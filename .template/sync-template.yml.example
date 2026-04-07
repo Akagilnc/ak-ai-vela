@@ -1,0 +1,78 @@
+name: Sync shared files to template repo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - CLAUDE.md
+      - AGENTS.md
+      - docs/process.md
+      - .editorconfig
+      - .gitattributes
+      - .github/PULL_REQUEST_TEMPLATE.md
+      - .github/ISSUE_TEMPLATE/**
+      - docs/memory/feedback_confirm_before_act.md
+      - docs/memory/feedback_tdd.md
+      - docs/memory/feedback_e2e_before_pr.md
+      - docs/memory/feedback_real_e2e_before_phase_complete.md
+      - docs/memory/feedback_use_worktree_for_isolated_followups.md
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      TEMPLATE_REPO_PAT: ${{ secrets.TEMPLATE_REPO_PAT }}
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Skip when template sync secret is unavailable
+        if: ${{ env.TEMPLATE_REPO_PAT == '' }}
+        run: echo "TEMPLATE_REPO_PAT is not configured; skipping template sync."
+
+      - name: Checkout template repo
+        if: ${{ env.TEMPLATE_REPO_PAT != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: Akagilnc/template-workflow-base
+          token: ${{ secrets.TEMPLATE_REPO_PAT }}
+          path: template-repo
+
+      - name: Copy shared files
+        if: ${{ env.TEMPLATE_REPO_PAT != '' }}
+        run: |
+          cp CLAUDE.md template-repo/CLAUDE.md
+          cp AGENTS.md template-repo/AGENTS.md
+          cp docs/process.md template-repo/docs/process.md
+          cp .editorconfig template-repo/.editorconfig
+          cp .gitattributes template-repo/.gitattributes
+          cp .github/PULL_REQUEST_TEMPLATE.md template-repo/.github/PULL_REQUEST_TEMPLATE.md
+          rm -rf template-repo/.github/ISSUE_TEMPLATE
+          cp -r .github/ISSUE_TEMPLATE template-repo/.github/ISSUE_TEMPLATE
+          mkdir -p template-repo/docs/memory
+
+          for file in \
+            feedback_confirm_before_act.md \
+            feedback_tdd.md \
+            feedback_e2e_before_pr.md \
+            feedback_real_e2e_before_phase_complete.md \
+            feedback_use_worktree_for_isolated_followups.md
+          do
+            if [ -f "docs/memory/$file" ]; then
+              cp "docs/memory/$file" "template-repo/docs/memory/$file"
+            fi
+          done
+
+      - name: Push if changed
+        if: ${{ env.TEMPLATE_REPO_PAT != '' }}
+        run: |
+          cd template-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+          else
+            git commit -m "Sync shared files from ${GITHUB_REPOSITORY}"
+            git push
+          fi
