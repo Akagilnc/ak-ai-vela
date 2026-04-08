@@ -39,7 +39,7 @@ const questionnaireBaseSchema = z.object({
   schemaVersion: z.literal(1).default(1),
 
   // Section 1: Child basics
-  childName: z.string({ error: "请填写孩子姓名" }).min(1, "请填写孩子姓名"),
+  childName: z.string({ error: "请填写孩子姓名" }).trim().min(1, "请填写孩子姓名"),
   birthYear: z.number({ error: "请选择出生年份" })
     .int("请选择有效年份").min(1998, "请选择有效年份").max(2023, "请选择有效年份"),
   currentGrade: z.number({ error: "请选择当前年级" })
@@ -198,6 +198,11 @@ export function canonicalizeAnswers(data: Record<string, unknown>): Record<strin
     delete cleaned.apCourses;
   }
   // homeschool/other: keep everything
+
+  // Clean up stale targetMajorOther
+  if (cleaned.targetMajor !== "other") {
+    delete cleaned.targetMajorOther;
+  }
 
   // Filter out empty array entries (user left blank entries that would fail validation)
   if (Array.isArray(cleaned.activities)) {

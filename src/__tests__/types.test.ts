@@ -300,6 +300,37 @@ describe("canonicalizeAnswers", () => {
     expect(result.ibDiploma).toBe(false);
   });
 
+  it("trims childName whitespace via Zod schema", () => {
+    const result = questionnaireSchema.safeParse({
+      ...validBase,
+      childName: "  张小明  ",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.childName).toBe("张小明");
+    }
+  });
+
+  it("removes targetMajorOther when targetMajor is not other", () => {
+    const result = canonicalizeAnswers({
+      schoolSystem: "public",
+      gpaPercentage: 88,
+      targetMajor: "pre-vet",
+      targetMajorOther: "some stale value",
+    });
+    expect(result.targetMajorOther).toBeUndefined();
+  });
+
+  it("keeps targetMajorOther when targetMajor is other", () => {
+    const result = canonicalizeAnswers({
+      schoolSystem: "public",
+      gpaPercentage: 88,
+      targetMajor: "other",
+      targetMajorOther: "Zoology",
+    });
+    expect(result.targetMajorOther).toBe("Zoology");
+  });
+
   it("keeps all fields for other", () => {
     const input = {
       schoolSystem: "other",
