@@ -67,11 +67,12 @@
 - 如果 PR 更新后不会自动重新触发 review，可在确认修改完成后手动触发。
 
 ### 手动重新触发 Review
-- `Gemini`：在 PR 顶层评论发送 `/gemini review`。
+- `Gemini`：在 PR 顶层评论发送 `@gemini-code-assist please review`。
 - `Codex`：在 PR 顶层评论发送 `@codex review`。
-- `GitHub Copilot`：
-  - 推送新 commit：如果当前账号 / 仓库 / 组织的 Copilot review 配置开启了“新 commit 自动重新请求 review”，直接向 PR 分支 push 新提交即可。
-  - 评论召唤：可在 PR 顶层评论尝试 `@copilot review`。
+- `GitHub Copilot`：使用 request-review API 触发，不要用 `@copilot review` 评论（会被 Copilot 对话 agent 拦截，不触发代码审查）。
+  ```bash
+  gh api repos/OWNER/REPO/pulls/N/requested_reviewers -X POST -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
+  ```
 
 ## Live Smoke 验证规则
 - 对于依赖真实浏览器、登录态、第三方平台、外部 API 或 LLM 实时输出的链路，能做 live smoke 就必须做 live smoke。

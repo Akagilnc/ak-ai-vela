@@ -1,58 +1,63 @@
 # Project Context
 
 ## Project name
-PROJECT_NAME
+Vela
 
 ## One-line summary
-Describe the project in one sentence.
+AI college planning tool for Chinese families targeting US pre-vet/animal science university programs.
 
 ## Goal
-What is the main business or product goal?
+Replace expensive study-abroad agencies with a data-driven decision support system. Help parents understand admissions gaps and get actionable recommendations, not just information dumps.
 
 ## Target users
-Who will use this project?
+Mainland Chinese parents planning their child's path to top 30 US universities. Seed user: a mom whose child wants to pursue veterinary medicine (pre-vet track).
 
 ## Core scope
-List the primary capabilities that are in scope.
-
--
--
--
+- School database with CDS admissions data and international student fields
+- Parent questionnaire (8 sections, static for MVP)
+- Gap analysis engine (rule-driven, deterministic)
+- Interactive assessment report with actionable recommendations
+- School browse/filter/compare UI with radar charts
+- Bilingual glossary tooltips (~20-30 US admissions terms)
+- Screenshot export for WeChat sharing (html2canvas)
 
 ## Out of scope
-List what this project will not try to solve for now.
-
--
--
--
+- Cloud deployment (local-only until 100+ users)
+- User auth/registration (single-user local tool)
+- Payment/monetization
+- Dynamic AI-generated questionnaire (Phase 2)
+- Case database / Reddit pipeline (Phase 2)
+- Activity scoring system (Phase 2)
+- "What If" simulator (deferred to P2)
 
 ## Key constraints
-List important constraints.
-
-Examples:
-- time constraints
-- budget constraints
-- deployment constraints
-- compliance constraints
-- platform constraints
+- Local deployment on founder's machine only
+- LLM is backend-only tool for founder to polish report content, never user-facing
+- MVP targets 10-15 schools, not 50
+- Chinese-first interface
+- Must work offline after initial setup
 
 ## Tech assumptions
-List current assumptions, if already known.
-
-Examples:
-- frontend / backend split
-- runtime assumptions
-- storage assumptions
-- authentication assumptions
+- Next.js 16 + TypeScript + Tailwind CSS 4 (App Router)
+- Prisma 7 + SQLite (better-sqlite3 adapter)
+- Recharts for visualizations
+- html2canvas for report screenshot export
+- No API keys, no external services for MVP
 
 ## External services
-List third-party services, APIs, or infrastructure dependencies.
+- Google Fonts CDN (Fraunces, Plus Jakarta Sans)
+- None for core functionality
 
 ## Deployment assumptions
-Where and how is this expected to run?
+Local: `npm run dev` or `npm start` on founder's MacBook.
 
 ## Risks
-List notable product or technical risks.
+- html2canvas + Google Fonts + SVG charts may produce rendering artifacts (spike planned for M4-POST)
+- Chinese school GPA normalization to US 4.0 scale is approximate
+- Seed data accuracy depends on manual CDS extraction by founder
 
 ## Open questions
-List unresolved decisions that should be clarified before major implementation.
+- K-6 vs G7-G10 target age range (needs seed user validation)
+- Specific school list beyond initial 3 (needs co-designer input)
+- Questionnaire wording for Chinese parents (needs co-designer conversation)
+- Gap scoring model details for pre-vet track (define during M3)

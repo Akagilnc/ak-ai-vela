@@ -1,60 +1,84 @@
-# PROJECT_NAME
+# Vela
 
-PROJECT_DESCRIPTION
+AI college planning tool for Chinese families targeting US university admissions.
 
-## Purpose
-This repository is created from `template-workflow-base`.
+Replaces expensive study-abroad agencies with data-driven gap analysis and actionable recommendations. Built for a seed user pursuing pre-vet/animal science programs at top 30 US universities.
 
-It provides:
-- shared repository rules via `CLAUDE.md`
-- Codex-specific entry rules via `AGENTS.md`
-- workflow and project management rules via `docs/process.md`
-- durable shared lessons via `docs/memory/MEMORY.md`
-- issue and PR templates for consistent collaboration
+## Stack
 
-## Repository rules
-- Shared execution rules: `CLAUDE.md`
-- Codex-specific behavior: `AGENTS.md`
-- Issue / milestone / PR workflow: `docs/process.md`
-- Shared memory and lessons learned: `docs/memory/MEMORY.md`
+- **Next.js 16** + TypeScript + Tailwind CSS 4 (App Router)
+- **Prisma 7** + SQLite (better-sqlite3 adapter)
+- **Recharts** for radar charts and visualizations
+- **Zod** for questionnaire schema validation
+- **Vitest** for testing
 
-## Project context
-Fill in the business and scope information in:
-- `docs/project-context.md`
+## Getting Started
 
-This file should explain:
-- what this project is for
-- what is in scope
-- what is out of scope
-- key constraints
-- deployment assumptions
-- external dependencies
+```bash
+npm install
+npm run db:push        # Create database tables
+npm run db:seed        # Seed 3 pre-vet schools (Cornell, UC Davis, Colorado State)
+npm run dev            # Start dev server at http://localhost:3000
+```
 
-## First-time setup
-After creating a new repository from this template:
+## Scripts
 
-1. Rename the project in this README
-2. Fill `docs/project-context.md`
-3. Review `CLAUDE.md`
-4. Review `AGENTS.md`
-5. Review `docs/process.md`
-6. Review `docs/memory/MEMORY.md`
-7. Adjust issue / PR templates if needed
-8. Add project-specific stack files
-9. Remove placeholder text that no longer applies
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Next.js dev server |
+| `npm run build` | Production build |
+| `npm test` | Run all tests (14 tests) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run db:push` | Push Prisma schema to SQLite |
+| `npm run db:seed` | Upsert school data (safe with existing student data) |
+| `npm run db:reset` | Full wipe + reseed (destructive, requires `--reset` flag) |
+| `npm run lint` | ESLint |
 
-## Development workflow
-1. Create or confirm an issue
-2. Ensure issue labels / milestone are correct
-3. Create a branch
-4. Read code and propose a plan
-5. Wait for approval before changing repository contents
-6. Implement with minimal changes
-7. Verify changes with tests or equivalent validation
-8. Commit at green checkpoints
-9. Open a PR with clear verification notes
+## Project Structure
 
-## Notes
-- This template is workflow-oriented, not stack-oriented.
-- Add project-specific runtime, framework, CI, and deployment files separately.
-- Keep cross-project lessons in `docs/memory/feedback_*.md`; keep repo-specific retrospectives in `docs/memory/project_*.md`.
+```
+src/
+  app/           # Next.js App Router pages
+  lib/
+    prisma.ts    # Prisma client singleton (hot-reload safe)
+    backup.ts    # SQLite backup via VACUUM INTO
+    types.ts     # Zod questionnaire schema + GapResult type
+  __tests__/     # Vitest tests
+prisma/
+  schema.prisma  # School, Student, QuestionnaireResult models
+  seed.ts        # Seed script with 3 pre-vet schools
+docs/
+  designs/       # CEO plan and MVP design
+  process.md     # Git workflow and project management rules
+```
+
+## Design System
+
+Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, and cream palette. Fonts: Fraunces (display), Plus Jakarta Sans (body), Geist Mono (data).
+
+## Documentation
+
+- `CLAUDE.md` — Shared execution rules for AI agents
+- `AGENTS.md` — Codex-specific behavior rules
+- `DESIGN.md` — Visual design system
+- `TODOS.md` — Deferred work items by milestone
+- `CHANGELOG.md` — Version history
+- `docs/process.md` — Git workflow, PR review, and project management
+- `docs/designs/vela-mvp.md` — CEO plan with scope decisions and milestones
+- `docs/project-context.md` — Project scope and constraints
+
+## Milestones
+
+| Milestone | Status |
+|-----------|--------|
+| M0: Project setup | Done (v0.1.1.0) |
+| M1: Data layer (school browse/filter UI) | Next |
+| M2: Input layer (questionnaire form) | Planned |
+| M3: Gap analysis engine | Planned |
+| M4: Interactive report | Planned |
+| M6: Browse enhancements (radar, glossary) | Planned |
+| M7: Export (html2canvas) | Planned |
+
+## Local deployment
+
+This is a single-user tool running on the founder's machine. No cloud deployment, no auth, no API keys until 100+ real users.
