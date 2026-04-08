@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0.0] - 2026-04-09
+
+### Added
+- 8-step questionnaire wizard with per-step validation and conditional fields
+- Welcome page with draft resume: detects saved progress, shows "继续填写" or "重新开始"
+- Review page with full student profile card, Chinese labels, and edit links per section
+- Submission success page personalized with child's name
+- localStorage draft persistence with debounced auto-save (300ms), 7-day expiry, and schema version guard
+- Draft restore on provider mount (data survives page reload and browser restart)
+- Progress stepper with 3 responsive breakpoints: desktop (circles+lines+labels), tablet (compact circles), mobile (progress bar+text)
+- Server action for questionnaire submission with Zod validation, data canonicalization, and Prisma upsert
+- Conditional field logic: international schools show IB/AP curriculum fields, public/private show GPA/rank
+- Chinese-first UI: all labels, validation errors, option values, hints, and placeholders in Chinese
+- Bilingual major options: "兽医预科 (Pre-Vet)", "动物科学 (Animal Science)", "生物学 (Biology)"
+- Glossary tooltips on technical terms (GPA, SAT, Grade Level) with mobile-friendly tap behavior
+- Auto-save timestamp indicator showing last save time
+- 34 new tests: server action (7), draft persistence (7), schema validation expansion (20)
+
+### Fixed
+- Strict mode double-initialization of activity/experience arrays (useRef guard pattern)
+- Empty array entries no longer block Zod validation (canonicalizeAnswers filters blank entries)
+- Experience type labels display in Chinese on review page (was showing raw enum values)
+- "IB Diploma" label changed to "IB 文凭" on review page
+- Fresh start now clears both localStorage and provider memory state (prevents stale data leakage)
+- Stored questionnaire answers now use Zod-validated data instead of raw input (prevents extra field injection)
+
 ## [0.1.2.0] - 2026-04-08
 
 ### Added

@@ -23,10 +23,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.1.2.0. Root layout uses `<link>` tags with preconnect for Google Fonts.
 - **Completed:** v0.1.2.0 (2026-04-08)
 
-### ~~[M1] Use Prisma `Json` type for JSON string fields~~ RESOLVED
-- **Status:** Prisma 6.2.0+ supports `Json` on SQLite. Previous "NOT FEASIBLE" was incorrect.
-- **Action:** M2 eng review confirmed. `QuestionnaireResult.answers` will change from `String` to `Json` during M2 implementation. Existing `targetSchools` field in Student model can also be upgraded.
-- **Updated:** 2026-04-08 (eng review + Codex outside voice confirmed)
+### ~~[M1] Use Prisma `Json` type for JSON string fields~~ DONE
+- **Status:** Completed in v0.2.0.0. `QuestionnaireResult.answers` uses `Json` type. Prisma 7.7.0 + SQLite confirmed working.
+- **Completed:** v0.2.0.0 (2026-04-09)
 
 ### [P2] Add error/loading/not-found pages for school routes
 - **What:** Create `src/app/schools/error.tsx`, `src/app/schools/loading.tsx`, `src/app/schools/not-found.tsx`, `src/app/schools/[id]/error.tsx`, `src/app/schools/[id]/not-found.tsx`.
@@ -43,7 +42,12 @@ Deferred work items tracked by engineering and CEO reviews.
 ### [P2] Create docs/current-state.md
 - **What:** Create and maintain `docs/current-state.md` as long-term project status document per CLAUDE.md rules.
 - **Why:** Codex outside voice flagged it missing. Helps cross-session context recovery.
-- **When:** Before M2 implementation starts or alongside it.
+- **When:** After M2 ships.
+
+### [P2] Wrap student upsert + questionnaire result in Prisma transaction
+- **What:** Use `prisma.$transaction()` to make student create/update and QuestionnaireResult.create atomic.
+- **Why:** Adversarial review (Claude + Codex) found non-atomic writes: if student create succeeds but QuestionnaireResult.create fails, student record is orphaned.
+- **When:** Before multi-user deployment. Acceptable for MVP single-user.
 
 ## Deferred from CEO Review
 
