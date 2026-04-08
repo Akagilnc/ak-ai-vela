@@ -23,9 +23,10 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.1.2.0. Root layout uses `<link>` tags with preconnect for Google Fonts.
 - **Completed:** v0.1.2.0 (2026-04-08)
 
-### ~~[M1] Use Prisma `Json` type for JSON string fields~~ NOT FEASIBLE
-- **Status:** Not feasible. Prisma v7 + SQLite does not support the `Json` field type. SQLite has no native JSON column type, and Prisma does not emulate it for this provider.
-- **Workaround:** Continue using `String` fields with manual `JSON.stringify()` / `JSON.parse()` via `safeJsonParse` helper (already implemented in `[id]/page.tsx`).
+### ~~[M1] Use Prisma `Json` type for JSON string fields~~ RESOLVED
+- **Status:** Prisma 6.2.0+ supports `Json` on SQLite. Previous "NOT FEASIBLE" was incorrect.
+- **Action:** M2 eng review confirmed. `QuestionnaireResult.answers` will change from `String` to `Json` during M2 implementation. Existing `targetSchools` field in Student model can also be upgraded.
+- **Updated:** 2026-04-08 (eng review + Codex outside voice confirmed)
 
 ### [P2] Add error/loading/not-found pages for school routes
 - **What:** Create `src/app/schools/error.tsx`, `src/app/schools/loading.tsx`, `src/app/schools/not-found.tsx`, `src/app/schools/[id]/error.tsx`, `src/app/schools/[id]/not-found.tsx`.
@@ -39,9 +40,30 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in feat/m0-scaffold (commit a8531c2).
 - **What was done:** `db:seed` now upserts schools only, `db:reset` does full wipe + reseed via `--reset` flag.
 
+### [P2] Create docs/current-state.md
+- **What:** Create and maintain `docs/current-state.md` as long-term project status document per CLAUDE.md rules.
+- **Why:** Codex outside voice flagged it missing. Helps cross-session context recovery.
+- **When:** Before M2 implementation starts or alongside it.
+
 ## Deferred from CEO Review
 
 - "What If" simulator — P2, wait for seed user feedback to confirm demand (~50 min when gap engine exists)
 - WeChat QR code sharing — blocked by local-only deployment
 - Calendar export (.ics) — blocked by incomplete deadline data
 - Define failure exit criteria — do before seed user conversation
+
+## Deferred from M2 Design Review
+
+### [P2] Progressive student profile anchor during questionnaire fill
+- **What:** Add a persistent visual element in the questionnaire layout that progressively reveals student info as steps complete (e.g., a mini dossier header or summary strip).
+- **Why:** Codex design review found that the "design highlight" is deferred to the review page, leaving the 8 form steps feeling like a generic form. A persistent anchor builds trust and differentiation during fill, not just after.
+- **When:** P2, after M2 ships and seed user feedback confirms the form feels too generic.
+- **Depends on:** M2 complete
+
+## Deferred from M2 CEO Review
+
+- Smart target school suggestions (needs M3 gap engine)
+- Real-time profile card sidebar (P2 enhancement)
+- Voice/dictation input for biggestConcern (P2)
+- AI-powered field auto-fill from uploaded transcript (Phase 2)
+- Multi-tab draft sync via BroadcastChannel (single-user, overkill for MVP)
