@@ -4,8 +4,10 @@ import path from "path";
 
 function createPrismaClient() {
   // MVP: local-only deployment, single machine. Revisit for cloud.
-  const dbPath = path.join(process.cwd(), "prisma", "dev.db");
-  const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
+  const url =
+    process.env.DATABASE_URL ||
+    `file:${path.join(process.cwd(), "prisma", "dev.db")}`;
+  const adapter = new PrismaBetterSqlite3({ url });
   return new PrismaClient({ adapter });
 }
 
