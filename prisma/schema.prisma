@@ -103,7 +103,7 @@ model QuestionnaireResult {
 
   // Full questionnaire answers stored as JSON
   // Validated by zod at app layer, not DB layer
-  answers     String   // JSON blob
+  answers     Json
 
   @@map("questionnaire_results")
 }
