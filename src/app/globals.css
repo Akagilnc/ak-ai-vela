@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
+@import "tailwindcss";
+
+:root {
+  /* Primary */
+  --color-primary: #2D6A4F;
+  --color-primary-light: #40916C;
+  --color-primary-dark: #1B4332;
+
+  /* Secondary */
+  --color-secondary: #E9C46A;
+  --color-secondary-light: #F4D58D;
+  --color-secondary-dark: #D4A843;
+
+  /* Accent */
+  --color-accent: #E76F51;
+
+  /* Neutrals (warm) */
+  --color-cream: #FEFAE0;
+  --color-surface: #F5F0E1;
+  --color-border: #E8E0D0;
+  --color-muted: #B8B0A0;
+  --color-secondary-text: #6B6560;
+  --color-primary-text: #3D3835;
+  --color-heading: #1A1715;
+
+  /* Semantic */
+  --color-success: #2D6A4F;
+  --color-warning: #E9C46A;
+  --color-error: #E63946;
+  --color-info: #457B9D;
+
+  /* Gap severity */
+  --color-gap-green: #2D6A4F;
+  --color-gap-yellow: #E9C46A;
+  --color-gap-red: #E63946;
+  --color-gap-nodata: #B8B0A0;
+
+  /* Background */
+  --background: #FEFAE0;
+  --foreground: #3D3835;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-vela-primary: #2D6A4F;
+  --color-vela-primary-light: #40916C;
+  --color-vela-primary-dark: #1B4332;
+  --color-vela-secondary: #E9C46A;
+  --color-vela-secondary-light: #F4D58D;
+  --color-vela-secondary-dark: #D4A843;
+  --color-vela-accent: #E76F51;
+  --color-vela-cream: #FEFAE0;
+  --color-vela-surface: #F5F0E1;
+  --color-vela-border: #E8E0D0;
+  --color-vela-muted: #B8B0A0;
+  --color-vela-text-secondary: #6B6560;
+  --color-vela-text: #3D3835;
+  --color-vela-heading: #1A1715;
+  --color-vela-success: #2D6A4F;
+  --color-vela-warning: #E9C46A;
+  --color-vela-error: #E63946;
+  --color-vela-info: #457B9D;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1A1715;
+    --foreground: #E8E0D0;
+    --color-cream: #1A1715;
+    --color-surface: #252220;
+    --color-border: #3D3835;
+    --color-muted: #6B6560;
+    --color-secondary-text: #B8B0A0;
+    --color-primary-text: #E8E0D0;
+    --color-heading: #FEFAE0;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: "Fraunces", Georgia, serif;
+  color: var(--color-heading);
+}
