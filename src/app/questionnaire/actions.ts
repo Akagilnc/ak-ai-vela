@@ -40,12 +40,10 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
   const data = result.data;
 
   try {
-    // 5. Upsert Student by childName + birthYear
+    // 5. Upsert Student by name (MVP: single user, single child)
     const existingStudent = await prisma.student.findFirst({
       where: {
         name: data.childName,
-        // birthYear is not directly on Student, but we check gradeLevel + name
-        // For MVP: upsert by name (single user, single child)
       },
     });
 

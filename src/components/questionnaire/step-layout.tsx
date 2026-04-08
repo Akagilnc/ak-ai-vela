@@ -28,12 +28,9 @@ export function StepLayout({
 
   const savedTimeStr = useMemo(() => {
     if (!lastSavedAt) return null;
-    try {
-      const d = new Date(lastSavedAt);
-      return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
-    } catch {
-      return null;
-    }
+    const d = new Date(lastSavedAt);
+    if (Number.isNaN(d.getTime())) return null;
+    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
   }, [lastSavedAt]);
 
   const handleNext = () => {

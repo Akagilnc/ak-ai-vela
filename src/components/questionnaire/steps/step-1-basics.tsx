@@ -85,7 +85,7 @@ export function Step1Basics() {
         error={errors.currentGrade}
       >
         <select
-          value={data.currentGrade || ""}
+          value={data.currentGrade ?? ""}
           onChange={(e) => setField("currentGrade", e.target.value ? Number(e.target.value) : undefined)}
           className={`${selectClass} ${errors.currentGrade ? inputErrorClass : ""}`}
           aria-required="true"

@@ -105,4 +105,29 @@ describe("questionnaire draft persistence", () => {
     clearDraft();
     expect(localStorageMock.getItem(STORAGE_KEY)).toBeNull();
   });
+
+  it("returns null for invalid savedAt timestamp", () => {
+    localStorageMock.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        currentStep: 2,
+        data: { schemaVersion: 1, childName: "Test" },
+        savedAt: "not-a-date",
+      })
+    );
+    // Invalid savedAt should be treated as expired/invalid, not silently accepted
+    expect(loadDraft()).toBeNull();
+  });
+
+  it("returns null for empty savedAt", () => {
+    localStorageMock.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        currentStep: 2,
+        data: { schemaVersion: 1, childName: "Test" },
+        savedAt: "",
+      })
+    );
+    expect(loadDraft()).toBeNull();
+  });
 });

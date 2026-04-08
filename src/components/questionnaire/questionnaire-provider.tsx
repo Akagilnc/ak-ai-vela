@@ -29,8 +29,14 @@ function loadDraft(): DraftInfo | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as DraftInfo;
+    // Reject drafts with invalid or missing savedAt
+    const savedTime = new Date(parsed.savedAt).getTime();
+    if (Number.isNaN(savedTime)) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
     // Reject drafts older than 7 days
-    if (Date.now() - new Date(parsed.savedAt).getTime() > DRAFT_MAX_AGE_MS) {
+    if (Date.now() - savedTime > DRAFT_MAX_AGE_MS) {
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }

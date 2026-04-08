@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useQuestionnaire } from "@/components/questionnaire/questionnaire-provider";
 import { ProgressStepper } from "@/components/questionnaire/progress-stepper";
 import { submitQuestionnaire, type SubmitResult } from "../actions";
-import { STEP_META } from "@/lib/types";
+
 
 type SectionData = {
   label: string;
@@ -155,10 +155,11 @@ export default function ReviewPage() {
   ];
 
   // Count missing fields that affect report quality
+  // Use == null instead of falsy check: 0 is a valid score/GPA
   const missingImportant = [
-    !data.gpaPercentage && !data.classRank,
-    !data.satScore && !data.actScore,
-    !data.toeflScore && !data.ieltsScore,
+    data.gpaPercentage == null && !data.classRank,
+    data.satScore == null && data.actScore == null,
+    data.toeflScore == null && data.ieltsScore == null,
   ].filter(Boolean).length;
 
   const handleSubmit = () => {
