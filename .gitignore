@@ -6,20 +6,53 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Logs
-*.log
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Next.js
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
 
 # Env
 .env
 .env.*
 !.env.example
 
-# Temporary files
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing / Coverage
+/coverage
+
+# Misc
+*.pem
+*.tmp
 tmp/
 temp/
-*.tmp
 
-# Coverage / reports
-coverage/
-dist/
-build/
+# gstack
+.gstack/
+
+# Prisma
+*.db
+*.db-journal
+prisma/backups/
+
+# Vercel
+.vercel
+
+/src/generated/prisma
