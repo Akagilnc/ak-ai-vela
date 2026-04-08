@@ -87,7 +87,7 @@ export default async function SchoolsPage({
                     </p>
                   )}
                 </div>
-                {school.ranking && (
+                {school.ranking != null && (
                   <span className="ml-2 shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full bg-vela-primary text-white text-sm font-mono font-bold">
                     #{school.ranking}
                   </span>
@@ -119,7 +119,7 @@ export default async function SchoolsPage({
                   <div>
                     <span className="text-vela-muted">年费用</span>
                     <p className="font-mono font-medium text-vela-text">
-                      ${school.estimatedAnnualCost.toLocaleString()}
+                      ${school.estimatedAnnualCost.toLocaleString('en-US')}
                     </p>
                   </div>
                 )}

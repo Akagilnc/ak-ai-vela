@@ -53,7 +53,7 @@ export function RadarChart({
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       className="w-full max-w-[240px] mx-auto"
       role="img"
-      aria-label="School profile radar chart"
+      aria-label="学校画像雷达图"
     >
       {/* Grid */}
       {gridPaths.map((points, i) => (

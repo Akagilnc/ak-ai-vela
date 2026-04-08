@@ -77,7 +77,7 @@ export default async function SchoolDetailPage({
               )}
               <p className="text-vela-text-secondary mt-1">{school.location}</p>
             </div>
-            {school.ranking && (
+            {school.ranking != null && (
               <div className="text-center">
                 <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-vela-primary text-white text-xl font-mono font-bold">
                   #{school.ranking}
@@ -125,7 +125,7 @@ export default async function SchoolDetailPage({
                         key={type}
                         className="inline-flex items-center gap-1 text-sm bg-vela-secondary/20 text-vela-heading px-3 py-1 rounded-full"
                       >
-                        <span className="font-medium">{type}:</span> {date as string}
+                        <span className="font-medium">{type}:</span> {date}
                       </span>
                     ))}
                   </div>
@@ -139,7 +139,7 @@ export default async function SchoolDetailPage({
                 费用与奖学金
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <Stat label="年费用" value={school.estimatedAnnualCost != null ? `$${school.estimatedAnnualCost.toLocaleString()}` : null} />
+                <Stat label="年费用" value={school.estimatedAnnualCost != null ? `$${school.estimatedAnnualCost.toLocaleString('en-US')}` : null} />
                 <Stat label="获助学金比例" value={school.financialAidPct != null ? `${(school.financialAidPct * 100).toFixed(0)}%` : null} />
                 <Stat label="Need-Blind 录取" value={school.needBlind ? "是" : "否"} mono={false} />
               </div>
