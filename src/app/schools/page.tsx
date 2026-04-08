@@ -74,7 +74,7 @@ export default async function SchoolsPage({
             <Link
               key={school.id}
               href={`/schools/${school.id}`}
-              className="block bg-vela-surface border border-vela-border rounded-lg p-6 hover:shadow-md transition-shadow"
+              className="block bg-vela-surface border border-vela-border rounded-lg p-6 shadow-sm hover:shadow-md focus-visible:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 min-w-0">
