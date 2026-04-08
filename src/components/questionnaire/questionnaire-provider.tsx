@@ -192,6 +192,14 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    const saved = loadDraft();
+    if (saved) {
+      dispatch({ type: "RESTORE_DRAFT", draft: saved });
+    }
+  }, []);
+
   // Flush: cancel pending debounce, save immediately
   const flushSave = useCallback(() => {
     if (debounceRef.current) {
