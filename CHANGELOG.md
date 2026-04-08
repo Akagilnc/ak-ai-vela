@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - 3 new Zod schema edge-case tests (activities, animalExperience, budgetRange) — 14 tests total
-- TODOS.md for tracking deferred work items (next/link, Prisma Json type, schema range fields)
+- TODOS.md for tracking deferred work items (next/link, Prisma Json type, schema range fields, Google Fonts loading)
 
 ## [0.1.0.0] - 2026-04-08
 
@@ -32,5 +32,5 @@ All notable changes to this project will be documented in this file.
 - Zod schema for 8-section parent questionnaire with validation
 - GapResult type for gap analysis engine
 - Seed script with 3 pre-vet schools (Cornell, UC Davis, Colorado State)
-- Vitest test framework with 11 passing tests (schema validation + backup utility)
+- Vitest test framework with 14 passing tests (schema validation + backup utility)
 - Homepage placeholder with design system styling
