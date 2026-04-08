@@ -17,13 +17,23 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** During M1 (school data layer + browse UI), when entering complete data for 10-15 schools.
 - **Depends on:** M1
 
+### [M1] Use `next/link` for internal navigation
+- **What:** Replace `<a href>` tags with Next.js `<Link>` component in `src/app/page.tsx` and future pages.
+- **Why:** Plain `<a>` tags trigger full page reloads, bypassing App Router client-side navigation and prefetching.
+- **When:** M1, when building real page routes.
+- **Depends on:** M1
+
+### [M1] Use Prisma `Json` type for JSON string fields
+- **What:** Change `programs`, `applicationDeadline`, `internationalScholarships`, `targetSchools`, `answers` from `String` to `Json` in Prisma schema.
+- **Why:** Prisma `Json` type handles serialization automatically and provides better type safety. Currently using `JSON.stringify()` manually in seed/app code.
+- **When:** M1, when expanding School schema with target range fields.
+- **Depends on:** M1
+
 ## P2 — Do when the prerequisite is met
 
-### [M2] Seed script safety: split db:seed and db:reset
-- **What:** Refactor seed.ts so `db:seed` only upserts school data (safe to run anytime), and `db:reset` does the full wipe + reseed (destructive, requires confirmation).
-- **Why:** Current `db:seed` runs `deleteMany` on Student and QuestionnaireResult tables. Once M2 introduces real student data, running `db:seed` will silently destroy it.
-- **When:** M2 (when student data starts existing).
-- **Depends on:** M2
+### [M2] ~~Seed script safety: split db:seed and db:reset~~ DONE
+- **Status:** Completed in feat/m0-scaffold (commit a8531c2).
+- **What was done:** `db:seed` now upserts schools only, `db:reset` does full wipe + reseed via `--reset` flag.
 
 ## Deferred from CEO Review
 

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1.0] - 2026-04-08
+
+### Changed
+- Database backup now uses SQLite VACUUM INTO for consistent snapshots (safe during writes)
+- All database paths (prisma client, seed script, backup utility) now read DATABASE_URL with fallback
+- Removed hard grade/birthYear constraints from questionnaire schema (no longer enforces range)
+- Seed script split into safe upsert mode (db:seed) and destructive reset mode (db:reset --reset)
+
+### Fixed
+- .env.example pointed to wrong database path (./dev.db → ./prisma/dev.db)
+- Backup tests now properly isolate DATABASE_URL environment variable
+- Backup tests verify data integrity using real SQLite databases instead of fake files
+
+### Added
+- 3 new Zod schema edge-case tests (activities, animalExperience, budgetRange) — 14 tests total
+- TODOS.md for tracking deferred work items (next/link, Prisma Json type, schema range fields)
+
 ## [0.1.0.0] - 2026-04-08
 
 ### Added
