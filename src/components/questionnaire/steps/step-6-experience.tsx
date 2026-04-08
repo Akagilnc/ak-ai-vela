@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { StepLayout } from "../step-layout";
 import { FormField, inputClass, selectClass } from "../form-field";
 import { useQuestionnaire } from "../questionnaire-provider";
@@ -28,20 +28,20 @@ const EXPERIENCE_TYPES = [
 
 export function Step6Experience() {
   const { data, setArrayItem, addArrayItem, removeArrayItem } = useQuestionnaire();
+  const initializedRef = useRef(false);
+
+  // Initialize with exactly 1 empty entry (useEffect + ref prevents strict mode double-add)
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (!data.animalExperience || (data.animalExperience as AnimalExperience[]).length === 0) {
+      initializedRef.current = true;
+      addArrayItem("animalExperience", { ...EMPTY_EXPERIENCE });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const experiences = (data.animalExperience as AnimalExperience[] | undefined)?.length
     ? (data.animalExperience as AnimalExperience[])
     : [{ ...EMPTY_EXPERIENCE }];
-
-  const initializeIfEmpty = useCallback(() => {
-    if (!data.animalExperience || (data.animalExperience as AnimalExperience[]).length === 0) {
-      addArrayItem("animalExperience", { ...EMPTY_EXPERIENCE });
-    }
-  }, [data.animalExperience, addArrayItem]);
-
-  if (!data.animalExperience || (data.animalExperience as AnimalExperience[]).length === 0) {
-    initializeIfEmpty();
-  }
 
   const updateEntry = (index: number, field: keyof AnimalExperience, value: unknown) => {
     const entry = { ...experiences[index], [field]: value };
@@ -66,7 +66,7 @@ export function Step6Experience() {
     <StepLayout
       step={6}
       title="特殊经历"
-      subtitle="动物相关的经历对 Pre-Vet 方向很加分"
+      subtitle="动物相关的经历对兽医预科方向很加分"
     >
       <div className="space-y-6">
         {experiences.map((exp, index) => (

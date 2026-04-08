@@ -30,9 +30,10 @@ export function Step1Basics() {
     return false;
   }, [data]);
 
-  // Generate birth year options (2000-2015)
-  const birthYears = Array.from({ length: 16 }, (_, i) => 2000 + i);
-  const grades = Array.from({ length: 7 }, (_, i) => 6 + i); // 6-12
+  // Generate birth year options (1998-2023)
+  const birthYears = Array.from({ length: 26 }, (_, i) => 1998 + i);
+  // Grades: 0 = kindergarten, 1-12
+  const grades = Array.from({ length: 13 }, (_, i) => i); // 0-12
 
   return (
     <StepLayout
@@ -91,7 +92,7 @@ export function Step1Basics() {
         >
           <option value="">请选择</option>
           {grades.map((g) => (
-            <option key={g} value={g}>{g}年级</option>
+            <option key={g} value={g}>{g === 0 ? "幼儿园" : `${g}年级`}</option>
           ))}
         </select>
       </FormField>

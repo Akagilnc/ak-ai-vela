@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { StepLayout } from "../step-layout";
 import { FormField, inputClass, selectClass } from "../form-field";
 import { useQuestionnaire } from "../questionnaire-provider";
@@ -30,23 +30,21 @@ const ACTIVITY_TYPES = [
 
 export function Step5Activities() {
   const { data, setArrayItem, addArrayItem, removeArrayItem } = useQuestionnaire();
+  const initializedRef = useRef(false);
 
-  // Ensure at least one entry
+  // Initialize with exactly 1 empty entry (useEffect + ref prevents strict mode double-add)
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (!data.activities || (data.activities as Activity[]).length === 0) {
+      initializedRef.current = true;
+      addArrayItem("activities", { ...EMPTY_ACTIVITY });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Display: use data if populated, else show 1 empty entry for UI
   const activities = (data.activities as Activity[] | undefined)?.length
     ? (data.activities as Activity[])
     : [{ ...EMPTY_ACTIVITY }];
-
-  // On first render, initialize if empty
-  const initializeIfEmpty = useCallback(() => {
-    if (!data.activities || (data.activities as Activity[]).length === 0) {
-      addArrayItem("activities", { ...EMPTY_ACTIVITY });
-    }
-  }, [data.activities, addArrayItem]);
-
-  // Call once
-  if (!data.activities || (data.activities as Activity[]).length === 0) {
-    initializeIfEmpty();
-  }
 
   const updateEntry = (index: number, field: keyof Activity, value: unknown) => {
     const entry = { ...activities[index], [field]: value };

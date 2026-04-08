@@ -42,7 +42,7 @@ export function Step8Goals() {
     >
       <FormField
         label="目标专业方向"
-        hint="Pre-vet 申请和 animal science 的路径不同，这帮助我们精准匹配"
+        hint="兽医预科和动物科学的申请路径不同，这帮助我们精准匹配"
         glossary="Target Major"
       >
         <select
@@ -51,9 +51,9 @@ export function Step8Goals() {
           className={selectClass}
         >
           <option value="">暂时不确定</option>
-          <option value="pre-vet">Pre-Veterinary</option>
-          <option value="animal-science">Animal Science</option>
-          <option value="biology">Biology</option>
+          <option value="pre-vet">兽医预科 (Pre-Vet)</option>
+          <option value="animal-science">动物科学 (Animal Science)</option>
+          <option value="biology">生物学 (Biology)</option>
           <option value="other">其他方向</option>
         </select>
       </FormField>
@@ -80,10 +80,10 @@ export function Step8Goals() {
           className={selectClass}
         >
           <option value="">无偏好</option>
-          <option value="Northeast">东北部 (纽约、波士顿、费城)</option>
-          <option value="Midwest">中西部 (芝加哥、密歇根)</option>
-          <option value="South">南部 (北卡、佐治亚、德州)</option>
-          <option value="West">西部 (加州、华盛顿)</option>
+          <option value="东北部">东北部 (纽约、波士顿、费城)</option>
+          <option value="中西部">中西部 (芝加哥、密歇根)</option>
+          <option value="南部">南部 (北卡、佐治亚、德州)</option>
+          <option value="西部">西部 (加州、华盛顿)</option>
         </select>
       </FormField>
 

@@ -14,6 +14,11 @@ type SectionData = {
   entries: { label: string; value: string | null }[];
 };
 
+function formatGrade(grade: number): string {
+  if (grade === 0) return "幼儿园";
+  return `${grade}年级`;
+}
+
 function formatValue(val: unknown): string | null {
   if (val == null || val === "" || val === undefined) return null;
   if (typeof val === "boolean") return val ? "是" : "否";
@@ -42,9 +47,9 @@ const BUDGET_LABELS: Record<string, string> = {
 };
 
 const MAJOR_LABELS: Record<string, string> = {
-  "pre-vet": "Pre-Veterinary",
-  "animal-science": "Animal Science",
-  "biology": "Biology",
+  "pre-vet": "兽医预科 (Pre-Vet)",
+  "animal-science": "动物科学 (Animal Science)",
+  "biology": "生物学 (Biology)",
   "other": "其他",
 };
 
@@ -63,7 +68,7 @@ export default function ReviewPage() {
       entries: [
         { label: "姓名", value: data.childName || null },
         { label: "出生年份", value: data.birthYear ? `${data.birthYear}年` : null },
-        { label: "当前年级", value: data.currentGrade ? `${data.currentGrade}年级` : null },
+        { label: "当前年级", value: data.currentGrade != null ? formatGrade(data.currentGrade) : null },
       ],
     },
     {
@@ -178,7 +183,7 @@ export default function ReviewPage() {
             {data.childName || "学生"}的档案总览
           </h2>
           <p className="text-sm text-vela-text-secondary mt-1">
-            {data.currentGrade ? `${data.currentGrade}年级` : ""}{data.schoolName ? ` · ${data.schoolName}` : ""}
+            {data.currentGrade != null ? formatGrade(data.currentGrade) : ""}{data.schoolName ? ` · ${data.schoolName}` : ""}
             {data.targetMajor ? ` · 目标: ${MAJOR_LABELS[data.targetMajor] || data.targetMajor}` : ""}
           </p>
         </div>
