@@ -97,12 +97,14 @@ export default function QuestionnairePage() {
           </button>
         )}
 
-        <Link
-          href="/"
-          className="inline-block text-sm text-vela-text-secondary hover:text-vela-primary transition-colors mt-4"
-        >
-          ← 返回首页
-        </Link>
+        <div className="pt-2">
+          <Link
+            href="/"
+            className="text-sm text-vela-text-secondary hover:text-vela-primary transition-colors"
+          >
+            ← 返回首页
+          </Link>
+        </div>
       </div>
     </div>
   );
