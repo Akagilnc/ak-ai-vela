@@ -8,7 +8,7 @@ Replaces expensive study-abroad agencies with data-driven gap analysis and actio
 
 - **Next.js 16** + TypeScript + Tailwind CSS 4 (App Router)
 - **Prisma 7** + SQLite (better-sqlite3 adapter)
-- **Recharts** for radar charts and visualizations
+- **Recharts** for visualizations (radar charts use custom SVG)
 - **Zod** for questionnaire schema validation
 - **Vitest** for testing
 
@@ -17,7 +17,7 @@ Replaces expensive study-abroad agencies with data-driven gap analysis and actio
 ```bash
 npm install
 npm run db:push        # Create database tables
-npm run db:seed        # Seed 3 pre-vet schools (Cornell, UC Davis, Colorado State)
+npm run db:seed        # Seed 12 pre-vet-relevant schools
 npm run dev            # Start dev server at http://localhost:3000
 ```
 
@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (14 tests) |
+| `npm test` | Run all tests (33 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -38,18 +38,21 @@ npm run dev            # Start dev server at http://localhost:3000
 
 ```
 src/
-  app/           # Next.js App Router pages
+  app/                    # Next.js App Router pages
+    schools/              # School browse + detail pages
+      [id]/               # Detail page with radar chart
+    page.tsx              # Homepage (Chinese-first)
   lib/
-    prisma.ts    # Prisma client singleton (hot-reload safe)
-    backup.ts    # SQLite backup via VACUUM INTO
-    types.ts     # Zod questionnaire schema + GapResult type
-  __tests__/     # Vitest tests
+    prisma.ts             # Prisma client singleton (hot-reload safe)
+    backup.ts             # SQLite backup via VACUUM INTO
+    types.ts              # Zod questionnaire schema + GapResult type
+  __tests__/              # Vitest tests (33 tests)
 prisma/
-  schema.prisma  # School, Student, QuestionnaireResult models
-  seed.ts        # Seed script with 3 pre-vet schools
+  schema.prisma           # School, Student, QuestionnaireResult models
+  seed.ts                 # Seed script with 12 pre-vet-relevant schools
 docs/
-  designs/       # CEO plan and MVP design
-  process.md     # Git workflow and project management rules
+  process.md              # Git workflow and project management rules
+  project-context.md      # Project scope and constraints
 ```
 
 ## Design System
@@ -72,7 +75,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | Milestone | Status |
 |-----------|--------|
 | M0: Project setup | Done (v0.1.1.0) |
-| M1: Data layer (school browse/filter UI) | Next |
+| M1: Data layer (school browse/filter UI) | Done (v0.1.2.0) |
 | M2: Input layer (questionnaire form) | Planned |
 | M3: Gap analysis engine | Planned |
 | M4: Interactive report | Planned |
