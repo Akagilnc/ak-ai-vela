@@ -1,24 +1,12 @@
 import { describe, it, expect } from "vitest";
-
-// Test the radar chart geometry functions independently
-// (extracted logic from the component for testability)
-
-const SIDES = 5;
-const SIZE = 240;
-const CENTER = SIZE / 2;
-const RADIUS = 90;
-
-function polarToCartesian(
-  angle: number,
-  radius: number
-): [number, number] {
-  const rad = ((angle - 90) * Math.PI) / 180;
-  return [CENTER + radius * Math.cos(rad), CENTER + radius * Math.sin(rad)];
-}
-
-function getAngles(): number[] {
-  return Array.from({ length: SIDES }, (_, i) => (360 / SIDES) * i);
-}
+import {
+  SIDES,
+  SIZE,
+  CENTER,
+  RADIUS,
+  polarToCartesian,
+  getAngles,
+} from "../app/schools/[id]/radar-utils";
 
 describe("RadarChart geometry", () => {
   it("generates correct number of angles", () => {

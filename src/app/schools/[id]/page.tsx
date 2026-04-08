@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -5,9 +6,22 @@ import { RadarChart } from "./radar-chart";
 
 type Params = Promise<{ id: string }>;
 
+const getSchool = cache(async (id: string) => {
+  return prisma.school.findUnique({ where: { id } });
+});
+
+function safeJsonParse<T>(value: string | null, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function generateMetadata({ params }: { params: Params }) {
   const { id } = await params;
-  const school = await prisma.school.findUnique({ where: { id } });
+  const school = await getSchool(id);
   if (!school) return { title: "School Not Found — Vela" };
   return { title: `${school.name} — Vela` };
 }
@@ -18,16 +32,18 @@ export default async function SchoolDetailPage({
   params: Params;
 }) {
   const { id } = await params;
-  const school = await prisma.school.findUnique({ where: { id } });
+  const school = await getSchool(id);
   if (!school) notFound();
 
-  const programs: string[] = JSON.parse(school.programs);
-  const deadline = school.applicationDeadline
-    ? JSON.parse(school.applicationDeadline)
-    : null;
-  const scholarships = school.internationalScholarships
-    ? JSON.parse(school.internationalScholarships)
-    : null;
+  const programs = safeJsonParse<string[]>(school.programs, []);
+  const deadline = safeJsonParse<Record<string, string> | null>(
+    school.applicationDeadline,
+    null
+  );
+  const scholarships = safeJsonParse<string | null>(
+    school.internationalScholarships,
+    null
+  );
 
   const radarData = {
     acceptance: school.radarAcceptance ?? 0,
@@ -42,9 +58,9 @@ export default async function SchoolDetailPage({
       <div className="max-w-[1200px] mx-auto">
         <Link
           href="/schools"
-          className="text-sm text-vela-text-secondary hover:text-vela-primary transition-colors"
+          className="inline-flex items-center min-h-[44px] text-sm text-vela-text-secondary hover:text-vela-primary transition-colors"
         >
-          &larr; Back to Schools
+          &larr; 返回学校列表
         </Link>
 
         {/* Header */}
@@ -77,7 +93,7 @@ export default async function SchoolDetailPage({
               rel="noopener noreferrer"
               className="inline-block mt-2 text-sm text-vela-primary hover:underline"
             >
-              Visit Website &rarr;
+              访问官网 &rarr;
             </a>
           )}
         </div>
@@ -86,24 +102,24 @@ export default async function SchoolDetailPage({
           {/* Left column: data sections */}
           <div className="lg:col-span-2 space-y-6">
             {/* Admissions */}
-            <section className="bg-vela-surface border border-vela-border rounded-lg p-5">
+            <section className="bg-vela-surface border border-vela-border rounded-lg p-6">
               <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
-                Admissions
+                录取信息
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <Stat label="Acceptance Rate" value={school.acceptanceRate != null ? `${(school.acceptanceRate * 100).toFixed(1)}%` : null} />
-                <Stat label="Intl Accept Rate" value={school.internationalAcceptRate != null ? `${(school.internationalAcceptRate * 100).toFixed(1)}%` : null} />
-                <Stat label="Median SAT" value={school.medianSAT?.toString()} />
-                <Stat label="SAT Range" value={school.sat25th && school.sat75th ? `${school.sat25th}–${school.sat75th}` : null} />
-                <Stat label="Median ACT" value={school.medianACT?.toString()} />
-                <Stat label="ACT Range" value={school.act25th && school.act75th ? `${school.act25th}–${school.act75th}` : null} />
-                <Stat label="Avg GPA" value={school.avgGPA?.toFixed(2)} />
-                <Stat label="English Req" value={school.englishRequirements} mono={false} />
+                <Stat label="录取率" value={school.acceptanceRate != null ? `${(school.acceptanceRate * 100).toFixed(1)}%` : null} />
+                <Stat label="国际生录取率" value={school.internationalAcceptRate != null ? `${(school.internationalAcceptRate * 100).toFixed(1)}%` : null} />
+                <Stat label="SAT 中位数" value={school.medianSAT?.toString()} />
+                <Stat label="SAT 区间" value={school.sat25th && school.sat75th ? `${school.sat25th}–${school.sat75th}` : null} />
+                <Stat label="ACT 中位数" value={school.medianACT?.toString()} />
+                <Stat label="ACT 区间" value={school.act25th && school.act75th ? `${school.act25th}–${school.act75th}` : null} />
+                <Stat label="平均 GPA" value={school.avgGPA?.toFixed(2)} />
+                <Stat label="英语要求" value={school.englishRequirements} mono={false} />
               </div>
               {deadline && (
                 <div className="mt-4 pt-4 border-t border-vela-border">
-                  <p className="text-sm text-vela-muted mb-2">Application Deadlines</p>
-                  <div className="flex flex-wrap gap-3">
+                  <p className="text-sm text-vela-muted mb-2">申请截止日期</p>
+                  <div className="flex flex-wrap gap-2">
                     {Object.entries(deadline).map(([type, date]) => (
                       <span
                         key={type}
@@ -118,14 +134,14 @@ export default async function SchoolDetailPage({
             </section>
 
             {/* Financial */}
-            <section className="bg-vela-surface border border-vela-border rounded-lg p-5">
+            <section className="bg-vela-surface border border-vela-border rounded-lg p-6">
               <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
-                Financial
+                费用与奖学金
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <Stat label="Annual Cost" value={school.estimatedAnnualCost != null ? `$${school.estimatedAnnualCost.toLocaleString()}` : null} />
-                <Stat label="Aid Recipients" value={school.financialAidPct != null ? `${(school.financialAidPct * 100).toFixed(0)}%` : null} />
-                <Stat label="Need-Blind" value={school.needBlind ? "Yes" : "No"} mono={false} />
+                <Stat label="年费用" value={school.estimatedAnnualCost != null ? `$${school.estimatedAnnualCost.toLocaleString()}` : null} />
+                <Stat label="获助学金比例" value={school.financialAidPct != null ? `${(school.financialAidPct * 100).toFixed(0)}%` : null} />
+                <Stat label="Need-Blind 录取" value={school.needBlind ? "是" : "否"} mono={false} />
               </div>
               {scholarships && (
                 <p className="mt-4 pt-4 border-t border-vela-border text-sm text-vela-text">
@@ -135,28 +151,28 @@ export default async function SchoolDetailPage({
             </section>
 
             {/* International */}
-            <section className="bg-vela-surface border border-vela-border rounded-lg p-5">
+            <section className="bg-vela-surface border border-vela-border rounded-lg p-6">
               <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
-                International Students
+                国际学生
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <Stat label="Intl Students" value={school.internationalStudentPct != null ? `${(school.internationalStudentPct * 100).toFixed(0)}%` : null} />
-                <Stat label="Visa/OPT" value={school.visaOPTSupport ? "Supported" : "N/A"} mono={false} />
+                <Stat label="国际生比例" value={school.internationalStudentPct != null ? `${(school.internationalStudentPct * 100).toFixed(0)}%` : null} />
+                <Stat label="签证/OPT 支持" value={school.visaOPTSupport ? "支持" : "N/A"} mono={false} />
               </div>
             </section>
 
             {/* Pre-Vet */}
             {school.hasPreVetTrack && (
-              <section className="bg-vela-surface border border-vela-border rounded-lg p-5">
-                <h2 className="text-xl font-semibold text-vela-heading font-display mb-3">
-                  Pre-Vet Program
+              <section className="bg-vela-surface border border-vela-border rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
+                  Pre-Vet 项目
                 </h2>
                 {school.preVetNotes && (
                   <p className="text-sm text-vela-text leading-relaxed">
                     {school.preVetNotes}
                   </p>
                 )}
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {programs.map((p) => (
                     <span
                       key={p}
@@ -170,19 +186,19 @@ export default async function SchoolDetailPage({
             )}
           </div>
 
-          {/* Right column: radar chart */}
-          <div className="lg:col-span-1">
-            <div className="bg-vela-surface border border-vela-border rounded-lg p-5 sticky top-8">
+          {/* Right column: radar chart (mobile: show first) */}
+          <div className="lg:col-span-1 order-first lg:order-none">
+            <div className="bg-vela-surface border border-vela-border rounded-lg p-6 sticky top-8">
               <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
-                Profile
+                学校画像
               </h2>
               <RadarChart data={radarData} />
               <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
-                <RadarLegendItem label="Acceptance" value={radarData.acceptance} />
-                <RadarLegendItem label="International" value={radarData.international} />
-                <RadarLegendItem label="SAT Competitiveness" value={radarData.sat} />
-                <RadarLegendItem label="Affordability" value={radarData.cost} />
-                <RadarLegendItem label="Financial Aid" value={radarData.aid} />
+                <RadarLegendItem label="录取友好度" value={radarData.acceptance} />
+                <RadarLegendItem label="国际生友好度" value={radarData.international} />
+                <RadarLegendItem label="SAT 竞争力" value={radarData.sat} />
+                <RadarLegendItem label="费用可负担度" value={radarData.cost} />
+                <RadarLegendItem label="奖学金力度" value={radarData.aid} />
               </div>
             </div>
           </div>

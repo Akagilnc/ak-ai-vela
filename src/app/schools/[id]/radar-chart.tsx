@@ -1,23 +1,12 @@
 "use client";
 
+import { SIZE, CENTER, RADIUS, polarToCartesian, getAngles } from "./radar-utils";
+
 const LABELS = ["Acceptance", "International", "SAT", "Affordability", "Aid"];
-const SIDES = 5;
-const SIZE = 240;
-const CENTER = SIZE / 2;
-const RADIUS = 90;
 const LEVELS = 4;
 
-function polarToCartesian(
-  angle: number,
-  radius: number
-): [number, number] {
-  // Start from top (-90°), go clockwise
-  const rad = ((angle - 90) * Math.PI) / 180;
-  return [CENTER + radius * Math.cos(rad), CENTER + radius * Math.sin(rad)];
-}
-
-function getAngles(): number[] {
-  return Array.from({ length: SIDES }, (_, i) => (360 / SIDES) * i);
+function clamp(v: number): number {
+  return Math.max(0, Math.min(100, v));
 }
 
 export function RadarChart({
@@ -33,11 +22,11 @@ export function RadarChart({
 }) {
   const angles = getAngles();
   const values = [
-    data.acceptance,
-    data.international,
-    data.sat,
-    data.cost,
-    data.aid,
+    clamp(data.acceptance),
+    clamp(data.international),
+    clamp(data.sat),
+    clamp(data.cost),
+    clamp(data.aid),
   ];
 
   // Grid circles
@@ -71,7 +60,7 @@ export function RadarChart({
           key={i}
           points={points}
           fill="none"
-          stroke="#E8E0D0"
+          stroke="var(--color-border, #E8E0D0)"
           strokeWidth="1"
         />
       ))}
@@ -84,7 +73,7 @@ export function RadarChart({
           y1={CENTER}
           x2={x}
           y2={y}
-          stroke="#E8E0D0"
+          stroke="var(--color-border, #E8E0D0)"
           strokeWidth="1"
         />
       ))}
@@ -92,9 +81,9 @@ export function RadarChart({
       {/* Data area */}
       <polygon
         points={dataPolygon}
-        fill="#2D6A4F"
+        fill="var(--color-primary, #2D6A4F)"
         fillOpacity="0.2"
-        stroke="#2D6A4F"
+        stroke="var(--color-primary, #2D6A4F)"
         strokeWidth="2"
       />
 
@@ -105,7 +94,7 @@ export function RadarChart({
           cx={x}
           cy={y}
           r="3"
-          fill="#2D6A4F"
+          fill="var(--color-primary, #2D6A4F)"
         />
       ))}
 

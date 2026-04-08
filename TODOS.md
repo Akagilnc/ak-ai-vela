@@ -29,11 +29,15 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** M1, when building real pages.
 - **Depends on:** M1
 
-### [M1] Use Prisma `Json` type for JSON string fields
-- **What:** Change `programs`, `applicationDeadline`, `internationalScholarships`, `targetSchools`, `answers` from `String` to `Json` in Prisma schema.
-- **Why:** Prisma `Json` type handles serialization automatically and provides better type safety. Currently using `JSON.stringify()` manually in seed/app code.
-- **When:** M1, when expanding School schema with target range fields.
-- **Depends on:** M1
+### ~~[M1] Use Prisma `Json` type for JSON string fields~~ NOT FEASIBLE
+- **Status:** Not feasible. Prisma v7 + SQLite does not support the `Json` field type. SQLite has no native JSON column type, and Prisma does not emulate it for this provider.
+- **Workaround:** Continue using `String` fields with manual `JSON.stringify()` / `JSON.parse()` via `safeJsonParse` helper (already implemented in `[id]/page.tsx`).
+
+### [P2] Add error/loading/not-found pages for school routes
+- **What:** Create `src/app/schools/error.tsx`, `src/app/schools/loading.tsx`, `src/app/schools/not-found.tsx`, `src/app/schools/[id]/error.tsx`, `src/app/schools/[id]/not-found.tsx`.
+- **Why:** Design review identified missing technical state pages. Currently uses default Next.js error/404 pages which break brand continuity. Plan specifies warm Chinese-language empty states and branded error messages.
+- **When:** P2, next PR or when building M2 pages.
+- **Depends on:** None (can be done anytime)
 
 ## P2 — Do when the prerequisite is met
 
