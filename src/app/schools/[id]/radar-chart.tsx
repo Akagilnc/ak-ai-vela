@@ -2,7 +2,7 @@
 
 import { SIZE, CENTER, RADIUS, polarToCartesian, getAngles } from "./radar-utils";
 
-const LABELS = ["Acceptance", "International", "SAT", "Affordability", "Aid"];
+const LABELS = ["录取", "国际生", "SAT", "费用", "奖学金"];
 const LEVELS = 4;
 
 function clamp(v: number): number {
@@ -52,6 +52,7 @@ export function RadarChart({
     <svg
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       className="w-full max-w-[240px] mx-auto"
+      role="img"
       aria-label="School profile radar chart"
     >
       {/* Grid */}
