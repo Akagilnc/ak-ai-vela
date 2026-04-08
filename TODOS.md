@@ -23,6 +23,12 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** M1, when building real page routes.
 - **Depends on:** M1
 
+### [M1] Switch Google Fonts from CSS @import to `<link>` tag
+- **What:** Replace `@import url(...)` in `globals.css` with a `<link>` tag in the root layout, per DESIGN.md spec.
+- **Why:** CSS `@import` is render-blocking. `<link>` with `display=swap` loads fonts asynchronously.
+- **When:** M1, when building real pages.
+- **Depends on:** M1
+
 ### [M1] Use Prisma `Json` type for JSON string fields
 - **What:** Change `programs`, `applicationDeadline`, `internationalScholarships`, `targetSchools`, `answers` from `String` to `Json` in Prisma schema.
 - **Why:** Prisma `Json` type handles serialization automatically and provides better type safety. Currently using `JSON.stringify()` manually in seed/app code.
