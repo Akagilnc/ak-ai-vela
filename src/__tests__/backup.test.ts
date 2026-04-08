@@ -2,21 +2,31 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import Database from "better-sqlite3";
 
 describe("backupDatabase", () => {
   let tmpDir: string;
   let originalCwd: () => string;
 
+  let originalDatabaseUrl: string | undefined;
+
   beforeEach(() => {
     // Create an isolated temp directory so we never touch the real prisma/ dir
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vela-backup-test-"));
-    // Override process.cwd() so the module-level DB_PATH / BACKUP_DIR resolve inside tmpDir
+    // Override process.cwd() so getDbPath() resolves inside tmpDir
     originalCwd = process.cwd;
     process.cwd = () => tmpDir;
+    // Clear DATABASE_URL so getDbPath() uses the cwd fallback
+    originalDatabaseUrl = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
   });
 
   afterEach(() => {
     process.cwd = originalCwd;
+    // Restore DATABASE_URL
+    if (originalDatabaseUrl !== undefined) {
+      process.env.DATABASE_URL = originalDatabaseUrl;
+    }
     // Clean up temp directory
     fs.rmSync(tmpDir, { recursive: true, force: true });
     // Reset module cache so each test gets fresh module-level constants
@@ -30,10 +40,14 @@ describe("backupDatabase", () => {
   });
 
   it("copies the database and returns the backup path when DB exists", async () => {
-    // Set up a fake database file
+    // Set up a real SQLite database
     const prismaDir = path.join(tmpDir, "prisma");
     fs.mkdirSync(prismaDir, { recursive: true });
-    fs.writeFileSync(path.join(prismaDir, "dev.db"), "fake-db-content");
+    const dbPath = path.join(prismaDir, "dev.db");
+    const db = new Database(dbPath);
+    db.exec("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)");
+    db.exec("INSERT INTO test VALUES (1, 'hello')");
+    db.close();
 
     const { backupDatabase } = await import("@/lib/backup");
     const result = backupDatabase();
@@ -42,15 +56,20 @@ describe("backupDatabase", () => {
     expect(result!).toContain(path.join(tmpDir, "prisma", "backups", "dev-"));
     expect(result!).toMatch(/\.db$/);
 
-    // Verify backup file was actually created with correct content
+    // Verify backup is a valid SQLite database with the same data
     expect(fs.existsSync(result!)).toBe(true);
-    expect(fs.readFileSync(result!, "utf-8")).toBe("fake-db-content");
+    const backupDb = new Database(result!);
+    const rows = backupDb.prepare("SELECT value FROM test WHERE id = 1").all();
+    expect(rows).toEqual([{ value: "hello" }]);
+    backupDb.close();
   });
 
   it("creates the backups directory if it does not exist", async () => {
     const prismaDir = path.join(tmpDir, "prisma");
     fs.mkdirSync(prismaDir, { recursive: true });
-    fs.writeFileSync(path.join(prismaDir, "dev.db"), "data");
+    const db = new Database(path.join(prismaDir, "dev.db"));
+    db.exec("CREATE TABLE t (id INTEGER)");
+    db.close();
 
     const backupsDir = path.join(prismaDir, "backups");
     expect(fs.existsSync(backupsDir)).toBe(false);
@@ -65,7 +84,9 @@ describe("backupDatabase", () => {
     const prismaDir = path.join(tmpDir, "prisma");
     const backupsDir = path.join(prismaDir, "backups");
     fs.mkdirSync(backupsDir, { recursive: true });
-    fs.writeFileSync(path.join(prismaDir, "dev.db"), "data");
+    const db = new Database(path.join(prismaDir, "dev.db"));
+    db.exec("CREATE TABLE t (id INTEGER)");
+    db.close();
 
     // Create 6 existing backup files with sortable timestamps
     const existingBackups = [
@@ -99,7 +120,9 @@ describe("backupDatabase", () => {
     const prismaDir = path.join(tmpDir, "prisma");
     const backupsDir = path.join(prismaDir, "backups");
     fs.mkdirSync(backupsDir, { recursive: true });
-    fs.writeFileSync(path.join(prismaDir, "dev.db"), "data");
+    const db = new Database(path.join(prismaDir, "dev.db"));
+    db.exec("CREATE TABLE t (id INTEGER)");
+    db.close();
 
     // Create 3 existing backups
     const existingBackups = [
@@ -125,7 +148,9 @@ describe("backupDatabase", () => {
     const prismaDir = path.join(tmpDir, "prisma");
     const backupsDir = path.join(prismaDir, "backups");
     fs.mkdirSync(backupsDir, { recursive: true });
-    fs.writeFileSync(path.join(prismaDir, "dev.db"), "data");
+    const db = new Database(path.join(prismaDir, "dev.db"));
+    db.exec("CREATE TABLE t (id INTEGER)");
+    db.close();
 
     // Create 6 real backups + 2 unrelated files
     const existingBackups = [
