@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2.0] - 2026-04-08
+
+### Added
+- School browse page with 3-column card grid, filtering by state, sorting by ranking/name/acceptance rate/cost, and Pre-Vet toggle
+- School detail page with admissions, financial, international, and Pre-Vet sections in a 2:1 responsive layout
+- Five-axis radar chart showing acceptance friendliness, international friendliness, SAT competitiveness, cost affordability, and scholarship strength
+- 12 pre-vet-relevant schools seeded with full admissions, financial, and program data
+- SAT/ACT score ranges (25th-75th percentile) and average GPA fields for all schools
+- Chinese-first UI across all pages: navigation, labels, filter controls, empty states, metadata
+- Radar chart mobile optimization (shown first on small screens, sticky sidebar on desktop)
+- Accessibility: prefers-reduced-motion support, SVG role=img, Chinese aria-labels
+- 19 new tests: radar chart geometry (6), seed data integrity (7), school filtering/sorting (6)
+
+### Fixed
+- Ranking display uses null check instead of falsy check (rank 0 no longer hidden)
+- Cost formatting uses explicit en-US locale (prevents SSR/client hydration mismatch)
+- Filter changes use router.replace instead of router.push (no browser history pollution)
+
 ## [0.1.1.0] - 2026-04-08
 
 ### Changed

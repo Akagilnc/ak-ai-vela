@@ -40,8 +40,8 @@ Mainland Chinese parents planning their child's path to top 30 US universities. 
 ## Tech assumptions
 - Next.js 16 + TypeScript + Tailwind CSS 4 (App Router)
 - Prisma 7 + SQLite (better-sqlite3 adapter)
-- Recharts for visualizations
-- html2canvas for report screenshot export
+- Custom SVG radar charts (5-axis school profile visualization)
+- html2canvas for report screenshot export (planned for M4)
 - No API keys, no external services for MVP
 
 ## External services
@@ -58,6 +58,6 @@ Local: `npm run dev` or `npm start` on founder's MacBook.
 
 ## Open questions
 - K-6 vs G7-G10 target age range (needs seed user validation)
-- Specific school list beyond initial 3 (needs co-designer input)
+- School list expansion beyond current 12 (needs co-designer input)
 - Questionnaire wording for Chinese parents (needs co-designer conversation)
 - Gap scoring model details for pre-vet track (define during M3)
