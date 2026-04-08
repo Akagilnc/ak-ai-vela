@@ -54,14 +54,16 @@ function loadDraft(): DraftInfo | null {
   }
 }
 
-function saveDraft(info: DraftInfo): void {
-  if (typeof window === "undefined") return;
+export function saveDraft(info: DraftInfo): boolean {
+  if (typeof window === "undefined") return false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(info));
+    return true;
   } catch (e) {
     if (e instanceof DOMException && e.name === "QuotaExceededError") {
       console.warn("localStorage quota exceeded, draft not saved");
     }
+    return false;
   }
 }
 
@@ -214,8 +216,10 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     }
     const s = stateRef.current;
     const now = new Date().toISOString();
-    saveDraft({ currentStep: s.currentStep, data: s.data, savedAt: now });
-    dispatch({ type: "MARK_SAVED", savedAt: now });
+    const ok = saveDraft({ currentStep: s.currentStep, data: s.data, savedAt: now });
+    if (ok) {
+      dispatch({ type: "MARK_SAVED", savedAt: now });
+    }
   }, []);
 
   // Debounced save on dirty changes
@@ -227,12 +231,14 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     }
     debounceRef.current = setTimeout(() => {
       const now = new Date().toISOString();
-      saveDraft({
+      const ok = saveDraft({
         currentStep: stateRef.current.currentStep,
         data: stateRef.current.data,
         savedAt: now,
       });
-      dispatch({ type: "MARK_SAVED", savedAt: now });
+      if (ok) {
+        dispatch({ type: "MARK_SAVED", savedAt: now });
+      }
       debounceRef.current = null;
     }, DEBOUNCE_MS);
 

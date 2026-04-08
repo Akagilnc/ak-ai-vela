@@ -126,12 +126,12 @@ export default function ReviewPage() {
       ],
     },
     {
-      label: `课外活动 (${(data.activities as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).name).length || 0})`,
+      label: `课外活动 (${(data.activities as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).name)?.length ?? 0})`,
       step: 5,
       entries: [{ label: "活动", value: formatValue(data.activities) }],
     },
     {
-      label: `特殊经历 (${(data.animalExperience as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).type).length || 0})`,
+      label: `特殊经历 (${(data.animalExperience as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).type)?.length ?? 0})`,
       step: 6,
       entries: [{ label: "经历", value: formatValue(data.animalExperience) }],
     },

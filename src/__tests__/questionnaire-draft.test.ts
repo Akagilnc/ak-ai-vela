@@ -24,7 +24,7 @@ Object.defineProperty(globalThis, "localStorage", {
 });
 
 // Now import the module (it will see our mocked window/localStorage)
-const { loadDraft, clearDraft } = await import(
+const { loadDraft, clearDraft, saveDraft } = await import(
   "@/components/questionnaire/questionnaire-provider"
 );
 
@@ -117,6 +117,32 @@ describe("questionnaire draft persistence", () => {
     );
     // Invalid savedAt should be treated as expired/invalid, not silently accepted
     expect(loadDraft()).toBeNull();
+  });
+
+  it("saveDraft returns true on success", () => {
+    const info = {
+      currentStep: 1,
+      data: { schemaVersion: 1 as const, childName: "Test" },
+      savedAt: new Date().toISOString(),
+    };
+    expect(saveDraft(info)).toBe(true);
+  });
+
+  it("saveDraft returns false on quota exceeded", () => {
+    const origSetItem = localStorageMock.setItem;
+    try {
+      localStorageMock.setItem = () => {
+        throw new DOMException("quota exceeded", "QuotaExceededError");
+      };
+      const info = {
+        currentStep: 1,
+        data: { schemaVersion: 1 as const, childName: "Test" },
+        savedAt: new Date().toISOString(),
+      };
+      expect(saveDraft(info)).toBe(false);
+    } finally {
+      localStorageMock.setItem = origSetItem;
+    }
   });
 
   it("returns null for empty savedAt", () => {

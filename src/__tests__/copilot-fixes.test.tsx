@@ -124,6 +124,33 @@ describe("grade 0 (kindergarten) value binding (fix #1)", () => {
   });
 });
 
+// --- Fix (round 2) #2: optional chaining crash on undefined arrays ---
+
+describe("array count expression safety (round 2 fix #2)", () => {
+  it("does not crash when activities is undefined", () => {
+    const activities: unknown[] | undefined = undefined;
+    // The old code: (activities as unknown[])?.filter(...).length || 0
+    // .filter(...) returns undefined via ?., then .length throws
+    // Fixed code should use ?.length ?? 0
+    const count = (activities as unknown[])?.filter(
+      (a: unknown) => (a as Record<string, unknown>).name
+    )?.length ?? 0;
+    expect(count).toBe(0);
+  });
+
+  it("counts correctly when activities has entries", () => {
+    const activities = [
+      { name: "Piano", type: "arts" },
+      { name: "", type: "sports" },
+      { name: "Chess", type: "academic" },
+    ];
+    const count = (activities as unknown[])?.filter(
+      (a: unknown) => (a as Record<string, unknown>).name
+    )?.length ?? 0;
+    expect(count).toBe(2); // "Piano" and "Chess", empty string is falsy
+  });
+});
+
 // --- Fix #2: NaN timestamp guard ---
 
 describe("timestamp NaN guard (fix #2)", () => {
