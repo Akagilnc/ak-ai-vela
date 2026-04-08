@@ -151,8 +151,9 @@ export default function ReviewPage() {
       try {
         const result: SubmitResult = await submitQuestionnaire(payload);
         if (result.success) {
+          const childName = data.childName || "";
           clearAll();
-          router.push("/questionnaire/complete");
+          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}`);
         } else {
           setSubmitError(result.error || "提交失败");
           setIsSubmitting(false);
