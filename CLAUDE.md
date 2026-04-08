@@ -196,6 +196,12 @@ Git 具体规则（Branch、Commit、PR、Review）遵循 `docs/process.md`。
 - 这类内容统一放在 `docs/retrospectives/`。
 - `current-state` 负责"现在是什么状态"，`retrospectives` 负责"我们从过去学到了什么"。
 
+## Design System
+Always read DESIGN.md before making any visual or UI decisions.
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+In QA mode, flag any code that doesn't match DESIGN.md.
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill
