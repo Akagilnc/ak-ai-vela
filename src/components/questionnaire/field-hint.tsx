@@ -31,7 +31,7 @@ export function FieldHint({ hint, glossary }: FieldHintProps) {
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
         aria-label="查看说明"
-        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs text-vela-muted border border-vela-border hover:border-vela-primary hover:text-vela-primary transition-colors ml-1"
+        className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs text-vela-muted border border-vela-border hover:border-vela-primary hover:text-vela-primary transition-colors ml-1"
       >
         ?
       </button>

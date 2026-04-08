@@ -35,7 +35,7 @@ export function ProgressStepper({ currentStep, completedSteps }: ProgressStepper
               disabled={isFuture}
               aria-current={isCurrent ? "step" : undefined}
               aria-label={isCompleted ? `已完成: ${label}` : label}
-              className={`flex items-center gap-1.5 text-sm transition-colors ${
+              className={`flex items-center gap-1.5 text-sm min-h-[44px] py-2 transition-colors ${
                 isCompleted
                   ? "text-vela-primary cursor-pointer hover:text-vela-primary-dark"
                   : isCurrent
@@ -72,7 +72,7 @@ export function ProgressStepper({ currentStep, completedSteps }: ProgressStepper
               title={label}
               aria-current={isCurrent ? "step" : undefined}
               aria-label={isCompleted ? `已完成: ${label}` : label}
-              className={`transition-colors ${
+              className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${
                 isCompleted
                   ? "text-vela-primary cursor-pointer"
                   : isCurrent
