@@ -1,0 +1,18 @@
+#!/bin/sh
+# Block direct pushes to main/master unless all changes are .md files only
+
+protected_branches="main master"
+current_branch=$(git branch --show-current)
+
+for branch in $protected_branches; do
+  if [ "$current_branch" = "$branch" ]; then
+    non_md=$(git diff --name-only "origin/$branch..HEAD" -- 2>/dev/null | grep -v '\.md$')
+    if [ -n "$non_md" ]; then
+      echo "❌ Direct push to $branch blocked. Non-documentation files changed:"
+      echo "$non_md"
+      echo "Use a feature branch + PR."
+      exit 1
+    fi
+    echo "✅ Docs-only push to $branch allowed."
+  fi
+done
