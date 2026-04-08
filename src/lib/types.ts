@@ -17,8 +17,8 @@ export type GapResult = {
 export const questionnaireSchema = z.object({
   // Section 1: Child basics
   childName: z.string().min(1),
-  birthYear: z.number().int().min(2005).max(2020),
-  currentGrade: z.number().int().min(6).max(12),
+  birthYear: z.number().int(),
+  currentGrade: z.number().int(),
   gender: z.enum(["male", "female", "other", "prefer-not-to-say"]).optional(),
 
   // Section 2: School system

@@ -61,7 +61,7 @@ model Student {
   updatedAt DateTime @updatedAt
 
   name      String
-  gradeLevel Int?    // Current grade (7-12)
+  gradeLevel Int?    // Current grade level
   schoolSystem String? // e.g. "public", "international", "private"
 
   // Academic
