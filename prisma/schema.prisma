@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model School {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Basic info
+  name      String
+  nameZh    String?  // Chinese name
+  location  String   // e.g. "Ithaca, NY"
+  state     String
+  ranking   Int?     // US News ranking
+  website   String?
+
+  // Programs
+  programs  String   // JSON array: ["pre-vet", "animal-science", "biology"]
+
+  // Admissions (CDS data)
+  acceptanceRate          Float?
+  internationalAcceptRate Float?
+  medianSAT               Int?
+  medianACT               Int?
+  applicationDeadline     String?  // JSON: {"ED": "Nov 1", "RD": "Jan 15"}
+
+  // International student fields
+  internationalStudentPct Float?
+  internationalScholarships String? // JSON description
+  visaOPTSupport          Boolean  @default(false)
+  englishRequirements     String?  // e.g. "TOEFL 100+ / IELTS 7.0+"
+
+  // Financial
+  estimatedAnnualCost     Int?     // Total COA in USD
+  financialAidPct         Float?   // % of students receiving aid
+  needBlind               Boolean  @default(false)
+
+  // Pre-vet specific
+  hasPreVetTrack          Boolean  @default(false)
+  preVetNotes             String?  // Free text about program strength
+
+  // Radar chart dimensions (normalized 0-100)
+  radarAcceptance         Float?
+  radarInternational      Float?
+  radarSAT                Float?
+  radarCost               Float?
+  radarAid                Float?
+
+  @@unique([name, state])
+  @@map("schools")
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  gradeLevel Int?    // Current grade (7-12)
+  schoolSystem String? // e.g. "public", "international", "private"
+
+  // Academic
+  gpaPercentage Float?   // Chinese percentage score (0-100)
+  classRank     String?  // e.g. "5/200"
+  normalizedGPA Float?   // Computed US 4.0 scale equivalent
+  gpaPercentile Float?   // Computed percentile
+
+  // Test scores
+  satScore      Int?
+  actScore      Int?
+  toeflScore    Int?
+  ieltsScore    Float?
+
+  // Science specific (pre-vet relevant)
+  scienceGPA    Float?   // Science course average if available
+
+  // Target
+  targetMajor   String?  // e.g. "pre-vet", "animal-science", "biology"
+  targetSchools String?  // JSON array of school IDs
+
+  // Questionnaire results (growth tracking)
+  questionnaireResults QuestionnaireResult[]
+
+  @@map("students")
+}
+
+model QuestionnaireResult {
+  id          String   @id @default(cuid())
+  submittedAt DateTime @default(now())
+
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+
+  // Full questionnaire answers stored as JSON
+  // Validated by zod at app layer, not DB layer
+  answers     String   // JSON blob
+
+  @@map("questionnaire_results")
+}
