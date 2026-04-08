@@ -81,7 +81,8 @@ type Action =
   | { type: "CLEAR" }
   | { type: "SET_ARRAY_ITEM"; field: string; index: number; value: unknown }
   | { type: "ADD_ARRAY_ITEM"; field: string; value: unknown }
-  | { type: "REMOVE_ARRAY_ITEM"; field: string; index: number };
+  | { type: "REMOVE_ARRAY_ITEM"; field: string; index: number }
+  | { type: "MARK_SAVED"; savedAt: string };
 
 type State = {
   data: QuestionnaireDraft;
@@ -144,6 +145,8 @@ function reducer(state: State, action: Action): State {
       arr.splice(action.index, 1);
       return { ...state, data: { ...state.data, [action.field]: arr }, isDirty: true };
     }
+    case "MARK_SAVED":
+      return { ...state, isDirty: false, lastSavedAt: action.savedAt };
     default:
       return state;
   }
@@ -198,6 +201,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     const s = stateRef.current;
     const now = new Date().toISOString();
     saveDraft({ currentStep: s.currentStep, data: s.data, savedAt: now });
+    dispatch({ type: "MARK_SAVED", savedAt: now });
   }, []);
 
   // Debounced save on dirty changes
@@ -214,6 +218,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         data: stateRef.current.data,
         savedAt: now,
       });
+      dispatch({ type: "MARK_SAVED", savedAt: now });
       debounceRef.current = null;
     }, DEBOUNCE_MS);
 

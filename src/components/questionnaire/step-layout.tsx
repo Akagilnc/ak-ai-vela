@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { useQuestionnaire } from "./questionnaire-provider";
 import { TOTAL_STEPS } from "@/lib/types";
 import type { ReactNode } from "react";
@@ -23,7 +24,17 @@ export function StepLayout({
   extraTopPadding = false,
 }: StepLayoutProps) {
   const router = useRouter();
-  const { flushSave, setStep } = useQuestionnaire();
+  const { flushSave, setStep, lastSavedAt } = useQuestionnaire();
+
+  const savedTimeStr = useMemo(() => {
+    if (!lastSavedAt) return null;
+    try {
+      const d = new Date(lastSavedAt);
+      return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+    } catch {
+      return null;
+    }
+  }, [lastSavedAt]);
 
   const handleNext = () => {
     if (onValidate && !onValidate()) return;
@@ -88,6 +99,13 @@ export function StepLayout({
           {step < TOTAL_STEPS ? "下一步 →" : "查看总览 →"}
         </button>
       </div>
+
+      {/* Auto-save indicator */}
+      {savedTimeStr && (
+        <p className="text-xs text-vela-muted text-center pb-4">
+          已自动保存 · {savedTimeStr}
+        </p>
+      )}
     </div>
   );
 }
