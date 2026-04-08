@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   loadDraft,
-  clearDraft,
   useQuestionnaire,
   type DraftInfo,
 } from "@/components/questionnaire/questionnaire-provider";
@@ -23,7 +22,7 @@ function formatTimeAgo(isoString: string): string {
 
 export default function QuestionnairePage() {
   const router = useRouter();
-  const { setStep } = useQuestionnaire();
+  const { setStep, clearAll } = useQuestionnaire();
   const [draft, setDraft] = useState<DraftInfo | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -41,8 +40,7 @@ export default function QuestionnairePage() {
   };
 
   const handleFreshStart = () => {
-    clearDraft();
-    setStep(1);
+    clearAll();
     router.push("/questionnaire/step/1");
   };
 

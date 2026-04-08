@@ -95,7 +95,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
     await prisma.questionnaireResult.create({
       data: {
         studentId,
-        answers: canonicalized as Prisma.InputJsonValue,
+        answers: data as unknown as Prisma.InputJsonValue,
       },
     });
 
