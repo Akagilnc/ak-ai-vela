@@ -25,7 +25,8 @@ export function SchoolFilters({
       } else {
         params.set(key, value);
       }
-      router.replace(`/schools?${params.toString()}`);
+      const qs = params.toString();
+      router.replace(qs ? `/schools?${qs}` : "/schools");
     },
     [router, searchParams]
   );

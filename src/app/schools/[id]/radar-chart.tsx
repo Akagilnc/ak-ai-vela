@@ -108,7 +108,7 @@ export function RadarChart({
           textAnchor="middle"
           dominantBaseline="middle"
           className="text-[9px] fill-vela-text-secondary"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          style={{ fontFamily: "var(--font-sans)" }}
         >
           {LABELS[i]}
         </text>

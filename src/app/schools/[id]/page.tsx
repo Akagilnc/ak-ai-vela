@@ -110,9 +110,9 @@ export default async function SchoolDetailPage({
                 <Stat label="录取率" value={school.acceptanceRate != null ? `${(school.acceptanceRate * 100).toFixed(1)}%` : null} />
                 <Stat label="国际生录取率" value={school.internationalAcceptRate != null ? `${(school.internationalAcceptRate * 100).toFixed(1)}%` : null} />
                 <Stat label="SAT 中位数" value={school.medianSAT?.toString()} />
-                <Stat label="SAT 区间" value={school.sat25th && school.sat75th ? `${school.sat25th}–${school.sat75th}` : null} />
+                <Stat label="SAT 区间" value={school.sat25th != null && school.sat75th != null ? `${school.sat25th}–${school.sat75th}` : null} />
                 <Stat label="ACT 中位数" value={school.medianACT?.toString()} />
-                <Stat label="ACT 区间" value={school.act25th && school.act75th ? `${school.act25th}–${school.act75th}` : null} />
+                <Stat label="ACT 区间" value={school.act25th != null && school.act75th != null ? `${school.act25th}–${school.act75th}` : null} />
                 <Stat label="平均 GPA" value={school.avgGPA?.toFixed(2)} />
                 <Stat label="英语要求" value={school.englishRequirements} mono={false} />
               </div>
