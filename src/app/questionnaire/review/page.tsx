@@ -28,7 +28,14 @@ function formatValue(val: unknown): string | null {
     // Array of objects (activities, experience)
     if (typeof val[0] === "object") {
       const names = val
-        .map((v) => (v as Record<string, unknown>).name || (v as Record<string, unknown>).type || "")
+        .map((v) => {
+          const r = v as Record<string, unknown>;
+          const name = r.name as string | undefined;
+          const type = r.type as string | undefined;
+          if (name) return name;
+          if (type) return EXPERIENCE_TYPE_LABELS[type] || ACTIVITY_TYPE_LABELS[type] || type;
+          return "";
+        })
         .filter(Boolean);
       return names.length > 0 ? names.join(" · ") : null;
     }
@@ -50,6 +57,18 @@ const MAJOR_LABELS: Record<string, string> = {
   "pre-vet": "兽医预科 (Pre-Vet)",
   "animal-science": "动物科学 (Animal Science)",
   "biology": "生物学 (Biology)",
+  "other": "其他",
+};
+
+const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+  "academic": "学术竞赛", "arts": "艺术/音乐", "sports": "体育运动",
+  "volunteer": "志愿服务", "leadership": "学生领导力", "club": "社团组织",
+  "research": "科研项目", "work": "实习/工作", "other": "其他",
+};
+
+const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
+  "volunteer": "志愿服务", "intern": "实习", "pet-care": "宠物照顾",
+  "research": "科研项目", "vet-shadow": "兽医跟诊", "farm": "农场/牧场",
   "other": "其他",
 };
 
@@ -93,7 +112,7 @@ export default function ReviewPage() {
         { label: "排名", value: data.classRank || null },
         { label: "理科", value: data.scienceGPA != null ? `${data.scienceGPA}%` : null },
         { label: "课程体系", value: data.curriculumType || null },
-        { label: "IB Diploma", value: data.ibDiploma != null ? (data.ibDiploma ? "是" : "否") : null },
+        { label: "IB 文凭", value: data.ibDiploma != null ? (data.ibDiploma ? "是" : "否") : null },
       ].filter((e) => e.value !== null),
     },
     {
