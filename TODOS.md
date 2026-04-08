@@ -11,23 +11,17 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Fallback:** If html2canvas fails, evaluate: browser print CSS, Puppeteer server-side screenshot, or manual screenshot instruction.
 - **Depends on:** M4 (report UI must exist to test against)
 
-### [M1] Add target range fields to School schema
-- **What:** Add SAT 25th/75th percentile, GPA range, prerequisite requirements, and other target range fields to the School model.
-- **Why:** `GapResult` type defines `target: { min, max }`, but current schema only has `medianSAT`. M3 gap engine needs range data to compute meaningful gaps. Codex: "schema doesn't support the story you want to tell."
-- **When:** During M1 (school data layer + browse UI), when entering complete data for 10-15 schools.
-- **Depends on:** M1
+### ~~[M1] Add target range fields to School schema~~ DONE
+- **Status:** Completed in v0.1.2.0. SAT 25th/75th, ACT 25th/75th, avgGPA added to schema and seeded for all 12 schools.
+- **Completed:** v0.1.2.0 (2026-04-08)
 
-### [M1] Use `next/link` for internal navigation
-- **What:** Replace `<a href>` tags with Next.js `<Link>` component in `src/app/page.tsx` and future pages.
-- **Why:** Plain `<a>` tags trigger full page reloads, bypassing App Router client-side navigation and prefetching.
-- **When:** M1, when building real page routes.
-- **Depends on:** M1
+### ~~[M1] Use `next/link` for internal navigation~~ DONE
+- **Status:** Completed in v0.1.2.0. All internal navigation uses Next.js `<Link>` component.
+- **Completed:** v0.1.2.0 (2026-04-08)
 
-### [M1] Switch Google Fonts from CSS @import to `<link>` tag
-- **What:** Replace `@import url(...)` in `globals.css` with a `<link>` tag in the root layout, per DESIGN.md spec.
-- **Why:** CSS `@import` is render-blocking. `<link>` with `display=swap` loads fonts asynchronously.
-- **When:** M1, when building real pages.
-- **Depends on:** M1
+### ~~[M1] Switch Google Fonts from CSS @import to `<link>` tag~~ DONE
+- **Status:** Completed in v0.1.2.0. Root layout uses `<link>` tags with preconnect for Google Fonts.
+- **Completed:** v0.1.2.0 (2026-04-08)
 
 ### ~~[M1] Use Prisma `Json` type for JSON string fields~~ NOT FEASIBLE
 - **Status:** Not feasible. Prisma v7 + SQLite does not support the `Json` field type. SQLite has no native JSON column type, and Prisma does not emulate it for this provider.
