@@ -32,10 +32,10 @@ export function FormField({ label, hint, glossary, error, required, children }: 
 
 // Shared input styles
 export const inputClass =
-  "w-full px-3 py-2 text-base border border-vela-border rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-vela-primary focus:border-transparent transition-colors";
+  "w-full px-3 py-2.5 text-base border border-vela-border rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-vela-primary focus:border-transparent transition-colors";
 
 export const selectClass =
-  "w-full px-3 py-2 text-base border border-vela-border rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-vela-primary focus:border-transparent transition-colors appearance-none";
+  "w-full px-3 py-2.5 text-base border border-vela-border rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-vela-primary focus:border-transparent transition-colors";
 
 export const inputErrorClass =
   "border-vela-error focus:ring-vela-error";
