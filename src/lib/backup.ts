@@ -25,7 +25,7 @@ export function backupDatabase(): string | null {
   const backupPath = path.join(backupDir, `dev-${timestamp}.db`);
 
   // Use SQLite VACUUM INTO for a consistent snapshot (safe during writes)
-  const db = new Database(dbPath, { readonly: true });
+  const db = new Database(dbPath);
   try {
     db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
   } finally {
