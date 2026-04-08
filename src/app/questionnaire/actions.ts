@@ -60,7 +60,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          normalizedGPA: data.gpaPercentage ? data.gpaPercentage / 25 : null, // rough 100→4.0
+          normalizedGPA: data.gpaPercentage != null ? data.gpaPercentage / 25 : null, // rough 100→4.0
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,
@@ -79,7 +79,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          normalizedGPA: data.gpaPercentage ? data.gpaPercentage / 25 : null,
+          normalizedGPA: data.gpaPercentage != null ? data.gpaPercentage / 25 : null,
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,

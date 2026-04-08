@@ -202,7 +202,7 @@ export function canonicalizeAnswers(data: Record<string, unknown>): Record<strin
   // Filter out empty array entries (user left blank entries that would fail validation)
   if (Array.isArray(cleaned.activities)) {
     cleaned.activities = (cleaned.activities as Record<string, unknown>[]).filter(
-      (a) => a.name && (a.name as string).trim().length > 0
+      (a) => typeof a.name === "string" && a.name.trim().length > 0
     );
     if ((cleaned.activities as unknown[]).length === 0) {
       delete cleaned.activities;
@@ -210,7 +210,7 @@ export function canonicalizeAnswers(data: Record<string, unknown>): Record<strin
   }
   if (Array.isArray(cleaned.animalExperience)) {
     cleaned.animalExperience = (cleaned.animalExperience as Record<string, unknown>[]).filter(
-      (a) => a.type && (a.type as string).trim().length > 0
+      (a) => typeof a.type === "string" && a.type.trim().length > 0
     );
     if ((cleaned.animalExperience as unknown[]).length === 0) {
       delete cleaned.animalExperience;
