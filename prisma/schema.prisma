@@ -27,6 +27,11 @@ model School {
   internationalAcceptRate Float?
   medianSAT               Int?
   medianACT               Int?
+  sat25th                 Int?     // 25th percentile SAT
+  sat75th                 Int?     // 75th percentile SAT
+  act25th                 Int?     // 25th percentile ACT
+  act75th                 Int?     // 75th percentile ACT
+  avgGPA                  Float?   // Average admitted GPA (4.0 scale)
   applicationDeadline     String?  // JSON: {"ED": "Nov 1", "RD": "Jan 15"}
 
   // International student fields
