@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (91 tests) |
+| `npm test` | Run all tests (103 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -57,7 +57,7 @@ src/
     prisma.ts             # Prisma client singleton (hot-reload safe)
     backup.ts             # SQLite backup via VACUUM INTO
     types.ts              # Zod questionnaire schema + GapResult type
-  __tests__/              # Vitest tests (91 tests)
+  __tests__/              # Vitest tests (103 tests)
 prisma/
   schema.prisma           # School, Student, QuestionnaireResult models
   seed.ts                 # Seed script with 12 pre-vet-relevant schools
