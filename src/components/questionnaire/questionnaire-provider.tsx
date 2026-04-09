@@ -173,7 +173,10 @@ type QuestionnaireContextType = {
   addArrayItem: (field: string, value: unknown) => void;
   removeArrayItem: (field: string, index: number) => void;
   clearAll: () => void;
-  flushSave: () => void;
+  // `overrides.currentStep` lets callers persist a forward-looking step
+  // number before dispatching the corresponding setStep, so a navigation
+  // flush writes the draft at the target step instead of the stale one.
+  flushSave: (overrides?: { currentStep?: number }) => void;
 };
 
 const QuestionnaireContext = createContext<QuestionnaireContextType | null>(null);
@@ -208,19 +211,30 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Flush: cancel pending debounce, save immediately
-  const flushSave = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-    const s = stateRef.current;
-    const now = new Date().toISOString();
-    const ok = saveDraft({ currentStep: s.currentStep, data: s.data, savedAt: now });
-    if (ok) {
-      dispatch({ type: "MARK_SAVED", savedAt: now });
-    }
-  }, []);
+  // Flush: cancel pending debounce, save immediately.
+  // `overrides.currentStep` is for navigation flows where the caller already
+  // knows the next step (e.g. handleNext clicking to step N+1) but hasn't
+  // dispatched setStep yet — without the override, stateRef.current.currentStep
+  // still points at the current step and the saved draft lags a step behind.
+  const flushSave = useCallback(
+    (overrides?: { currentStep?: number }) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      const s = stateRef.current;
+      const now = new Date().toISOString();
+      const ok = saveDraft({
+        currentStep: overrides?.currentStep ?? s.currentStep,
+        data: s.data,
+        savedAt: now,
+      });
+      if (ok) {
+        dispatch({ type: "MARK_SAVED", savedAt: now });
+      }
+    },
+    [],
+  );
 
   // Debounced save on dirty changes
   useEffect(() => {
