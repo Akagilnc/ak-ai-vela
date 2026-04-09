@@ -9,7 +9,7 @@ type FieldHintProps = {
 
 export function FieldHint({ hint, glossary }: FieldHintProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
 
   // Close on outside click
   useEffect(() => {

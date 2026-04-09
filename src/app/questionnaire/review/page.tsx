@@ -19,7 +19,7 @@ function formatGrade(grade: number): string {
   return `${grade}年级`;
 }
 
-function formatValue(val: unknown): string | null {
+function formatValue(val: unknown, labelMap?: Record<string, string>): string | null {
   if (val == null || val === "" || val === undefined) return null;
   if (typeof val === "boolean") return val ? "是" : "否";
   if (typeof val === "number") return String(val);
@@ -33,7 +33,7 @@ function formatValue(val: unknown): string | null {
           const name = r.name as string | undefined;
           const type = r.type as string | undefined;
           if (name) return name;
-          if (type) return EXPERIENCE_TYPE_LABELS[type] || ACTIVITY_TYPE_LABELS[type] || type;
+          if (type) return labelMap?.[type] || type;
           return "";
         })
         .filter(Boolean);
@@ -128,12 +128,12 @@ export default function ReviewPage() {
     {
       label: `课外活动 (${(data.activities as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).name)?.length ?? 0})`,
       step: 5,
-      entries: [{ label: "活动", value: formatValue(data.activities) }],
+      entries: [{ label: "活动", value: formatValue(data.activities, ACTIVITY_TYPE_LABELS) }],
     },
     {
       label: `特殊经历 (${(data.animalExperience as unknown[])?.filter((a: unknown) => (a as Record<string, unknown>).type)?.length ?? 0})`,
       step: 6,
-      entries: [{ label: "经历", value: formatValue(data.animalExperience) }],
+      entries: [{ label: "经历", value: formatValue(data.animalExperience, EXPERIENCE_TYPE_LABELS) }],
     },
     {
       label: "家庭财务",

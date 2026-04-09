@@ -151,6 +151,66 @@ describe("array count expression safety (round 2 fix #2)", () => {
   });
 });
 
+// --- Gemini round 3 #2: formatValue label map disambiguation ---
+
+describe("formatValue label map (Gemini round 3 #2)", () => {
+  // The label maps for activities and experiences both have "volunteer"
+  // formatValue must use the correct map based on context
+
+  const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+    "academic": "学术竞赛", "arts": "艺术/音乐", "sports": "体育运动",
+    "volunteer": "志愿服务", "leadership": "学生领导力", "club": "社团组织",
+    "research": "科研项目", "work": "实习/工作", "other": "其他",
+  };
+
+  const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
+    "volunteer": "志愿服务", "intern": "实习", "pet-care": "宠物照顾",
+    "research": "科研项目", "vet-shadow": "兽医跟诊", "farm": "农场/牧场",
+    "other": "其他",
+  };
+
+  function formatArrayDisplay(
+    val: Record<string, unknown>[],
+    labelMap: Record<string, string>,
+  ): string | null {
+    if (val.length === 0) return null;
+    const names = val
+      .map((r) => {
+        const name = r.name as string | undefined;
+        const type = r.type as string | undefined;
+        if (name) return name;
+        if (type) return labelMap[type] || type;
+        return "";
+      })
+      .filter(Boolean);
+    return names.length > 0 ? names.join(" · ") : null;
+  }
+
+  it("uses activity labels for activities", () => {
+    const result = formatArrayDisplay(
+      [{ type: "volunteer" }],
+      ACTIVITY_TYPE_LABELS,
+    );
+    expect(result).toBe("志愿服务");
+  });
+
+  it("uses experience labels for experiences", () => {
+    const result = formatArrayDisplay(
+      [{ type: "vet-shadow" }],
+      EXPERIENCE_TYPE_LABELS,
+    );
+    expect(result).toBe("兽医跟诊");
+  });
+
+  it("falls back to raw type when not in label map", () => {
+    const result = formatArrayDisplay(
+      [{ type: "unknown-type" }],
+      ACTIVITY_TYPE_LABELS,
+    );
+    expect(result).toBe("unknown-type");
+  });
+});
+
 // --- Fix #2: NaN timestamp guard ---
 
 describe("timestamp NaN guard (fix #2)", () => {
