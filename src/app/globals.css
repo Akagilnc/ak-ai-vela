@@ -73,19 +73,7 @@
   --radius-full: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1A1715;
-    --foreground: #E8E0D0;
-    --color-cream: #1A1715;
-    --color-surface: #252220;
-    --color-border: #3D3835;
-    --color-muted: #6B6560;
-    --color-secondary-text: #B8B0A0;
-    --color-primary-text: #E8E0D0;
-    --color-heading: #FEFAE0;
-  }
-}
+/* Dark mode deferred to post-MVP. Force light mode regardless of system preference. */
 
 body {
   background: var(--background);
