@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - Bilingual major options: "兽医预科 (Pre-Vet)", "动物科学 (Animal Science)", "生物学 (Biology)"
 - Glossary tooltips on technical terms (GPA, SAT, Grade Level) with mobile-friendly tap behavior
 - Auto-save timestamp indicator showing last save time
-- 34 new tests: server action (7), draft persistence (7), schema validation expansion (20)
+- 58 new tests: server action (7), draft persistence (9), schema validation expansion (23), component/logic tests (19)
 
 ### Fixed
 - Strict mode double-initialization of activity/experience arrays (useRef guard pattern)
@@ -27,6 +27,18 @@ All notable changes to this project will be documented in this file.
 - "IB Diploma" label changed to "IB 文凭" on review page
 - Fresh start now clears both localStorage and provider memory state (prevents stale data leakage)
 - Stored questionnaire answers now use Zod-validated data instead of raw input (prevents extra field injection)
+- GPA falsy check: `gpaPercentage != null` preserves valid 0 values in server action and review page
+- childName schema now trims whitespace (prevents duplicate student records from spaces)
+- canonicalizeAnswers cleans stale targetMajorOther when targetMajor is not "other"
+- currentGrade select uses nullish coalescing (grade 0 = kindergarten no longer clears selection)
+- saveDraft returns boolean; auto-save indicator only shows when write succeeds
+- Invalid/corrupt savedAt timestamps in draft no longer bypass 7-day expiry check
+- Step navigation now persists to localStorage (SET_STEP marks dirty)
+- formatValue uses explicit label maps to prevent activity/experience type label collision
+- FormField label-input association via useId + htmlFor for screen reader accessibility
+- useRef type corrected from HTMLDivElement to HTMLSpanElement in field-hint
+- Removed unused STEP_META import from review page
+- @testing-library/react added for component-level tests
 
 ## [0.1.2.0] - 2026-04-08
 

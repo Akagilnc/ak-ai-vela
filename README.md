@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (33 tests) |
+| `npm test` | Run all tests (91 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -41,12 +41,23 @@ src/
   app/                    # Next.js App Router pages
     schools/              # School browse + detail pages
       [id]/               # Detail page with radar chart
+    questionnaire/        # 8-step questionnaire wizard
+      step/[step]/        # Dynamic step pages (1-8)
+      review/             # Review page with profile card
+      complete/           # Submission success page
+      actions.ts          # Server action (Zod → Prisma)
     page.tsx              # Homepage (Chinese-first)
+  components/
+    questionnaire/        # Questionnaire UI components
+      steps/              # Per-step form components (1-8)
+      questionnaire-provider.tsx  # State + localStorage draft persistence
+      progress-stepper.tsx        # Responsive progress indicator
+      form-field.tsx              # Shared field with a11y label association
   lib/
     prisma.ts             # Prisma client singleton (hot-reload safe)
     backup.ts             # SQLite backup via VACUUM INTO
     types.ts              # Zod questionnaire schema + GapResult type
-  __tests__/              # Vitest tests (33 tests)
+  __tests__/              # Vitest tests (91 tests)
 prisma/
   schema.prisma           # School, Student, QuestionnaireResult models
   seed.ts                 # Seed script with 12 pre-vet-relevant schools
@@ -76,7 +87,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 |-----------|--------|
 | M0: Project setup | Done (v0.1.1.0) |
 | M1: Data layer (school browse/filter UI) | Done (v0.1.2.0) |
-| M2: Input layer (questionnaire form) | Planned |
+| M2: Input layer (questionnaire form) | Done (v0.2.0.0) |
 | M3: Gap analysis engine | Planned |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |
