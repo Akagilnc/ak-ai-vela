@@ -123,7 +123,7 @@ function reducer(state: State, action: Action): State {
     case "SET_FIELDS":
       return { ...state, data: { ...state.data, ...action.fields }, isDirty: true };
     case "SET_STEP":
-      return { ...state, currentStep: action.step };
+      return { ...state, currentStep: action.step, isDirty: true };
     case "RESTORE_DRAFT":
       return {
         data: action.draft.data,
