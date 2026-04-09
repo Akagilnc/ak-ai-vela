@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuestionnaire } from "@/components/questionnaire/questionnaire-provider";
 import { ProgressStepper } from "@/components/questionnaire/progress-stepper";
+import { countMissingImportant } from "@/lib/review-rules";
 import { submitQuestionnaire, type SubmitResult } from "../actions";
 
 
@@ -154,13 +155,12 @@ export default function ReviewPage() {
     },
   ];
 
-  // Count missing fields that affect report quality
-  // Use == null instead of falsy check: 0 is a valid score/GPA
-  const missingImportant = [
-    data.gpaPercentage == null && !data.classRank,
-    data.satScore == null && data.actScore == null,
-    data.toeflScore == null && data.ieltsScore == null,
-  ].filter(Boolean).length;
+  // Count missing fields that affect report quality. The rule branches on
+  // schoolSystem (international → curriculumType, public/private →
+  // GPA-or-rank, homeschool/other → no academic slot) so international
+  // students don't get false-positive warnings about a GPA their system
+  // doesn't produce. Full logic + tests live in src/lib/review-rules.ts.
+  const missingImportant = countMissingImportant(data);
 
   const handleSubmit = () => {
     if (isSubmitting) return; // Double-click guard
