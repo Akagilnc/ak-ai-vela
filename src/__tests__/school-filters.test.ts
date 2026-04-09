@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import path from "path";
+import { TEST_DB_URL } from "./helpers/test-db";
 
-const url = `file:${path.join(process.cwd(), "prisma", "dev.db")}`;
-const adapter = new PrismaBetterSqlite3({ url });
+const adapter = new PrismaBetterSqlite3({ url: TEST_DB_URL });
 const prisma = new PrismaClient({ adapter });
 
 describe("school filtering and sorting", () => {
