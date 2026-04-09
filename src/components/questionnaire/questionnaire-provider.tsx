@@ -201,7 +201,13 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  // Sync the ref in an effect (not during render) so we don't trip the
+  // react-hooks/refs rule. This runs after every commit, so the flushSave
+  // callback and the debounced-save effect — both of which fire strictly
+  // after render — always read the latest state.
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   // Restore draft from localStorage on mount
   useEffect(() => {

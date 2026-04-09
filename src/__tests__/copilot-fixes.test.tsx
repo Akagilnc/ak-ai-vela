@@ -128,25 +128,30 @@ describe("grade 0 (kindergarten) value binding (fix #1)", () => {
 
 describe("array count expression safety (round 2 fix #2)", () => {
   it("does not crash when activities is undefined", () => {
-    const activities: unknown[] | undefined = undefined;
-    // The old code: (activities as unknown[])?.filter(...).length || 0
-    // .filter(...) returns undefined via ?., then .length throws
-    // Fixed code should use ?.length ?? 0
-    const count = (activities as unknown[])?.filter(
-      (a: unknown) => (a as Record<string, unknown>).name
-    )?.length ?? 0;
+    // Widening cast on the RHS prevents TS from narrowing the const to
+    // literal `undefined`, which would make `activities?.filter` fail to
+    // typecheck against `never`. Runtime value is still undefined.
+    const activities = undefined as unknown[] | undefined;
+    // The old bug: activities?.filter(...).length || 0
+    //   .filter(...) returns undefined via ?., then .length throws.
+    // The fix: chain the .length with ?., then ?? 0 for the fallback.
+    const count =
+      activities?.filter(
+        (a: unknown) => (a as Record<string, unknown>).name,
+      )?.length ?? 0;
     expect(count).toBe(0);
   });
 
   it("counts correctly when activities has entries", () => {
-    const activities = [
+    const activities: unknown[] = [
       { name: "Piano", type: "arts" },
       { name: "", type: "sports" },
       { name: "Chess", type: "academic" },
     ];
-    const count = (activities as unknown[])?.filter(
-      (a: unknown) => (a as Record<string, unknown>).name
-    )?.length ?? 0;
+    const count =
+      activities?.filter(
+        (a: unknown) => (a as Record<string, unknown>).name,
+      )?.length ?? 0;
     expect(count).toBe(2); // "Piano" and "Chess", empty string is falsy
   });
 });

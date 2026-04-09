@@ -26,8 +26,14 @@ export default function QuestionnairePage() {
   const [draft, setDraft] = useState<DraftInfo | null>(null);
   const [checked, setChecked] = useState(false);
 
+  // Read localStorage on mount to decide whether to show "继续填写" vs
+  // "开始填写". This MUST happen in an effect: localStorage isn't available
+  // during SSR, so we can't use a lazy useState initializer without causing
+  // a hydration mismatch. The lint rule flags the setState as a cascading
+  // render, but here it's a one-shot hydration that runs exactly once.
   useEffect(() => {
     const existing = loadDraft();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(existing);
     setChecked(true);
   }, []);
