@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1.0] - 2026-04-09
+
+### Fixed
+- International-school students no longer see a false-positive "缺少 GPA" warning on the review page; the missing-information rule now branches on school system so IB/AP/A-Level students are graded on curriculum type instead of a GPA their system doesn't produce
+- Reloading the questionnaire immediately after clicking "下一步" or "上一步" now lands on the correct page instead of bouncing back to the previous step
+
 ## [0.2.0.0] - 2026-04-09
 
 ### Added

@@ -36,23 +36,24 @@ export function StepLayout({
   const handleNext = () => {
     if (onValidate && !onValidate()) return;
 
-    // Flush save before navigation (race condition guard)
-    flushSave();
-
     if (step < TOTAL_STEPS) {
+      // Persist the TARGET step synchronously so a reload after navigation
+      // lands on the correct page. Calling flushSave before setStep would
+      // otherwise snapshot the stale currentStep from stateRef.
+      flushSave({ currentStep: step + 1 });
       setStep(step + 1);
       router.push(`/questionnaire/step/${step + 1}`);
     } else {
-      // Last step, go to review
+      // Last step: navigate to review, keeping currentStep pointing at the
+      // last form page (so a future back-button lands here).
+      flushSave();
       router.push("/questionnaire/review");
     }
   };
 
   const handlePrev = () => {
-    // Flush save before navigation
-    flushSave();
-
     if (step > 1) {
+      flushSave({ currentStep: step - 1 });
       setStep(step - 1);
       router.push(`/questionnaire/step/${step - 1}`);
     }

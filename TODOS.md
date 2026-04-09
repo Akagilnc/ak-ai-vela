@@ -71,3 +71,11 @@ Deferred work items tracked by engineering and CEO reviews.
 - Voice/dictation input for biggestConcern (P2)
 - AI-powered field auto-fill from uploaded transcript (Phase 2)
 - Multi-tab draft sync via BroadcastChannel (single-user, overkill for MVP)
+
+## Deferred from Pre-M3 Stabilization (2026-04-09)
+
+### [P2] Replace Student.name de-facto key with stable student identifier
+- **What:** Today `submitQuestionnaire` uses `Student.name` (childName) as the upsert key and the review/complete flow keys off the same string. Rename a student → orphaned record. Add a stable `studentId` (cuid/uuid), track it in the draft, and make all lookups key off the id. Requires a Prisma migration and questionnaire-provider changes to persist the generated id.
+- **Why:** Codex review P2.1 found this as a correctness risk for multi-user and for any post-submit edit flow. Deferred to its own PR because the fix touches schema, actions, provider, and complete/review pages — larger scope than the pre-M3 stabilization bundle.
+- **When:** Before multi-user or before shipping a "edit submitted questionnaire" flow. Safe to keep for current single-user MVP.
+- **Depends on:** Nothing. Independent PR with its own migration.
