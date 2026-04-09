@@ -51,6 +51,7 @@ import {
   useQuestionnaire,
 } from "@/components/questionnaire/questionnaire-provider";
 import { StepLayout } from "@/components/questionnaire/step-layout";
+import { TOTAL_STEPS } from "@/lib/types";
 
 // Helper: read currentStep from the persisted draft
 function readPersistedStep(): number | null {
@@ -138,5 +139,35 @@ describe("StepLayout flushSave ordering (P2.2)", () => {
 
     expect(readPersistedStep()).toBe(4);
     expect(pushMock).toHaveBeenCalledWith("/questionnaire/step/4");
+  });
+
+  it("final step: clicking 查看总览 persists TOTAL_STEPS and routes to /review", async () => {
+    // On the last questionnaire step the CTA changes from "下一步 →" to
+    // "查看总览 →" and routes to /questionnaire/review instead of
+    // /questionnaire/step/N. The draft must still pin currentStep at
+    // TOTAL_STEPS so reloading the review page doesn't bounce the user
+    // back to an earlier step.
+    render(
+      <QuestionnaireProvider>
+        <SeedState step={TOTAL_STEPS} />
+        <StepLayout step={TOTAL_STEPS} title={`Step ${TOTAL_STEPS}`}>
+          <div>final step content</div>
+        </StepLayout>
+      </QuestionnaireProvider>,
+    );
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 400));
+    });
+
+    expect(readPersistedStep()).toBe(TOTAL_STEPS);
+
+    const reviewBtn = screen.getByRole("button", { name: /查看总览/ });
+    await act(async () => {
+      reviewBtn.click();
+    });
+
+    expect(readPersistedStep()).toBe(TOTAL_STEPS);
+    expect(pushMock).toHaveBeenCalledWith("/questionnaire/review");
   });
 });

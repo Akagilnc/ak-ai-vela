@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterAll } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { TEST_DB_URL } from "./helpers/test-db";
@@ -7,6 +7,10 @@ const adapter = new PrismaBetterSqlite3({ url: TEST_DB_URL });
 const prisma = new PrismaClient({ adapter });
 
 describe("seed data integrity", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   it("has at least 10 schools", async () => {
     const count = await prisma.school.count();
     expect(count).toBeGreaterThanOrEqual(10);

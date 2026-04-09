@@ -107,11 +107,18 @@ describe("countMissingImportant (P3 — schoolSystem branching)", () => {
     expect(countMissingImportant(draft)).toBe(0);
   });
 
-  it("treats score of 0 as present, not missing (nullish check, not falsy)", () => {
+  it("treats legitimate 0 values as present, not missing (nullish check, not falsy)", () => {
+    // This rule checks slot EMPTINESS (null/undefined), not value VALIDITY.
+    // Zod is responsible for rejecting out-of-range inputs upstream; here
+    // we only care that the user filled something in. Use values that are
+    // actually valid per Zod:
+    //   - gpaPercentage: 0 is a legal floor
+    //   - satScore: Zod requires 400-1600, so use the lower boundary
+    //   - toeflScore: Zod allows 0-120, so 0 is legal
     const draft: QuestionnaireDraft = {
       schoolSystem: "public",
       gpaPercentage: 0,
-      satScore: 0, // user hasn't taken SAT but entered 0 — we count it as present
+      satScore: 400,
       toeflScore: 0,
     };
     expect(countMissingImportant(draft)).toBe(0);
