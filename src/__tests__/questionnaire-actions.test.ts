@@ -201,4 +201,241 @@ describe("submitQuestionnaire server action", () => {
     expect(result.success).toBe(false);
     expect(result.fieldErrors?.gpaPercentage).toBeDefined();
   });
+
+  // Regression fences for the GPA double-path bug fixed in M3 (design doc
+  // Finding 12). Without these, someone could silently revert actions.ts
+  // to the old `gpaPercentage / 25` math and no test would catch it.
+  it("persists normalizedGPA via @/lib/gap midpoint table for percentage", async () => {
+    const percentagePayload = {
+      schemaVersion: 1,
+      childName: "GPA Test Child",
+      birthYear: 2008,
+      currentGrade: 11,
+      schoolSystem: "public",
+      gpaType: "percentage",
+      gpaPercentage: 90,
+    };
+
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "gpa-student",
+      name: "GPA Test Child",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "public",
+      gpaPercentage: 90,
+      classRank: null,
+      normalizedGPA: 3.8,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-gpa",
+      submittedAt: new Date(),
+      studentId: "gpa-student",
+      answers: percentagePayload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(percentagePayload));
+    const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
+    // CEO plan midpoint: 90% → 3.8 (NOT 90/25 = 3.6 from pre-M3 math)
+    expect(createCall.data.normalizedGPA).toBe(3.8);
+  });
+
+  it("persists normalizedGPA from classRank when percentage missing", async () => {
+    const rankPayload = {
+      schemaVersion: 1,
+      childName: "Rank Test Child",
+      birthYear: 2008,
+      currentGrade: 11,
+      schoolSystem: "public",
+      gpaType: "rank",
+      classRank: "5/200",
+    };
+
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "rank-student",
+      name: "Rank Test Child",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "public",
+      gpaPercentage: null,
+      classRank: "5/200",
+      normalizedGPA: 3.95,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-rank",
+      submittedAt: new Date(),
+      studentId: "rank-student",
+      answers: rankPayload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(rankPayload));
+    const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
+    // Rank 5/200 → top 2.5% → 3.95 (pre-M3 math ignored rank entirely → null)
+    expect(createCall.data.normalizedGPA).toBe(3.95);
+  });
+
+  // gpaType contract regression fences — lock fix for Codex P1 + Copilot P2
+  // on PR #7. Before the fix, actions.ts called
+  // `normalizeChineseGpa(gpaPercentage, classRank)` unconditionally, which
+  // meant a stale percentage could override a declared rank, and an
+  // "international" / "unknown" user with stale numeric fields would persist
+  // a normalizedGPA to the DB that diverged from what the gap engine reports
+  // at read time (no-data).
+
+  it("gpaType=rank with stale gpaPercentage → normalizedGPA from rank only", async () => {
+    const payload = {
+      schemaVersion: 1,
+      childName: "Rank-over-stale-percent Kid",
+      birthYear: 2008,
+      currentGrade: 11,
+      schoolSystem: "public",
+      gpaType: "rank",
+      gpaPercentage: 85, // stale: must be ignored
+      classRank: "5/200",
+    };
+
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "s-stale-pct",
+      name: "Rank-over-stale-percent Kid",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "public",
+      gpaPercentage: 85,
+      classRank: "5/200",
+      normalizedGPA: 3.95,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-stale-pct",
+      submittedAt: new Date(),
+      studentId: "s-stale-pct",
+      answers: payload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(payload));
+    const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
+    // Rank 5/200 → 3.95. Pre-fix: percentage 85 wins → 3.6.
+    expect(createCall.data.normalizedGPA).toBe(3.95);
+  });
+
+  it("gpaType=international with stale gpaPercentage (homeschool) → normalizedGPA null", async () => {
+    // Homeschool branch specifically, because canonicalizeAnswers only
+    // strips percentage/classRank for schoolSystem=international, not for
+    // schoolSystem=homeschool. So stale fields survive canonicalization
+    // here and must be gated inside actions.ts itself.
+    const payload = {
+      schemaVersion: 1,
+      childName: "Homeschool Intl Kid",
+      birthYear: 2008,
+      currentGrade: 11,
+      schoolSystem: "homeschool",
+      gpaType: "international",
+      gpaPercentage: 85, // stale: canonicalize does NOT strip for homeschool
+      classRank: "5/200", // stale
+    };
+
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "s-homeschool-intl",
+      name: "Homeschool Intl Kid",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "homeschool",
+      gpaPercentage: 85,
+      classRank: "5/200",
+      normalizedGPA: null,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-homeschool-intl",
+      submittedAt: new Date(),
+      studentId: "s-homeschool-intl",
+      answers: payload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(payload));
+    const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
+    // gpaType=international → gap engine returns no-data. DB must also
+    // persist null to keep write/read semantics aligned.
+    expect(createCall.data.normalizedGPA).toBe(null);
+  });
+
+  it("gpaType=unknown with stale gpaPercentage → normalizedGPA null", async () => {
+    const payload = {
+      schemaVersion: 1,
+      childName: "Unknown GPA Kid",
+      birthYear: 2008,
+      currentGrade: 11,
+      schoolSystem: "homeschool",
+      gpaType: "unknown",
+      gpaPercentage: 90, // stale
+    };
+
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "s-unknown",
+      name: "Unknown GPA Kid",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "homeschool",
+      gpaPercentage: 90,
+      classRank: null,
+      normalizedGPA: null,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-unknown",
+      submittedAt: new Date(),
+      studentId: "s-unknown",
+      answers: payload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(payload));
+    const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
+    expect(createCall.data.normalizedGPA).toBe(null);
+  });
 });
