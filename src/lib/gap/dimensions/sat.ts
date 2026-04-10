@@ -21,8 +21,8 @@ const LABEL = "SAT";
 // student-facing "fill the form" copy and the DB-gap copy. M3.5 #9.
 function buildNoData(
   school: School,
-  current: number | null,
   reason: "missing-data" | "school-missing-data",
+  current: number | null,
 ): GapResult {
   return {
     dimension: ID,
@@ -59,12 +59,12 @@ export const satDimension: Dimension = {
     // school are missing, because the user-actionable fix is to fill
     // the form — we can't ask them to wait on DB data they never had.
     if (satScore == null) {
-      return buildNoData(school, satScore, "missing-data");
+      return buildNoData(school, "missing-data", satScore);
     }
     // School-side: student filled in a score but our DB lacks the
     // percentile bands. Flag the DB gap, do NOT blame the student.
     if (sat25th == null || sat75th == null) {
-      return buildNoData(school, satScore, "school-missing-data");
+      return buildNoData(school, "school-missing-data", satScore);
     }
 
     const target = { min: sat25th, max: sat75th };

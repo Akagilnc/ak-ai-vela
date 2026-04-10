@@ -18,8 +18,8 @@ const LABEL = "ACT";
 // M3.5 #9.
 function buildNoData(
   school: School,
-  current: number | null,
   reason: "missing-data" | "school-missing-data",
+  current: number | null,
 ): GapResult {
   return {
     dimension: ID,
@@ -53,10 +53,10 @@ export const actDimension: Dimension = {
 
     // Student-missing wins over school-missing for the same reason as sat.ts.
     if (actScore == null) {
-      return buildNoData(school, actScore, "missing-data");
+      return buildNoData(school, "missing-data", actScore);
     }
     if (act25th == null || act75th == null) {
-      return buildNoData(school, actScore, "school-missing-data");
+      return buildNoData(school, "school-missing-data", actScore);
     }
 
     const target = { min: act25th, max: act75th };
