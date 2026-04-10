@@ -74,7 +74,7 @@ describe("actDimension.compute — severity", () => {
 });
 
 describe("actDimension.compute — no-data", () => {
-  it("student has no ACT score → no-data", () => {
+  it("student has no ACT score → no-data (student-missing text)", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: undefined }),
       makeSchool(),
@@ -82,23 +82,41 @@ describe("actDimension.compute — no-data", () => {
     expect(result.severity).toBe("no-data");
     expect(result.current).toBe(null);
     expect(result.target).toBe(null);
-    expect(result.action).toBeTruthy();
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 
-  it("school missing act25th → no-data", () => {
+  // M3.5 #9: mirror SAT — school-side DB gap must not blame the student.
+  it("school missing act25th → no-data (school-missing-data text, names the school)", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: 32 }),
-      makeSchool({ act25th: null }),
+      makeSchool({ name: "Cornell University", act25th: null }),
     );
     expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("Cornell University");
+    expect(result.action).not.toContain("补上");
   });
 
-  it("school missing act75th → no-data", () => {
+  it("school missing act75th → no-data (school-missing-data text, names the school)", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: 32 }),
-      makeSchool({ act75th: null }),
+      makeSchool({ name: "Cornell University", act75th: null }),
     );
     expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("Cornell University");
+    expect(result.action).not.toContain("补上");
+  });
+
+  it("both student and school missing → no-data (student-missing wins)", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: undefined }),
+      makeSchool({ act25th: null, act75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 });
 

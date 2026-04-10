@@ -161,7 +161,7 @@ describe("gpaDimension.compute — no-data cases", () => {
     expect(result.action).toContain("百分制");
   });
 
-  it("gpaType percentage but gpaPercentage null → no-data", () => {
+  it("gpaType percentage but gpaPercentage null → no-data (student-missing text)", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "percentage",
@@ -170,9 +170,13 @@ describe("gpaDimension.compute — no-data cases", () => {
       makeSchool(),
     );
     expect(result.severity).toBe("no-data");
+    // Student-facing copy asks the user to fill in the form field. Must NOT
+    // blame the database. M3.5 #9 regression fence.
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 
-  it("gpaType rank but classRank null → no-data", () => {
+  it("gpaType rank but classRank null → no-data (student-missing text)", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "rank",
@@ -182,15 +186,24 @@ describe("gpaDimension.compute — no-data cases", () => {
       makeSchool(),
     );
     expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 
-  it("school avgGPA null → no-data", () => {
+  // M3.5 #9: school-side missing data must NOT ask the student to fill
+  // anything — they already did. Flag it as a data-quality issue on our
+  // side instead. Closes https://github.com/Akagilnc/ak-ai-vela/issues/9
+  it("school avgGPA null → no-data (school-missing-data text, names the school)", () => {
     const result = gpaDimension.compute(
       makeAnswers({ gpaPercentage: 90 }),
-      makeSchool({ avgGPA: null }),
+      makeSchool({ name: "Cornell University", avgGPA: null }),
     );
     expect(result.severity).toBe("no-data");
     expect(result.target).toBe(null);
+    // School-facing copy: flags DB gap, does NOT ask student to re-fill.
+    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("Cornell University");
+    expect(result.action).not.toContain("补上");
   });
 });
 

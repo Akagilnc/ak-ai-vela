@@ -34,7 +34,7 @@ const YELLOW_GAP = 0.3;
 
 function buildNoData(
   school: School,
-  reason: "international" | "unknown" | "missing-data",
+  reason: "international" | "unknown" | "missing-data" | "school-missing-data",
   current: number | null,
 ): GapResult {
   return {
@@ -91,9 +91,11 @@ export const gpaDimension: Dimension = {
       return buildNoData(school, "missing-data", currentNumeric);
     }
 
-    // School-side data check.
+    // School-side data check. Distinguish from student-missing above so
+    // the action text flags a DB gap instead of asking the student to
+    // re-submit data they already provided. M3.5 #9.
     if (school.avgGPA == null) {
-      return buildNoData(school, "missing-data", currentNumeric);
+      return buildNoData(school, "school-missing-data", currentNumeric);
     }
 
     // Compute severity.
