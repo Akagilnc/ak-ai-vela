@@ -26,6 +26,31 @@
 //   60-69 → 2.3   ("pass" range, US C)
 //   < 60  → 1.8   (failing in China, US D+)
 // Rank path got the same calibration mirrored onto percentile buckets.
+//
+// Rank percentile formula tradeoff (PR #7 — revisited in every round):
+// Three bot reviewers have flagged this line in opposite directions across
+// three rounds, so the tradeoff belongs in the code itself.
+//
+// The inclusive formula `(total - rank + 1) / total` was chosen in Round 1
+// (Codex + Gemini + Copilot all independently flagged the original
+// `1 - rank/total`, which mapped `1/1 → 0` and downgraded first-place
+// students in small classes to the bottom bucket). Inclusive fixes small
+// classes cleanly: `1/1 → 1.0`, `1/10 → 1.0`.
+//
+// The tradeoff Codex surfaced in Round 3: inclusive shifts boundary cases
+// upward by `1/total`. Example: `11/200 → 0.95` lands in the 3.95 bucket
+// even though a pure top-5.5% reading would fall in 3.8. The alternatives
+// fail in the opposite direction:
+//   - Midpoint `(total - rank + 0.5) / total`: `11/200 → 0.9475` (correct)
+//     but `1/1 → 0.5` (small-class first-place lands in 3.25, wrong).
+//   - Exclusive `1 - rank/total`: `1/1 → 0` (worst bucket, wrong), the
+//     original bug.
+// No closed-form formula hits both ends. Inclusive was kept because the
+// small-class failure is a systematic harm to Chinese first-place students
+// (especially common in rural or small-cohort high schools), while the
+// large-class boundary drift is bounded by `1/total` — at 200 students
+// that's 0.5%, at 2000 it's 0.05%, both well inside bucket boundary noise.
+// The midpoint table itself has higher uncertainty than this drift.
 
 export function normalizeChineseGpa(
   gpaPercentage: number | null | undefined,

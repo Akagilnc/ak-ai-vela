@@ -88,7 +88,9 @@ describe("gpaDimension.compute — percentage path severity", () => {
   });
 
   it("normalized more than 0.3 below → red", () => {
-    // 79 → 2.5, school 3.8, gap = 1.3
+    // 79 → 2.8 (70-79 bucket, PR #7 Round 3 sub-80 extension), school 3.8,
+    // gap = 1.0 > 0.3 → red. Flagged by Copilot Round 3 — the old `79 → 2.5`
+    // comment was stale from before the Gemini sub-80 bucket extension.
     const result = gpaDimension.compute(
       makeAnswers({ gpaPercentage: 79 }),
       makeSchool({ avgGPA: 3.8 }),
