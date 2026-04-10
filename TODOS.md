@@ -86,6 +86,14 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** Next PR after #9 (M3.5) or in parallel if #9 is deferred.
 - **Depends on:** PR #7 (merged)
 
+### [M4] Gap recommendation copy polish
+- **What:** Two defensive/tone improvements to `src/lib/gap/recommendations.ts` `school-missing-data` branches:
+  1. **Empty `school.name` fallback** — if upstream imports ever produce `school.name === ""`, templates render `"当前数据库暂缺  的 X 平均值..."` (double space, subject gone). Add `school.name || "该学校"` fallback in the 3 school-missing templates, or enforce NOT NULL at a schema/validation layer.
+  2. **Tone softening** — current copy `当前数据库暂缺 ${name} 的 GPA 平均值...` is engineering-heavy ("数据库"). Parent-facing copy should read more naturally, e.g. `我们还没收录 ${name} 的 GPA 平均值...`. Belongs with broader M4 copy/design polish, not a bug-fix PR.
+- **Why:** Surfaced during PR #11 adversarial review (Claude + Codex both flagged independently). Not blocking because DB has NOT NULL on `school.name` today and current tone is understandable, but both reads as gaps worth fixing before M4 ships user-visible recommendations.
+- **When:** M4 interactive report, batched with other copy/tone work.
+- **Depends on:** PR #11 (merged)
+
 ## Deferred from Pre-M3 Stabilization (2026-04-09)
 
 ### [P2] Replace Student.name de-facto key with stable student identifier

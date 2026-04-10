@@ -74,7 +74,7 @@ describe("satDimension.compute — severity", () => {
 });
 
 describe("satDimension.compute — no-data", () => {
-  it("student has no SAT score → no-data", () => {
+  it("student has no SAT score → no-data (student-missing text)", () => {
     const result = satDimension.compute(
       makeAnswers({ satScore: undefined }),
       makeSchool(),
@@ -82,23 +82,47 @@ describe("satDimension.compute — no-data", () => {
     expect(result.severity).toBe("no-data");
     expect(result.current).toBe(null);
     expect(result.target).toBe(null);
-    expect(result.action).toBeTruthy();
+    // Student-facing copy — must NOT blame the database. M3.5 #9 regression.
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 
-  it("school missing sat25th → no-data", () => {
+  // M3.5 #9: school-side DB gap (missing percentile bands) must not ask the
+  // student to fill SAT again — they may have filled it, or this may be a
+  // school without published bands. Flag the DB gap instead.
+  it("school missing sat25th → no-data (school-missing-data text, names the school)", () => {
     const result = satDimension.compute(
       makeAnswers({ satScore: 1450 }),
-      makeSchool({ sat25th: null, sat75th: 1500 }),
+      makeSchool({ name: "Cornell University", sat25th: null, sat75th: 1500 }),
     );
     expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("Cornell University");
+    expect(result.action).not.toContain("补上");
   });
 
-  it("school missing sat75th → no-data", () => {
+  it("school missing sat75th → no-data (school-missing-data text, names the school)", () => {
     const result = satDimension.compute(
       makeAnswers({ satScore: 1450 }),
-      makeSchool({ sat25th: 1400, sat75th: null }),
+      makeSchool({ name: "Cornell University", sat25th: 1400, sat75th: null }),
     );
     expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("Cornell University");
+    expect(result.action).not.toContain("补上");
+  });
+
+  // Edge case: both student and school missing. Student-missing wins because
+  // the user-facing fix is actionable (fill the form) while we can't tell
+  // them to wait on DB data when they don't even have a score yet.
+  it("both student and school missing → no-data (student-missing wins)", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: undefined }),
+      makeSchool({ sat25th: null, sat75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("补上");
+    expect(result.action).not.toContain("数据库");
   });
 });
 

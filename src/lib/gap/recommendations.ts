@@ -20,9 +20,19 @@ export interface RecommendationContext {
   target: { min: number; max: number } | null;
   schoolName: string;
   // Optional sub-case identifier. Used by dimensions that have multiple
-  // no-data paths with different action prompts (e.g. GPA distinguishes
-  // "international" from "missing data" per M3 design doc premise #3).
-  reason?: "international" | "unknown" | "missing-data";
+  // no-data paths with different action prompts:
+  //   - "international"       — student reports an IB/AP/A-Level system
+  //                             we can't yet normalize (Phase 2 TBD)
+  //   - "unknown"              — student explicitly picked "not sure"
+  //   - "missing-data"         — student-side field is empty
+  //   - "school-missing-data"  — database lacks the school-side field the
+  //                              dimension needs (e.g. avgGPA, sat25th)
+  //
+  // The split between "missing-data" and "school-missing-data" matters
+  // because the action is different: student-missing asks the user to
+  // fill the form, school-missing flags a DB gap on our side and must
+  // NOT blame the student. M3.5 #9 regression fence.
+  reason?: "international" | "unknown" | "missing-data" | "school-missing-data";
 }
 
 type RecommendationFn = (ctx: RecommendationContext) => string;
@@ -40,6 +50,9 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
     if (ctx.reason === "international") {
       return "国际课程成绩换算将在 Phase 2 支持，当前请补充等效百分制估算（可用学校 report card 的总评分）";
     }
+    if (ctx.reason === "school-missing-data") {
+      return `当前数据库暂缺 ${ctx.schoolName} 的 GPA 平均值，无法精确对比，我们会在后续版本补齐`;
+    }
     return "补上百分制成绩或年级排名可以让报告更准";
   },
 
@@ -56,7 +69,12 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       ? `SAT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议集中补强数学或阅读薄弱模块`
       : `SAT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
   },
-  "sat:no-data": () => "补上 SAT 或 ACT 分数可以让报告更准",
+  "sat:no-data": (ctx) => {
+    if (ctx.reason === "school-missing-data") {
+      return `当前数据库暂缺 ${ctx.schoolName} 的 SAT 分数段，无法精确对比，我们会在后续版本补齐`;
+    }
+    return "补上 SAT 或 ACT 分数可以让报告更准";
+  },
 
   // ============================================================
   // ACT
@@ -71,7 +89,12 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       ? `ACT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议集中补强薄弱科目`
       : `ACT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
   },
-  "act:no-data": () => "补上 ACT 或 SAT 分数可以让报告更准",
+  "act:no-data": (ctx) => {
+    if (ctx.reason === "school-missing-data") {
+      return `当前数据库暂缺 ${ctx.schoolName} 的 ACT 分数段，无法精确对比，我们会在后续版本补齐`;
+    }
+    return "补上 ACT 或 SAT 分数可以让报告更准";
+  },
 
   // ============================================================
   // Pre-vet Experience (animal hours)

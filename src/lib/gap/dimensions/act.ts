@@ -14,6 +14,29 @@ import { getRecommendation } from "../recommendations";
 const ID = "act";
 const LABEL = "ACT";
 
+// Mirror of sat.ts buildNoData — see that file for the reason-tag rationale.
+// M3.5 #9.
+function buildNoData(
+  school: School,
+  reason: "missing-data" | "school-missing-data",
+  current: number | null,
+): GapResult {
+  return {
+    dimension: ID,
+    label: LABEL,
+    current,
+    target: null,
+    normalized: null,
+    severity: "no-data",
+    action: getRecommendation(ID, "no-data", {
+      current,
+      target: null,
+      schoolName: school.name,
+      reason,
+    }),
+  };
+}
+
 export const actDimension: Dimension = {
   id: ID,
   label: LABEL,
@@ -28,20 +51,12 @@ export const actDimension: Dimension = {
     const act25th = school.act25th;
     const act75th = school.act75th;
 
-    if (actScore == null || act25th == null || act75th == null) {
-      return {
-        dimension: ID,
-        label: LABEL,
-        current: actScore,
-        target: null,
-        normalized: null,
-        severity: "no-data",
-        action: getRecommendation(ID, "no-data", {
-          current: actScore,
-          target: null,
-          schoolName: school.name,
-        }),
-      };
+    // Student-missing wins over school-missing for the same reason as sat.ts.
+    if (actScore == null) {
+      return buildNoData(school, "missing-data", actScore);
+    }
+    if (act25th == null || act75th == null) {
+      return buildNoData(school, "school-missing-data", actScore);
     }
 
     const target = { min: act25th, max: act75th };
