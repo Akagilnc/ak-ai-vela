@@ -258,6 +258,48 @@ describe("recommendation coverage invariant", () => {
       }
     }
   });
+
+  // M3.5 #9 regression fence: the per-dimension no-data template MUST render
+  // a distinct string when `reason: "school-missing-data"` is passed. Without
+  // this test, deleting the school-missing-data branch in recommendations.ts
+  // would silently fall through to the student-missing default copy, quietly
+  // reintroducing the exact bug #9 fixed. The adversarial review (Claude +
+  // Codex) flagged that the coverage invariant above alone can't lock this,
+  // because it never sets a `reason`.
+  it("no-data template differs when reason='school-missing-data' (for dimensions with school-side fields)", () => {
+    // prevet-experience has NO school-side field (thresholds are hardcoded
+    // module constants, not DB columns), so no "school-missing-data" path
+    // exists for it. Exclude it here.
+    const schoolDataDims = ["gpa", "sat", "act"] as const;
+    const baseCtx = {
+      current: 42 as number | null,
+      target: null,
+      schoolName: "Test University",
+    };
+
+    for (const dimId of schoolDataDims) {
+      const studentMissing = getRecommendation(dimId, "no-data", {
+        ...baseCtx,
+        reason: "missing-data",
+      });
+      const schoolMissing = getRecommendation(dimId, "no-data", {
+        ...baseCtx,
+        reason: "school-missing-data",
+      });
+
+      expect(studentMissing, `${dimId}: student-missing template`).toBeTruthy();
+      expect(schoolMissing, `${dimId}: school-missing template`).toBeTruthy();
+      // The two branches MUST render different strings. Equality here would
+      // mean the school-missing-data branch was removed or not wired up.
+      expect(
+        schoolMissing,
+        `${dimId}: school-missing template collapsed into student-missing`,
+      ).not.toBe(studentMissing);
+      // School-missing copy must name the school by name — that's the whole
+      // point of the split (flag a DB gap by name, not blame the student).
+      expect(schoolMissing).toContain("Test University");
+    }
+  });
 });
 
 // ============================================================================
