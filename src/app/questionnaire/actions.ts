@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema, canonicalizeAnswers } from "@/lib/types";
+import { normalizeChineseGpa } from "@/lib/gap";
 import type { Prisma } from "@prisma/client";
 
 export type SubmitResult = {
@@ -58,7 +59,13 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          normalizedGPA: data.gpaPercentage != null ? data.gpaPercentage / 25 : null, // rough 100→4.0
+          // M3: canonical normalizer lives in @/lib/gap. This replaces the
+          // prior `data.gpaPercentage / 25` linear rescale so DB-persisted
+          // normalizedGPA matches what the gap engine computes at read time.
+          normalizedGPA: normalizeChineseGpa(
+            data.gpaPercentage ?? null,
+            data.classRank ?? null,
+          ),
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,
@@ -77,7 +84,11 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          normalizedGPA: data.gpaPercentage != null ? data.gpaPercentage / 25 : null,
+          // See M3 comment above — canonical normalizer from @/lib/gap.
+          normalizedGPA: normalizeChineseGpa(
+            data.gpaPercentage ?? null,
+            data.classRank ?? null,
+          ),
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,
