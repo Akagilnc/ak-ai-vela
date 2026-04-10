@@ -1,18 +1,22 @@
 #!/bin/sh
-# Block direct pushes to main/master unless all changes are .md files only
+# Block direct pushes to main/master unless all changes are docs (.md) or
+# the root-level VERSION file. VERSION is allow-listed because release bumps
+# are mechanical single-line edits and routing them through a release PR was
+# pure friction. Anything else (src/, prisma/, package.json, configs, ...)
+# still requires a feature branch + PR.
 
 protected_branches="main master"
 current_branch=$(git branch --show-current)
 
 for branch in $protected_branches; do
   if [ "$current_branch" = "$branch" ]; then
-    non_md=$(git diff --name-only "origin/$branch..HEAD" -- 2>/dev/null | grep -v '\.md$')
-    if [ -n "$non_md" ]; then
-      echo "❌ Direct push to $branch blocked. Non-documentation files changed:"
-      echo "$non_md"
-      echo "Use a feature branch + PR."
+    blocked=$(git diff --name-only "origin/$branch..HEAD" -- 2>/dev/null | grep -v -E '\.md$|^VERSION$')
+    if [ -n "$blocked" ]; then
+      echo "❌ Direct push to $branch blocked. Non-allowed files changed:"
+      echo "$blocked"
+      echo "Allowed for direct push: *.md and root VERSION. Anything else: feature branch + PR."
       exit 1
     fi
-    echo "✅ Docs-only push to $branch allowed."
+    echo "✅ Docs/VERSION-only push to $branch allowed."
   fi
 done
