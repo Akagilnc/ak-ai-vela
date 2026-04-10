@@ -1,6 +1,7 @@
 // Chinese GPA normalization to the US 4.0 scale.
 //
-// Source: docs/designs/vela-mvp.md "GPA Normalization" section (CEO plan).
+// Source: docs/designs/vela-mvp.md "GPA Normalization" section (CEO plan),
+// with sub-80% buckets extended in PR #7 Round 3 per Gemini feedback.
 // The midpoint table is deliberately coarse — Chinese percentage GPAs carry
 // significant inter-school variance that a linear rescale cannot capture.
 // M3 accepts this as a known approximation.
@@ -14,6 +15,17 @@
 // percentage wins as a tiebreaker; callers that want the rank path must
 // pass `gpaPercentage = null`. Returns null when the selected path has
 // no usable input.
+//
+// Sub-80 calibration (PR #7 Round 3, Gemini finding): the original table
+// floored anything below 80% at 2.5, which was too optimistic for the
+// 40-60% range. In the Chinese secondary-school grading convention 60%
+// is the pass line and <60% is failing, so a student at 40% getting a
+// 2.5 US-equivalent hid the real gap from pre-vet applicants who need
+// 3.0+ across every target. Extended to:
+//   70-79 → 2.8   ("good" range in China, solid C+/B- in US)
+//   60-69 → 2.3   ("pass" range, US C)
+//   < 60  → 1.8   (failing in China, US D+)
+// Rank path got the same calibration mirrored onto percentile buckets.
 
 export function normalizeChineseGpa(
   gpaPercentage: number | null | undefined,
@@ -31,7 +43,9 @@ export function normalizeChineseGpa(
     if (gpaPercentage >= 90) return 3.8;
     if (gpaPercentage >= 85) return 3.6;
     if (gpaPercentage >= 80) return 3.25;
-    return 2.5;
+    if (gpaPercentage >= 70) return 2.8;
+    if (gpaPercentage >= 60) return 2.3;
+    return 1.8;
   }
 
   // classRank path: "rank/total" string → percentile → bucket.
@@ -52,7 +66,9 @@ export function normalizeChineseGpa(
     if (percentile >= 0.9) return 3.8;
     if (percentile >= 0.75) return 3.6;
     if (percentile >= 0.5) return 3.25;
-    return 2.5;
+    if (percentile >= 0.3) return 2.8;
+    if (percentile >= 0.15) return 2.3;
+    return 1.8;
   }
 
   return null;

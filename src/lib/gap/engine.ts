@@ -101,15 +101,28 @@ export function analyzeStudentVsAllSchools(
   schools: School[],
   overrides?: AnswersOverride,
 ): Map<string, GapResult[]> {
+  // Hoist the merge + dimension filter out of the per-school loop — both
+  // depend only on (baseAnswers, overrides) and are invariant across
+  // schools, so re-running them inside the loop is wasted work that
+  // compounds as the school list grows. Per PR #7 Round 2 Copilot review.
+  const answers = mergeOverrides(baseAnswers, overrides);
+  const applicableDimensions = DIMENSIONS.filter((dim) => dim.appliesTo(answers));
+
   // Sort by school.id so Map iteration order is deterministic regardless
-  // of caller input order. Without this, two different caller orderings
-  // produce two different iteration orders and the "deep equal" test only
-  // catches same-reference runs. Per plan-eng-review outside-voice Finding 4.
-  const sorted = [...schools].sort((a, b) => a.id.localeCompare(b.id));
+  // of caller input order. Plain codepoint `<`/`>` comparison (not
+  // `localeCompare`) because the default locale differs across runtimes
+  // and would leak non-determinism through sort order. Per PR #7 Round 2
+  // Copilot review. Per plan-eng-review outside-voice Finding 4.
+  const sorted = [...schools].sort((a, b) =>
+    a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+  );
 
   const result = new Map<string, GapResult[]>();
   for (const school of sorted) {
-    result.set(school.id, analyzeStudentVsSchool(baseAnswers, school, overrides));
+    result.set(
+      school.id,
+      applicableDimensions.map((dim) => dim.compute(answers, school)),
+    );
   }
   return result;
 }
