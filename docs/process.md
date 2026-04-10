@@ -84,7 +84,10 @@
 - 不允许用游客态验证结果冒充账号态验证结果，也不允许用 fixture / mock / partial smoke 冒充真实链路验证。
 
 ## Git Hooks
-- 仓库包含 `.githooks/pre-push`，禁止直接 push 到 main / master。
+- 仓库包含 `.githooks/pre-push`，禁止直接 push 到 main / master，但放行两类文件：
+  - 任意 `*.md` 文档
+  - 根目录 `VERSION` 文件（release bump 是机械改动，单独走 release PR 摩擦太大）
+- 其他改动（`src/`、`prisma/`、`package.json`、配置等）仍必须 feature branch + PR。
 - `package.json` 的 `postinstall` 会自动执行 `git config core.hooksPath .githooks`，clone 后 `bun install` 即生效。
 - 如果 hook 未生效，手动执行 `git config core.hooksPath .githooks`。
 - 此 hook 不影响 GitHub PR merge（服务端操作不经过本地 hook）。
