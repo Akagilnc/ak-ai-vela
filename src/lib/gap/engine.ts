@@ -15,12 +15,19 @@
 //   - Shallow merge — nested arrays (activities, animalExperience) are
 //     replaced wholesale.
 //
-// Overrides type: `AnswersOverride` allows null on every optional field
-// so callers/tests can express "clear this" without unsafe casts.
-// `Partial<QuestionnaireAnswers>` alone would forbid null on fields typed
-// as `number | undefined`, forcing `null as unknown as number` at call
-// sites — which is exactly the trap we want to prevent. Per PR #7
-// Copilot review.
+// Overrides type: `AnswersOverride` allows null ONLY on the subset of
+// fields the What If simulator actually clears — score/experience fields
+// (see ClearableKey below). Contract fields like `childName`, `gpaType`,
+// `schoolSystem`, and `targetMajor` deliberately reject null because
+// clearing them either violates the Zod schema or silently flips which
+// code path the engine takes (e.g. setting `gpaType = null` would wipe
+// the caller's explicit "use percentage" / "use rank" decision).
+//
+// `Partial<QuestionnaireAnswers>` alone would forbid null everywhere,
+// forcing tests to write `null as unknown as number` for legitimate
+// "clear this score" cases. The intersection below gets both: concrete
+// contract types for identity fields, and `T | null` for clearables.
+// Per PR #7 Codex/Copilot review (P1 permissive-null finding).
 //
 // Fail-fast: dimensions are expected to handle missing student/school
 // data by returning `severity: "no-data"`. A thrown exception from
@@ -32,13 +39,31 @@ import type { School } from "@prisma/client";
 import type { GapResult, QuestionnaireAnswers } from "@/lib/types";
 import { DIMENSIONS } from "./dimensions";
 
+// Fields the What If simulator may clear with `null`. Must stay in sync
+// with the UI — if a new simulator control lets the user wipe a field,
+// add it here.
+type ClearableKey =
+  | "gpaPercentage"
+  | "classRank"
+  | "scienceGPA"
+  | "satScore"
+  | "actScore"
+  | "toeflScore"
+  | "ieltsScore"
+  | "activities"
+  | "animalExperience";
+
 // Override type for the What If simulator. `null` means "explicit clear"
-// and is resolved inside mergeOverrides by deleting the key. `undefined`
-// means "skip this key, keep the base value". All fields map one-to-one
-// with QuestionnaireAnswers, plus the `| null` extension.
-export type AnswersOverride = {
-  [K in keyof QuestionnaireAnswers]?: QuestionnaireAnswers[K] | null;
-};
+// and is resolved inside mergeOverrides by deleting the key (only allowed
+// on ClearableKey fields). `undefined` means "skip this key, keep the
+// base value" and is allowed on every field.
+export type AnswersOverride =
+  & {
+      [K in Exclude<keyof QuestionnaireAnswers, ClearableKey>]?: QuestionnaireAnswers[K];
+    }
+  & {
+      [K in ClearableKey]?: QuestionnaireAnswers[K] | null;
+    };
 
 function mergeOverrides(
   base: QuestionnaireAnswers,

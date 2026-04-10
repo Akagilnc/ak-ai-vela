@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
-import type { School } from "@prisma/client";
 import type { QuestionnaireAnswers } from "@/lib/types";
 import {
   analyzeStudentVsSchool,
   analyzeStudentVsAllSchools,
+  type AnswersOverride,
 } from "../engine";
 import { DIMENSIONS } from "../dimensions";
 import { getRecommendation } from "../recommendations";
+import { makeSchool } from "./helpers/make-school";
 
 function makeAnswers(overrides: Partial<QuestionnaireAnswers> = {}): QuestionnaireAnswers {
   return {
@@ -23,39 +24,6 @@ function makeAnswers(overrides: Partial<QuestionnaireAnswers> = {}): Questionnai
     animalExperience: [{ type: "volunteer", hours: 50 }],
     ...overrides,
   } as QuestionnaireAnswers;
-}
-
-function makeSchool(overrides: Partial<School> = {}): School {
-  return {
-    id: "school-1",
-    slug: "test-u",
-    name: "Test University",
-    nameCn: "测试大学",
-    city: "Test City",
-    state: "CA",
-    country: "USA",
-    type: "public",
-    avgGPA: 3.8,
-    sat25th: 1400,
-    sat75th: 1500,
-    act25th: 31,
-    act75th: 34,
-    medianSAT: null,
-    medianACT: null,
-    acceptanceRate: null,
-    internationalAcceptRate: null,
-    estimatedAnnualCost: null,
-    englishRequirements: null,
-    hasAnimalScience: true,
-    hasPreVet: true,
-    needBlind: false,
-    radarAcceptance: null,
-    radarInternational: null,
-    radarSAT: null,
-    radarCost: null,
-    radarAid: null,
-    ...overrides,
-  } as unknown as School;
 }
 
 // ============================================================================
@@ -289,5 +257,82 @@ describe("recommendation coverage invariant", () => {
         ).toBe(true);
       }
     }
+  });
+});
+
+// ============================================================================
+// AnswersOverride — type-level narrowing (PR #7 Copilot P2)
+// ============================================================================
+//
+// These tests do NOT exercise runtime behavior. They are compile-time
+// assertions that pin the `AnswersOverride` type: score and experience
+// fields MAY be cleared with null (used by the What If simulator), but
+// contract fields (identity, schema version, school system, gpaType,
+// targetMajor, etc.) MUST NOT accept null — clearing them would either
+// violate the Zod schema or quietly change which code path the engine
+// selects. `@ts-expect-error` comments enforce this at build time: if
+// the type ever widens again, tsc will complain that the directive is
+// unused and CI will fail.
+//
+// Note: vitest transpiles via esbuild/swc and does not type-check. The
+// RED signal for these tests comes from `npx tsc --noEmit`, not from
+// the test runner. The body just runs a trivial assertion so the `it`
+// block has a non-empty runtime.
+
+describe("AnswersOverride — type-level narrowing", () => {
+  it("forbids null on contract fields, allows null on clearable fields", () => {
+    // --- Contract fields: null MUST be a type error ---
+
+    // @ts-expect-error schemaVersion is a contract field — null must not be allowed
+    const _invalidSchemaVersion: AnswersOverride = { schemaVersion: null };
+    // @ts-expect-error childName is a contract field — null must not be allowed
+    const _invalidChildName: AnswersOverride = { childName: null };
+    // @ts-expect-error birthYear is a contract field — null must not be allowed
+    const _invalidBirthYear: AnswersOverride = { birthYear: null };
+    // @ts-expect-error currentGrade is a contract field — null must not be allowed
+    const _invalidCurrentGrade: AnswersOverride = { currentGrade: null };
+    // @ts-expect-error schoolSystem is a contract field — null must not be allowed
+    const _invalidSchoolSystem: AnswersOverride = { schoolSystem: null };
+    // @ts-expect-error gpaType is a contract field — null must not be allowed (caller chooses GPA path)
+    const _invalidGpaType: AnswersOverride = { gpaType: null };
+    // @ts-expect-error targetMajor is a contract field — null must not be allowed (controls dimension filtering)
+    const _invalidTargetMajor: AnswersOverride = { targetMajor: null };
+
+    // --- Clearable fields: null MUST still be allowed (simulator use) ---
+
+    const _validGpaPercentage: AnswersOverride = { gpaPercentage: null };
+    const _validClassRank: AnswersOverride = { classRank: null };
+    const _validScienceGPA: AnswersOverride = { scienceGPA: null };
+    const _validSatScore: AnswersOverride = { satScore: null };
+    const _validActScore: AnswersOverride = { actScore: null };
+    const _validToeflScore: AnswersOverride = { toeflScore: null };
+    const _validIeltsScore: AnswersOverride = { ieltsScore: null };
+    const _validActivities: AnswersOverride = { activities: null };
+    const _validAnimalExperience: AnswersOverride = { animalExperience: null };
+
+    // Undefined remains valid on ALL fields (skip semantics).
+    const _validUndefinedContract: AnswersOverride = { gpaType: undefined };
+    const _validUndefinedClearable: AnswersOverride = { satScore: undefined };
+
+    void _invalidSchemaVersion;
+    void _invalidChildName;
+    void _invalidBirthYear;
+    void _invalidCurrentGrade;
+    void _invalidSchoolSystem;
+    void _invalidGpaType;
+    void _invalidTargetMajor;
+    void _validGpaPercentage;
+    void _validClassRank;
+    void _validScienceGPA;
+    void _validSatScore;
+    void _validActScore;
+    void _validToeflScore;
+    void _validIeltsScore;
+    void _validActivities;
+    void _validAnimalExperience;
+    void _validUndefinedContract;
+    void _validUndefinedClearable;
+
+    expect(true).toBe(true);
   });
 });

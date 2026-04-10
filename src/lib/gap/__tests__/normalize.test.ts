@@ -92,6 +92,43 @@ describe("normalizeChineseGpa", () => {
     });
   });
 
+  // Regression fence for the small-class rank percentile bug flagged by
+  // Codex, Gemini, and Copilot independently on PR #7. The old formula was
+  // `percentile = 1 - rank/total`, which underestimates small classes:
+  //   rank 1/1  → percentile 0 (!)  → bucket 2.5 (worst)
+  //   rank 1/5  → percentile 0.8   → bucket 3.6
+  //   rank 1/10 → percentile 0.9   → bucket 3.8
+  // A first-place student in any small class was systematically downgraded.
+  // The fix is to use an inclusive rank: `(total - rank + 1) / total`, which
+  // maps rank 1 to percentile 1.0 regardless of class size, and never
+  // changes existing large-class results (off by at most 1/total, well
+  // inside every bucket boundary we test above).
+  describe("classRank small-class edge cases (PR #7 rank formula regression)", () => {
+    it("'1/1' → 3.95 (first in class of one is top bucket, not bottom)", () => {
+      expect(normalizeChineseGpa(null, "1/1")).toBe(3.95);
+    });
+
+    it("'1/5' → 3.95 (first in class of five)", () => {
+      expect(normalizeChineseGpa(null, "1/5")).toBe(3.95);
+    });
+
+    it("'1/10' → 3.95 (first in class of ten)", () => {
+      expect(normalizeChineseGpa(null, "1/10")).toBe(3.95);
+    });
+
+    it("'2/10' → 3.8 (second in ten, inclusive top 20%)", () => {
+      expect(normalizeChineseGpa(null, "2/10")).toBe(3.8);
+    });
+
+    it("'5/10' → 3.25 (median, inclusive top 60%)", () => {
+      expect(normalizeChineseGpa(null, "5/10")).toBe(3.25);
+    });
+
+    it("'10/10' → 2.5 (last in class of ten)", () => {
+      expect(normalizeChineseGpa(null, "10/10")).toBe(2.5);
+    });
+  });
+
   describe("classRank parse guards", () => {
     it("'abc' → null", () => {
       expect(normalizeChineseGpa(null, "abc")).toBe(null);

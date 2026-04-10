@@ -7,7 +7,8 @@
 // Invariants (see M3 design doc, "Dimension Interface" section):
 //   1. `compute` must return a GapResult with `result.dimension === this.id`.
 //   2. `compute` must populate `GapResult.action` via `getRecommendation()`
-//      from `../recommendations.ts`; never inline recommendation strings.
+//      from `recommendations.ts` (sibling of this file); never inline
+//      recommendation strings.
 //   3. Pre-vet-conditional dimensions return false from `appliesTo` when
 //      `answers.targetMajor` is not in {pre-vet, animal-science}.
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import type { School } from "@prisma/client";
 import type { QuestionnaireAnswers } from "@/lib/types";
 import { prevetExperienceDimension } from "../dimensions/prevet-experience";
+import { makeSchool } from "./helpers/make-school";
 
 function makeAnswers(overrides: Partial<QuestionnaireAnswers> = {}): QuestionnaireAnswers {
   return {
@@ -15,39 +15,6 @@ function makeAnswers(overrides: Partial<QuestionnaireAnswers> = {}): Questionnai
     targetMajor: "pre-vet",
     ...overrides,
   } as QuestionnaireAnswers;
-}
-
-function makeSchool(overrides: Partial<School> = {}): School {
-  return {
-    id: "school-1",
-    slug: "test-u",
-    name: "Test University",
-    nameCn: "测试大学",
-    city: "Test City",
-    state: "CA",
-    country: "USA",
-    type: "public",
-    avgGPA: 3.8,
-    sat25th: 1400,
-    sat75th: 1500,
-    act25th: 31,
-    act75th: 34,
-    medianSAT: null,
-    medianACT: null,
-    acceptanceRate: null,
-    internationalAcceptRate: null,
-    estimatedAnnualCost: null,
-    englishRequirements: null,
-    hasAnimalScience: true,
-    hasPreVet: true,
-    needBlind: false,
-    radarAcceptance: null,
-    radarInternational: null,
-    radarSAT: null,
-    radarCost: null,
-    radarAid: null,
-    ...overrides,
-  } as unknown as School;
 }
 
 describe("prevetExperienceDimension — metadata", () => {
