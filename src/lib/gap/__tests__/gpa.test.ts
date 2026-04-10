@@ -225,6 +225,75 @@ describe("gpaDimension.compute — no-data cases", () => {
   });
 });
 
+// ---------------- gpaType contract (regression fence for PR #7 review) ----------------
+//
+// Codex P1 + Copilot independently flagged that `compute()` was passing both
+// gpaPercentage and classRank into normalizeChineseGpa(), which then preferred
+// percentage whenever it was present. That let stale form fields (e.g. a
+// percentage lingering after the user switched gpaType to "rank") silently
+// override the user's declared intent — severity could flip from red to green
+// based on a value the user no longer considered authoritative.
+//
+// These tests lock the fix: `compute()` must honor `answers.gpaType` as the
+// single source of truth for which field to read, independent of whether
+// other fields happen to be populated.
+
+describe("gpaDimension.compute — gpaType contract", () => {
+  it("gpaType='rank' with stale gpaPercentage → uses rank, ignores percentage", () => {
+    const result = gpaDimension.compute(
+      makeAnswers({
+        gpaType: "rank",
+        gpaPercentage: 85, // stale: should be ignored
+        classRank: "5/200", // top 2.5% → 3.95
+      }),
+      makeSchool({ avgGPA: 3.8 }),
+    );
+    // Rank path → 3.95 → green. Pre-fix: percentage path → 3.6 → yellow.
+    expect(result.normalized).toBe(3.95);
+    expect(result.severity).toBe("green");
+  });
+
+  it("gpaType='percentage' with stale classRank → uses percentage, ignores rank", () => {
+    const result = gpaDimension.compute(
+      makeAnswers({
+        gpaType: "percentage",
+        gpaPercentage: 85, // → 3.6
+        classRank: "5/200", // stale: should be ignored
+      }),
+      makeSchool({ avgGPA: 3.8 }),
+    );
+    expect(result.normalized).toBe(3.6);
+    expect(result.severity).toBe("yellow");
+  });
+
+  it("gpaType='international' with stale percentage+rank → no-data, ignores both", () => {
+    const result = gpaDimension.compute(
+      makeAnswers({
+        gpaType: "international",
+        gpaPercentage: 95, // stale
+        classRank: "5/200", // stale
+      }),
+      makeSchool({ avgGPA: 3.8 }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.normalized).toBe(null);
+    expect(result.action).toContain("国际课程");
+  });
+
+  it("gpaType='rank' with stale percentage but no rank → no-data (rank is the declared source)", () => {
+    const result = gpaDimension.compute(
+      makeAnswers({
+        gpaType: "rank",
+        gpaPercentage: 95, // stale: cannot substitute for declared source
+        classRank: undefined,
+      }),
+      makeSchool({ avgGPA: 3.8 }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.normalized).toBe(null);
+  });
+});
+
 // ---------------- GapResult invariants ----------------
 
 describe("gpaDimension.compute — invariants", () => {

@@ -13,6 +13,8 @@
 // test in engine.test.ts — every (dimensionId, severity) combination must
 // resolve to a non-empty string.
 
+import type { GapSeverity } from "@/lib/types";
+
 export interface RecommendationContext {
   current: number | null;
   target: { min: number; max: number } | null;
@@ -87,9 +89,13 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
 // Returns the rendered recommendation string, or null if no template matches.
 // Null (rather than empty string) matches GapResult.action type and makes
 // missing-template bugs visible in UI rendering.
+//
+// `severity` is typed as `GapSeverity` (not `string`) so that typos in
+// dimension authors' calls become compile-time errors instead of runtime
+// nulls. Per PR #7 Copilot review.
 export function getRecommendation(
   dimensionId: string,
-  severity: string,
+  severity: GapSeverity,
   ctx: RecommendationContext,
 ): string | null {
   const key = `${dimensionId}:${severity}`;

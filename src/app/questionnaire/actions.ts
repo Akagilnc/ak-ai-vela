@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema, canonicalizeAnswers } from "@/lib/types";
+import type { QuestionnaireAnswers } from "@/lib/types";
 import { normalizeChineseGpa } from "@/lib/gap";
 import type { Prisma } from "@prisma/client";
 
@@ -11,6 +12,32 @@ export type SubmitResult = {
   fieldErrors?: Record<string, string>;
   studentId?: string;
 };
+
+// Compute the DB-persisted normalizedGPA per the gpaType contract.
+// Mirrors the gap engine's gpa dimension so that what we write at
+// submission time matches what the engine reports at read time.
+//
+// Critical: branch on `gpaType`, not on field presence. The Step 3 form
+// does not clear inactive fields when the user switches gpaType, so a
+// payload can carry a stale `gpaPercentage` alongside `gpaType: "rank"`.
+// If we fell back on presence (or on normalizeChineseGpa's internal
+// percentage-wins precedence), the DB row would silently disagree with
+// the engine. See PR #7 Codex P1 + Copilot review.
+function computeNormalizedGpa(
+  gpaType: QuestionnaireAnswers["gpaType"],
+  gpaPercentage: number | null | undefined,
+  classRank: string | null | undefined,
+): number | null {
+  if (gpaType === "percentage") {
+    return normalizeChineseGpa(gpaPercentage ?? null, null);
+  }
+  if (gpaType === "rank") {
+    return normalizeChineseGpa(null, classRank ?? null);
+  }
+  // "international" / "unknown": gap engine returns no-data for these,
+  // so the persisted value must also be null to keep write/read aligned.
+  return null;
+}
 
 export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult> {
   // 1. Parse JSON
@@ -50,6 +77,15 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
 
     let studentId: string;
 
+    // Resolve normalizedGPA once per submission. Both update and create
+    // paths must agree on this value or the DB row will contradict what
+    // the gap engine reports at read time.
+    const normalizedGPA = computeNormalizedGpa(
+      data.gpaType,
+      data.gpaPercentage,
+      data.classRank,
+    );
+
     if (existingStudent) {
       // Update existing student with latest data
       await prisma.student.update({
@@ -59,13 +95,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          // M3: canonical normalizer lives in @/lib/gap. This replaces the
-          // prior `data.gpaPercentage / 25` linear rescale so DB-persisted
-          // normalizedGPA matches what the gap engine computes at read time.
-          normalizedGPA: normalizeChineseGpa(
-            data.gpaPercentage ?? null,
-            data.classRank ?? null,
-          ),
+          normalizedGPA,
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,
@@ -84,11 +114,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
           schoolSystem: data.schoolSystem,
           gpaPercentage: data.gpaPercentage,
           classRank: data.classRank,
-          // See M3 comment above — canonical normalizer from @/lib/gap.
-          normalizedGPA: normalizeChineseGpa(
-            data.gpaPercentage ?? null,
-            data.classRank ?? null,
-          ),
+          normalizedGPA,
           satScore: data.satScore,
           actScore: data.actScore,
           toeflScore: data.toeflScore,

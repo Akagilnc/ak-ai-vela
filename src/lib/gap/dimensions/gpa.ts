@@ -1,10 +1,21 @@
 // GPA dimension. Applies to all students regardless of targetMajor.
 //
-// Branching is driven by `answers.gpaType` (not `schoolSystem`):
-//   - "percentage"   → use gpaPercentage, pass through normalizeChineseGpa
-//   - "rank"         → use classRank (handled inside normalizeChineseGpa)
+// Branching is driven by `answers.gpaType` (the user-declared source of
+// truth), NOT by whether fields happen to be populated:
+//   - "percentage"   → read gpaPercentage only; classRank is ignored even
+//                      if present (it's stale form state, not authoritative)
+//   - "rank"         → read classRank only; gpaPercentage is ignored even
+//                      if present (same reason)
 //   - "international"→ no-data with Phase 2 prompt (IB/AP mapping TBD)
 //   - "unknown"      → no-data with generic prompt
+//
+// Why gpaType and not field presence: the Step 3 form does NOT clear
+// inactive fields when the user switches gpaType, so payloads routinely
+// carry both `gpaPercentage` and `classRank`. If we fell back on field
+// presence (or on normalizeChineseGpa's internal percentage-wins
+// precedence), a user who declared "rank" could have their severity
+// silently flipped by a stale percentage they no longer considered
+// authoritative. See PR #7 Codex P1 + Copilot review.
 //
 // Severity thresholds:
 //   - green:  normalized ≥ school.avgGPA
@@ -52,7 +63,7 @@ export const gpaDimension: Dimension = {
   },
 
   compute(answers: QuestionnaireAnswers, school: School): GapResult {
-    // Branch on gpaType first.
+    // Branch on gpaType first — the user-declared source of truth.
     if (answers.gpaType === "international") {
       return buildNoData(school, "international", null);
     }
@@ -60,24 +71,29 @@ export const gpaDimension: Dimension = {
       return buildNoData(school, "unknown", null);
     }
 
-    // Percentage / rank path: pass both to the normalizer, which enforces
-    // precedence (percentage wins when present). If neither field has a
-    // usable value, normalizer returns null → no-data.
-    const normalized = normalizeChineseGpa(
-      answers.gpaPercentage ?? null,
-      answers.classRank ?? null,
-    );
+    // At this point gpaType is "percentage" or "rank". Select EXACTLY
+    // one input field based on the declared type — pass null for the
+    // other so stale form state cannot override the user's intent.
+    let normalized: number | null;
+    let currentNumeric: number | null;
+    if (answers.gpaType === "percentage") {
+      normalized = normalizeChineseGpa(answers.gpaPercentage ?? null, null);
+      currentNumeric = answers.gpaPercentage ?? null;
+    } else {
+      // gpaType === "rank"
+      normalized = normalizeChineseGpa(null, answers.classRank ?? null);
+      // Rank is a string, not a number — no numeric value for the "current"
+      // slot. Report surfaces the rank string separately via answers.classRank.
+      currentNumeric = null;
+    }
 
     if (normalized == null) {
-      // Capture whichever raw value was present for the report's "current"
-      // field. Prefer percentage; fall back to null (rank is a string, not
-      // a number, so we can't show it in the numeric current slot).
-      return buildNoData(school, "missing-data", answers.gpaPercentage ?? null);
+      return buildNoData(school, "missing-data", currentNumeric);
     }
 
     // School-side data check.
     if (school.avgGPA == null) {
-      return buildNoData(school, "missing-data", answers.gpaPercentage ?? null);
+      return buildNoData(school, "missing-data", currentNumeric);
     }
 
     // Compute severity.
@@ -94,12 +110,12 @@ export const gpaDimension: Dimension = {
     return {
       dimension: ID,
       label: LABEL,
-      current: answers.gpaPercentage ?? null,
+      current: currentNumeric,
       target,
       normalized,
       severity,
       action: getRecommendation(ID, severity, {
-        current: answers.gpaPercentage ?? null,
+        current: currentNumeric,
         target,
         schoolName: school.name,
       }),

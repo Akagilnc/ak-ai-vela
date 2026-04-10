@@ -6,6 +6,7 @@
 // consumer code.
 
 export { analyzeStudentVsSchool, analyzeStudentVsAllSchools } from "./engine";
+export type { AnswersOverride } from "./engine";
 export { normalizeChineseGpa } from "./normalize";
 export { getRecommendation } from "./recommendations";
 export { ALL_DIMENSIONS_META } from "./dimensions";

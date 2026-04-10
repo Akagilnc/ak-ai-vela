@@ -208,9 +208,11 @@ describe("analyzeStudentVsSchool — overrides", () => {
 
   it("null field in overrides explicitly clears the base value", () => {
     const base = makeAnswers({ satScore: 1450 });
-    // Cast needed because QuestionnaireAnswers satScore is optional number.
+    // AnswersOverride permits null per key, so no cast is needed — null
+    // means "explicit clear" and mergeOverrides deletes the key so
+    // dimensions see it as missing.
     const withNullOverride = analyzeStudentVsSchool(base, makeSchool(), {
-      satScore: null as unknown as number,
+      satScore: null,
     });
     const sat = withNullOverride.find((r) => r.dimension === "sat");
     expect(sat?.severity).toBe("no-data");
