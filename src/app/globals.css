@@ -38,6 +38,12 @@
   /* Background */
   --background: #FEFAE0;
   --foreground: #3D3835;
+
+  /* Dark mode deferred to post-MVP. Force light mode regardless of system preference.
+     Lives in CSS (not layout.tsx inline style) to avoid iOS Safari / WeChat WebView
+     hydration mismatch — those environments inject -webkit-touch-callout into <html>
+     inline style before React hydrates, causing dev-mode hydration warnings. */
+  color-scheme: light;
 }
 
 @theme inline {
@@ -72,8 +78,6 @@
   --radius-lg: 12px;
   --radius-full: 9999px;
 }
-
-/* Dark mode deferred to post-MVP. Force light mode regardless of system preference. */
 
 body {
   background: var(--background);
