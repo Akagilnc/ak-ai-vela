@@ -74,11 +74,9 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## Deferred from M3 Gap Engine (2026-04-10)
 
-### [M3.5] Separate school-side vs student-side missing GPA data
-- **What:** Today `src/lib/gap/dimensions/gpa.ts:96` marks a missing `school.avgGPA` with the same `reason: "missing-data"` tag as the student-side missing-input branch at line 91. Both paths resolve to the same `gpa:no-data` template in `recommendations.ts`, which asks the student to supply GPA/rank data. That is wrong when the student already filled everything in and the gap is on the school-data side.
-- **Why:** Codex Round 3 P2 on PR #7 flagged that the recommendation text becomes confusing for users whose input was complete. Requires a new `"school-missing-data"` reason tag, a new template branch, tests asserting action text (not just severity), and an audit of `sat.ts` / `act.ts` / `prevet-experience.ts` for the same conflation pattern.
-- **When:** M3.5 polish milestone, before gap dump page ships the recommendations to users.
-- **Tracking:** https://github.com/Akagilnc/ak-ai-vela/issues/9
+### ~~[M3.5] Separate school-side vs student-side missing GPA data~~ DONE
+- **Status:** Completed in v0.3.1.0 (PR #11). Added `reason: "school-missing-data"` tag, new template branches in `recommendations.ts` for GPA/SAT/ACT, text-level test assertions, and a regression fence in `engine.test.ts` coverage invariant. `prevet-experience.ts` audited and confirmed clean (no school-side benchmark field).
+- **Completed:** v0.3.1.0 (2026-04-10) — closes #9
 
 ### [M3] Gap dump page (`/complete/gaps`)
 - **What:** Build the raw gap dump page on its own branch (`feat/m3-gap-dump-page`). Calls `analyzeStudentVsAllSchools` from `@/lib/gap` and renders the result for every school as a table or stacked list. No UI polish, no radar chart. Just enough for the founder to eyeball the gap engine output against real student data.
