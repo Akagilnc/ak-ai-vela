@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1.0] - 2026-04-10
+
+### Fixed
+- Recommendation copy no longer blames students for database gaps. Before, when our database was missing a school's GPA / SAT / ACT benchmark numbers, the report would tell the student "fill in your score" — even when they already had. Now the report names the school and flags the missing data as our problem to fix. Affects GPA, SAT, and ACT dimensions (closes #9)
+- Both student-side and school-side missing-data branches are individually testable now (text assertions, not just severity), and a new regression fence in the gap engine's coverage invariant locks the new templates so a future refactor cannot silently collapse them back together
+
+### For contributors
+- `buildNoData` helper signature unified across `gpa.ts`, `sat.ts`, `act.ts` to `(school, reason, current)` (Gemini round-2 review nit)
+- `pre-vet-experience` dimension audited and confirmed clean — it has no school-side benchmark field, so no conflation pattern to fix
+- Test suite: 245 → 248 (two new SAT/ACT edge cases for "both student and school missing → student-missing wins" + one regression fence assertion in `engine.test.ts`)
+
 ## [0.3.0.0] - 2026-04-10
 
 ### Added

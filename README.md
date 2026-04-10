@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (245 tests) |
+| `npm test` | Run all tests (248 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -59,7 +59,7 @@ src/
     types.ts              # Zod questionnaire schema + GapResult type
     gap/                  # M3 Gap Analysis Engine (pure functions, @/lib/gap)
       dimensions/         # 4 v1 dimensions (gpa, sat, act, prevet-experience)
-      __tests__/          # Gap engine tests (~142 tests)
+      __tests__/          # Gap engine tests (~145 tests)
       engine.ts           # analyzeStudentVsSchool / analyzeStudentVsAllSchools
       normalize.ts        # Chinese GPA → US 4.0 normalization
       recommendations.ts  # Hardcoded action templates (4 dims × 4 severities)
@@ -95,7 +95,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | M1: Data layer (school browse/filter UI) | Done (v0.1.2.0) |
 | M2: Input layer (questionnaire form) | Done (v0.2.0.0) |
 | M3: Gap analysis engine | Lib shipped (v0.3.0.0), dump page TODO |
-| M3.5: Gap engine polish (#9) | Planned |
+| M3.5: Gap engine polish (#9) | Done (v0.3.1.0) |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |
 | M7: Export (html2canvas) | Planned |
