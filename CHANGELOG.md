@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0.0] - 2026-04-10
+
+### Added
+- M3 Gap Analysis Engine (`@/lib/gap`): deterministic, pure-function library that compares a student profile against a university's admission data and returns a severity (green / yellow / red / no-data) plus an actionable Chinese recommendation for each dimension
+- 4 v1 dimensions: GPA, SAT, ACT, pre-vet experience. Biology / animal-science students automatically get the pre-vet experience dimension without any extra configuration
+- Chinese GPA normalization with percentage path (95→3.95, 90→3.8, 85→3.6, 80→3.25, 70-79→2.8, 60-69→2.3, <60→1.8) and class-rank path using an inclusive percentile formula that handles small classes correctly (first place in a class of any size lands in the top bucket)
+- `analyzeStudentVsSchool` / `analyzeStudentVsAllSchools` public API at `@/lib/gap`, with deterministic school iteration order (codepoint sort on `school.id`) and per-school dimension results
+- What If simulator foundation: `AnswersOverride` type lets callers override individual fields without mutating the saved questionnaire. `undefined` means "keep base value", `null` means "explicit clear" (for score wipes)
+- Dimension registry pattern — adding a new dimension only requires registering it in `src/lib/gap/dimensions/index.ts`; the engine auto-picks it up via `filter(appliesTo).map(compute)`
+- 16 hardcoded recommendation templates (4 dimensions × 4 severities) in `src/lib/gap/recommendations.ts` — deterministic copy that the founder can audit in a single file
+- 142 new tests covering normalize boundaries, bucket transitions, small-class rank regression fences, `AnswersOverride` type-level narrowing, and a recommendation coverage invariant that fails if any (dimension × severity) loses its template. Total test suite is now 245 passing
+
+### Fixed
+- Pre-M3 GPA double-path bug: `src/app/questionnaire/actions.ts` now calls `normalizeChineseGpa()` instead of the old linear `gpaPercentage / 25` rescale. Two regression fences lock this behavior
+- Class rank percentile formula: inclusive `(total - rank + 1) / total` (was `1 - rank/total`, which mapped rank `1/1` to `0` and downgraded first-place students in small classes to the bottom GPA bucket). Flagged independently by Codex, Gemini, and Copilot on PR #7
+
+### For contributors
+- Three-round bot review pipeline on PR #7 (Codex + Gemini + Copilot) with all findings either fixed, documented as deliberate tradeoffs in-code, or tracked as follow-ups
+- Inclusive rank percentile formula tradeoff documented in `src/lib/gap/normalize.ts` so the next reviewer sees the rationale directly (small-class correctness vs large-class boundary drift bounded by `1/total`)
+
+### Out of scope (follow-ups)
+- Gap dump page (`complete/gaps`) — next PR on `feat/m3-gap-dump-page`
+- School-side vs student-side missing-data copy split — #9 (M3.5)
+- English / Budget / Science-GPA dimensions — v2 after 陪课
+- What If simulator UI — M4
+
 ## [0.2.1.0] - 2026-04-09
 
 ### Fixed
