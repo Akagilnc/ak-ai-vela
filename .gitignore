@@ -46,6 +46,7 @@ temp/
 
 # gstack
 .gstack/
+.context/
 
 # Prisma
 *.db
