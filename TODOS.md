@@ -39,10 +39,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in feat/m0-scaffold (commit a8531c2).
 - **What was done:** `db:seed` now upserts schools only, `db:reset` does full wipe + reseed via `--reset` flag.
 
-### [P2] Create docs/current-state.md
-- **What:** Create and maintain `docs/current-state.md` as long-term project status document per CLAUDE.md rules.
-- **Why:** Codex outside voice flagged it missing. Helps cross-session context recovery.
-- **When:** After M2 ships.
+### ~~[P2] Create docs/current-state.md~~ DONE
+- **Status:** Completed in `chore/docs-current-state` branch (2026-04-12).
+  Covers MVP semantics, active branch/PR state, latest verification, blockers, and next-step recommendations per CLAUDE.md §长期状态文档.
 
 ### [P2] Wrap student upsert + questionnaire result in Prisma transaction
 - **What:** Use `prisma.$transaction()` to make student create/update and QuestionnaireResult.create atomic.
