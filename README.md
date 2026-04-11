@@ -68,6 +68,7 @@ prisma/
   schema.prisma           # School, Student, QuestionnaireResult models
   seed.ts                 # Seed script with 12 pre-vet-relevant schools
 docs/
+  current-state.md        # Long-term project status (MVP semantics, blockers, next steps)
   process.md              # Git workflow and project management rules
   project-context.md      # Project scope and constraints
 ```
@@ -83,6 +84,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 - `DESIGN.md` — Visual design system
 - `TODOS.md` — Deferred work items by milestone
 - `CHANGELOG.md` — Version history
+- `docs/current-state.md` — Long-term project status, active work, blockers, next steps
 - `docs/process.md` — Git workflow, PR review, and project management
 - `docs/designs/vela-mvp.md` — CEO plan with scope decisions and milestones
 - `docs/project-context.md` — Project scope and constraints
