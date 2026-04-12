@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2.0] - 2026-04-12
+
+### Added
+- Every school now tracks where its data came from: `dataSource` names the source document (e.g. "CDS 2023-2024"), `dataSourceUrl` links to it, `dataSourceRetrievedAt` records when it was fetched, `lastVerifiedAt` records when a human last eyeballed it, and `dataConfidence` rates the trust level ("verified", "partial", "estimated", "unknown")
+- Schools can now be classified as AAVMC-accredited vet school hosts (`aavmcAccredited`) separately from schools that just have a strong pre-vet track (`hasPreVetTrack`). A new `hasVetSchool` boolean distinguishes universities that operate their own veterinary college from pre-vet feeder schools
+- All 12 existing schools backfilled with honest provenance tags: the original 3 (Cornell, UC Davis, Colorado State) marked as "CDS 2023-2024 (unverified)", the other 9 marked as "mixed / unknown" pending re-verification against authoritative sources
+
+### For contributors
+- 7 new nullable fields on the School model in `prisma/schema.prisma`: `aavmcAccredited`, `hasVetSchool`, `dataSource`, `dataSourceUrl`, `dataSourceRetrievedAt`, `lastVerifiedAt`, `dataConfidence`. All backward-compatible (nullable or with `@default(false)`)
+- 4 new seed data integrity tests (AAVMC classification, dataConfidence allowlist, dataSource presence). Test suite: 248 → 252
+- After merging, run `npm run db:reset` to sync your local `dev.db` with the new schema
+
 ## [0.3.1.0] - 2026-04-10
 
 ### Fixed
