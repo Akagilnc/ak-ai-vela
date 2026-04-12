@@ -336,9 +336,12 @@ function SchoolCard({
                   <div className="text-[11px] font-semibold text-vela-text-secondary tracking-wide">
                     {r.label}
                   </div>
-                  {r.current != null && r.target && (
+                  {(r.current != null || r.normalized != null) && r.target && (
                     <div className="font-mono text-xs text-vela-text">
-                      {r.current}{r.normalized != null && r.normalized !== r.current ? ` (${r.normalized.toFixed(2)})` : ""} / 目标 {r.target.min === r.target.max ? r.target.min : `${r.target.min}-${r.target.max}`}
+                      {r.current != null
+                        ? <>{r.current}{r.normalized != null && r.normalized !== r.current ? ` (${r.normalized.toFixed(2)})` : ""}</>
+                        : r.normalized != null ? r.normalized.toFixed(2) : ""
+                      } / 目标 {r.target.min === r.target.max ? r.target.min : `${r.target.min}-${r.target.max}`}
                     </div>
                   )}
                   {r.action && (
