@@ -186,11 +186,9 @@ export default async function GapsPage({
               )}
             </div>
             <div className="flex gap-3 flex-wrap mb-6 text-xs text-vela-text-secondary">
-              {totalExcellent > 0 && (
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-[#E9C46A]" />优秀 {totalExcellent}
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#E9C46A]" />优秀 {totalExcellent}
+              </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-vela-primary" />达标 {totalGreen}
               </span>
@@ -200,11 +198,9 @@ export default async function GapsPage({
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-vela-error" />差距大 {totalRed}
               </span>
-              {totalNoData > 0 && (
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-vela-muted" />暂无 {totalNoData}
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-vela-muted" />暂无 {totalNoData}
+              </span>
             </div>
           </>
         )}
