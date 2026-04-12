@@ -23,6 +23,7 @@ model School {
   programs  String   // JSON array: ["pre-vet", "animal-science", "biology"]
 
   // Admissions (CDS data)
+  testPolicy              String?  // "required" | "optional" | "free" | "blind"
   acceptanceRate          Float?
   internationalAcceptRate Float?
   medianSAT               Int?
@@ -42,7 +43,8 @@ model School {
 
   // Financial
   estimatedAnnualCost     Int?     // Total COA in USD
-  financialAidPct         Float?   // % of students receiving aid
+  financialAidPct         Float?   // % of students receiving any aid (broad, may include merit)
+  needBasedAidPct         Float?   // % of first-year with need who received aid (CDS H2 D/A)
   needBlind               Boolean  @default(false)
 
   // Pre-vet / veterinary program classification

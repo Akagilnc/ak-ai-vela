@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3.0] - 2026-04-12
+
+### Changed
+- All 12 schools re-verified against CDS 2024-2025 PDFs downloaded from each university's institutional research office. Acceptance rates, SAT/ACT percentiles, GPA, international student %, and cost of attendance updated to the 2024-2025 admissions cycle
+- UC Davis and Colorado State are now correctly marked as test-free (`testPolicy: "free"`). Their SAT/ACT fields are null because these schools genuinely do not consider test scores, not because we haven't collected the data
+- Schools that don't report GPA in CDS (Cornell, Tufts, Texas A&M) now have `avgGPA: null` instead of estimated values. The gap engine handles this via the school-missing-data branch
+- GPA values from CDS that exceed 4.0 (weighted scale) are capped to 4.0 to match the gap engine's normalization range. Original weighted values noted in source comments
+- Each school now has its CDS source URL in `dataSourceUrl` (direct PDF link where available, landing page for UPenn and UW-Madison)
+
+### Added
+- `testPolicy` field on School model: "required", "optional", "free", or "blind". Distinguishes why SAT/ACT data is null (school doesn't require it vs data not yet collected)
+- `needBasedAidPct` field: percentage of first-year students with financial need who received aid (CDS H2 section D/A), providing a standardized comparison metric alongside the broader `financialAidPct`
+
+### For contributors
+- 2 new schema fields: `testPolicy String?`, `needBasedAidPct Float?`
+- Seed data integrity tests updated: testPolicy allowlist validation, test-free null consistency check, CDS-sourced retrieval date check. Test suite: 252 → 255
+- After merging, run `npm run db:reset` to sync your local `dev.db`
+- Two new TODOS tracked for M4: radar chart null-SAT rendering (#radarSAT ?? 0 bug) and recommendation copy for test-free vs data-missing distinction
+
 ## [0.3.2.0] - 2026-04-12
 
 ### Added
