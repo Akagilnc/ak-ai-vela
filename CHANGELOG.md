@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - UC Davis and Colorado State are now correctly marked as test-free (`testPolicy: "free"`). Their SAT/ACT fields are null because these schools genuinely do not consider test scores, not because we haven't collected the data
 - Schools that don't report GPA in CDS (Cornell, Tufts, Texas A&M) now have `avgGPA: null` instead of estimated values. The gap engine handles this via the school-missing-data branch
 - GPA values from CDS that exceed 4.0 (weighted scale) are capped to 4.0 to match the gap engine's normalization range. Original weighted values noted in source comments
-- Each school now has a CDS PDF direct link in `dataSourceUrl` for one-click verification
+- Each school now has its CDS source URL in `dataSourceUrl` (direct PDF link where available, landing page for UPenn and UW-Madison)
 
 ### Added
 - `testPolicy` field on School model: "required", "optional", "free", or "blind". Distinguishes why SAT/ACT data is null (school doesn't require it vs data not yet collected)

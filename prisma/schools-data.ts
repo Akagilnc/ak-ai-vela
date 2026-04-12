@@ -7,7 +7,7 @@
 // each school's admissions numbers came from and how much we trust them.
 // See prisma/schema.prisma for field definitions.
 //
-// PR #2 (v0.3.3.0): Re-verified all 12 schools against CDS 2024-2025.
+// PR #18 (v0.3.3.0): Re-verified all 12 schools against CDS 2024-2025.
 // Schools that stopped reporting SAT/ACT (test-free) or GPA have those
 // fields set to null with dataConfidence reflecting the gap.
 

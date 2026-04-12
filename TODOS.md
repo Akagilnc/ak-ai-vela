@@ -84,7 +84,7 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Depends on:** PR #7 (merged)
 
 ### [M4] Radar chart: handle null radarSAT for test-free schools
-- **What:** `/schools/[id]/page.tsx:51` uses `school.radarSAT ?? 0`, rendering test-free schools (UC Davis, CSU) with SAT competitiveness of 0 ("worst") instead of "not applicable." Fix: skip the SAT dimension from the radar chart when `testPolicy === "free"` or `radarSAT === null`, and show 4-dimension radar instead of 5.
+- **What:** `src/app/schools/[id]/page.tsx:51` uses `school.radarSAT ?? 0`, rendering test-free schools (UC Davis, CSU) with SAT competitiveness of 0 ("worst") instead of "not applicable." Fix: skip the SAT dimension from the radar chart when `testPolicy === "free"` or `radarSAT === null`, and show 4-dimension radar instead of 5.
 - **Why:** Codex adversarial review on PR #18 (v0.3.3.0) flagged this as silent visual corruption: "no data" rendered as "worst score."
 - **When:** M4 interactive report, or earlier if schools page gets attention.
 - **Depends on:** `testPolicy` field (added in v0.3.3.0)
