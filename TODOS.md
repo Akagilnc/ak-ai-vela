@@ -77,11 +77,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.3.1.0 (PR #11). Added `reason: "school-missing-data"` tag, new template branches in `recommendations.ts` for GPA/SAT/ACT, text-level test assertions, and a regression fence in `engine.test.ts` coverage invariant. `prevet-experience.ts` audited and confirmed clean (no school-side benchmark field).
 - **Completed:** v0.3.1.0 (2026-04-10) — closes #9
 
-### [M3] Gap dump page (`/complete/gaps`)
-- **What:** Build the raw gap dump page on its own branch (`feat/m3-gap-dump-page`). Calls `analyzeStudentVsAllSchools` from `@/lib/gap` and renders the result for every school as a table or stacked list. No UI polish, no radar chart. Just enough for the founder to eyeball the gap engine output against real student data.
-- **Why:** PR #7 explicitly scoped the gap engine as lib-only. The dump page is the first user-visible surface and is the minimum needed to validate the engine end-to-end against the seed user.
-- **When:** Next PR after #9 (M3.5) or in parallel if #9 is deferred.
-- **Depends on:** PR #7 (merged)
+### ~~[M3] Gap dump page (`/complete/gaps`)~~ DONE
+- **Status:** Completed in v0.4.0.0 (PR #20). Full gap analysis page with tier classification (match/reach/possible), 5-level severity pills, expandable detail sections, mobile-first layout, loading skeleton. QA health score 98/100.
+- **Completed:** v0.4.0.0 (2026-04-12)
 
 ### [M4] Radar chart: handle null radarSAT for test-free schools
 - **What:** `src/app/schools/[id]/page.tsx:51` uses `school.radarSAT ?? 0`, rendering test-free schools (UC Davis, CSU) with SAT competitiveness of 0 ("worst") instead of "not applicable." Fix: skip the SAT dimension from the radar chart when `testPolicy === "free"` or `radarSAT === null`, and show 4-dimension radar instead of 5.
@@ -108,4 +106,4 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Why:** Codex review P2.1 found this as a correctness risk for multi-user and for any post-submit edit flow. Deferred to its own PR because the fix touches schema, actions, provider, and complete/review pages — larger scope than the pre-M3 stabilization bundle.
 - **When:** Before multi-user or before shipping a "edit submitted questionnaire" flow. Safe to keep for current single-user MVP.
 - **Depends on:** Nothing. Independent PR with its own migration.
-- **Partial progress (v0.4.0.0):** Gap analysis page (`/complete/gaps`) now uses `studentId` from URL params. Review page redirect passes `studentId`. Remaining: complete page URL still uses `name` as primary, review page uses `name` from context.
+- **Partial progress (v0.4.0.0):** Gap analysis page (`/complete/gaps`) now uses `studentId` from URL params. Review page redirect passes `studentId`. Complete page "← 返回" link from gaps passes both name and studentId. Remaining: complete page URL still uses `name` as primary, review page uses `name` from context.

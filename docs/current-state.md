@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-12 · `main` @ `bd6a204` (v0.3.4.0), PR #20 pending (v0.4.0.0 gap analysis page)
+**Last updated:** 2026-04-13 · `main` @ `26f63eb` (v0.4.0.0)
 
 ## MVP Semantics
 
@@ -30,29 +30,29 @@ recommendation templates).
 
 ## Architecture snapshot
 
-- **Framework:** Next.js 15 (App Router), React 19, TypeScript strict.
+- **Framework:** Next.js 16 (App Router), React 19, TypeScript strict.
 - **Database:** Prisma 7.7.0 on SQLite (`dev.db`, empty today — 0 students, 0
   questionnaire_results).
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4 v1
-  dimensions (GPA, SAT, ACT, pre-vet experience), 16 hardcoded recommendation
-  templates, dimension registry pattern. Lib-only — no UI consumers yet.
-- **Tests:** 255 passing via Vitest (as of v0.3.4.0). Coverage invariant fences
+  dimensions (GPA, SAT, ACT, pre-vet experience), 5-level severity (excellent/
+  green/yellow/red/no-data), tier classification (match/reach/possible), 20
+  recommendation templates. UI consumer: `/questionnaire/complete/gaps`.
+- **Tests:** 282 passing via Vitest (as of v0.4.0.0). Coverage invariant fences
   the recommendation template matrix.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `main` (working tree clean before this doc landed).
-- **HEAD:** `89bbffc feat(data): re-verify 12 schools against CDS 2024-2025 (#18)`
-- **Version:** `0.3.4.0`
-- **Open PRs:** #19 `feat/db-aavmc-expansion` (26 AAVMC schools).
-- **In-flight feature branches:** `feat/db-aavmc-expansion` (this PR).
-- **Planned but paused:** thin feedback layer v2.1 — 487-line design doc exists
-  at `~/.gstack/projects/Akagilnc-ak-ai-vela/akagilnc-main-design-pause-await-audience-signal-*.md`
-  (status: APPROVED + ROUTING COMPLETE). **Deliberately not implementing.**
-  Waiting for seed user (Kailing, Shanghai) to return a real signal before
-  building any feedback-layer UI.
+- **Current branch:** `main` (working tree clean).
+- **HEAD:** `26f63eb Merge pull request #20 from Akagilnc/feat/m3-gap-dump-page`
+- **Version:** `0.4.0.0`
+- **Open PRs:** None.
+- **Recently merged:** PR #20 (gap analysis page, v0.4.0.0). QA passed with
+  health score 98/100, zero bugs. Bot reviews (Gemini, Copilot, Codex) all
+  addressed. 12 commits, 24 files changed.
+- **Planned but paused:** thin feedback layer v2.1 — design doc exists.
+  **Deliberately not implementing.** Waiting for seed user signal.
 
 ## Most recent real verification
 
@@ -100,17 +100,12 @@ recommendation templates).
 ## Next-step recommendations
 
 **Default while Kailing is standby:**
-1. Write / maintain `docs/current-state.md` (this file — self-fulfilling).
-2. Ship P2 small fixes that are independent and testable:
+1. Ship P2 small fixes that are independent and testable:
    - Error/loading/not-found pages for `/schools` routes
    - Prisma `$transaction` wrapping student upsert + questionnaire result
-3. Build **M3 gap dump page** (`/complete/gaps`) on `feat/m3-gap-dump-page`.
-   Minimum UI to surface `analyzeStudentVsAllSchools` output for founder
-   eyeballing. No chart, no polish. Listed in `TODOS.md` as the next PR after
-   #7. This is the natural bridge to M4.
-4. **Do not touch** v2.1 thin feedback layer. Do not open
-   `feat/thin-feedback-layer`. Do not run additional bot-review rounds on the
-   paused doc.
+2. Start **M4 interactive report** (charts, What If simulator, html2canvas).
+   The gap page (v0.4.0.0) is the foundation; M4 adds interactivity.
+3. **Do not touch** v2.1 thin feedback layer.
 
 **When Kailing signals "ready":**
 - Run the restart playbook in the pause doc §14.5: tunnel → capture URL →

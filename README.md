@@ -17,7 +17,7 @@ Replaces expensive study-abroad agencies with data-driven gap analysis and actio
 ```bash
 npm install
 npm run db:push        # Create database tables
-npm run db:seed        # Seed 12 pre-vet-relevant schools
+npm run db:seed        # Seed 26 pre-vet-relevant schools
 npm run dev            # Start dev server at http://localhost:3000
 ```
 
@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (248 tests) |
+| `npm test` | Run all tests (282 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -45,6 +45,7 @@ src/
       step/[step]/        # Dynamic step pages (1-8)
       review/             # Review page with profile card
       complete/           # Submission success page
+        gaps/             # Gap analysis page (tier cards, severity pills)
       actions.ts          # Server action (Zod → Prisma)
     page.tsx              # Homepage (Chinese-first)
   components/
@@ -59,14 +60,15 @@ src/
     types.ts              # Zod questionnaire schema + GapResult type
     gap/                  # M3 Gap Analysis Engine (pure functions, @/lib/gap)
       dimensions/         # 4 v1 dimensions (gpa, sat, act, prevet-experience)
-      __tests__/          # Gap engine tests (~145 tests)
+      classify.ts         # Tier classification (match/reach/possible)
+      __tests__/          # Gap engine tests (~170 tests)
       engine.ts           # analyzeStudentVsSchool / analyzeStudentVsAllSchools
       normalize.ts        # Chinese GPA → US 4.0 normalization
-      recommendations.ts  # Hardcoded action templates (4 dims × 4 severities)
+      recommendations.ts  # Hardcoded action templates (4 dims × 5 severities)
   __tests__/              # Top-level Vitest tests (questionnaire, backup, schema)
 prisma/
   schema.prisma           # School, Student, QuestionnaireResult models
-  seed.ts                 # Seed script with 12 pre-vet-relevant schools
+  seed.ts                 # Seed script with 26 pre-vet-relevant schools
 docs/
   current-state.md        # Long-term project status (MVP semantics, blockers, next steps)
   process.md              # Git workflow and project management rules
@@ -96,8 +98,9 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | M0: Project setup | Done (v0.1.1.0) |
 | M1: Data layer (school browse/filter UI) | Done (v0.1.2.0) |
 | M2: Input layer (questionnaire form) | Done (v0.2.0.0) |
-| M3: Gap analysis engine | Lib shipped (v0.3.0.0), dump page TODO |
+| M3: Gap analysis engine | Done (v0.3.0.0) |
 | M3.5: Gap engine polish (#9) | Done (v0.3.1.0) |
+| M3 Gap page | Done (v0.4.0.0) |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |
 | M7: Export (html2canvas) | Planned |
