@@ -23,8 +23,8 @@ const SEVERITY_CONFIG: Record<
   }
 > = {
   excellent: {
-    dotClass: "bg-[#E9C46A]",
-    pillClass: "bg-[#E9C46A18] text-[#8B6914] border border-[#E9C46A40]",
+    dotClass: "bg-gap-excellent",
+    pillClass: "bg-gap-excellent/10 text-gap-excellent-text border border-gap-excellent/25",
     label: "优秀",
     pillText: (r) => {
       if (r.dimension === "prevet-experience") return `${r.label} 远超`;
@@ -37,8 +37,8 @@ const SEVERITY_CONFIG: Record<
     },
   },
   green: {
-    dotClass: "bg-vela-primary",
-    pillClass: "bg-[#2D6A4F0D] text-vela-primary",
+    dotClass: "bg-gap-green",
+    pillClass: "bg-gap-green/5 text-gap-green",
     label: "达标",
     pillText: (r) => {
       if (r.dimension === "gpa" && r.normalized != null && r.target)
@@ -47,14 +47,14 @@ const SEVERITY_CONFIG: Record<
     },
   },
   yellow: {
-    dotClass: "bg-[#B5942D]",
-    pillClass: "bg-[#B5942D14] text-[#B5942D]",
+    dotClass: "bg-gap-yellow",
+    pillClass: "bg-gap-yellow/8 text-gap-yellow",
     label: "接近",
     pillText: (r) => `${r.label} 接近`,
   },
   red: {
-    dotClass: "bg-[#A63D40]",
-    pillClass: "bg-[#A63D4012] text-[#A63D40]",
+    dotClass: "bg-gap-red",
+    pillClass: "bg-gap-red/7 text-gap-red",
     label: "差距大",
     pillText: (r) => {
       if (r.target && r.current != null) {
@@ -65,8 +65,8 @@ const SEVERITY_CONFIG: Record<
     },
   },
   "no-data": {
-    dotClass: "bg-vela-muted",
-    pillClass: "bg-[#B8B0A00A] text-vela-muted",
+    dotClass: "bg-gap-nodata",
+    pillClass: "bg-gap-nodata/4 text-gap-nodata",
     label: "暂无",
     pillText: (r) => {
       if (r.action?.includes("不要求")) return `${r.label} 免试`;
@@ -79,17 +79,17 @@ const SEVERITY_CONFIG: Record<
 const TIER_CONFIG = {
   match: {
     label: "可匹配",
-    chipClass: "bg-[#2D6A4F0D] text-vela-primary border-[#2D6A4F30]",
-    barColor: "bg-vela-primary",
+    chipClass: "bg-gap-green/5 text-gap-green border-gap-green/20",
+    barColor: "bg-gap-green",
   },
   reach: {
     label: "需努力",
-    chipClass: "bg-[#A63D4012] text-[#A63D40] border-[#A63D4030]",
-    barColor: "bg-[#A63D40]",
+    chipClass: "bg-gap-red/7 text-gap-red border-gap-red/20",
+    barColor: "bg-gap-red",
   },
   possible: {
     label: "待评估",
-    chipClass: "bg-[#B8B0A00A] text-vela-text-secondary border-vela-border",
+    chipClass: "bg-gap-nodata/4 text-vela-text-secondary border-vela-border",
     barColor: "bg-vela-border",
   },
 } as const;
@@ -170,36 +170,36 @@ export default async function GapsPage({
           <>
             <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden mb-3">
               {totalExcellent > 0 && (
-                <div className="bg-[#E9C46A]" style={{ width: `${(totalExcellent / total) * 100}%` }} />
+                <div className="bg-gap-excellent" style={{ width: `${(totalExcellent / total) * 100}%` }} />
               )}
               {totalGreen > 0 && (
-                <div className="bg-vela-primary" style={{ width: `${(totalGreen / total) * 100}%` }} />
+                <div className="bg-gap-green" style={{ width: `${(totalGreen / total) * 100}%` }} />
               )}
               {totalYellow > 0 && (
-                <div className="bg-[#B5942D]" style={{ width: `${(totalYellow / total) * 100}%` }} />
+                <div className="bg-gap-yellow" style={{ width: `${(totalYellow / total) * 100}%` }} />
               )}
               {totalRed > 0 && (
-                <div className="bg-[#A63D40]" style={{ width: `${(totalRed / total) * 100}%` }} />
+                <div className="bg-gap-red" style={{ width: `${(totalRed / total) * 100}%` }} />
               )}
               {totalNoData > 0 && (
-                <div className="bg-vela-muted" style={{ width: `${(totalNoData / total) * 100}%` }} />
+                <div className="bg-gap-nodata" style={{ width: `${(totalNoData / total) * 100}%` }} />
               )}
             </div>
             <div className="flex gap-3 flex-wrap mb-6 text-xs text-vela-text-secondary">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#E9C46A]" />优秀 {totalExcellent}
+                <span className="w-2 h-2 rounded-full bg-gap-excellent" />优秀 {totalExcellent}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-vela-primary" />达标 {totalGreen}
+                <span className="w-2 h-2 rounded-full bg-gap-green" />达标 {totalGreen}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#B5942D]" />接近 {totalYellow}
+                <span className="w-2 h-2 rounded-full bg-gap-yellow" />接近 {totalYellow}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#A63D40]" />差距大 {totalRed}
+                <span className="w-2 h-2 rounded-full bg-gap-red" />差距大 {totalRed}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-vela-muted" />暂无 {totalNoData}
+                <span className="w-2 h-2 rounded-full bg-gap-nodata" />暂无 {totalNoData}
               </span>
             </div>
           </>
@@ -291,13 +291,15 @@ function SchoolCard({
           {(["excellent", "green", "yellow", "red", "no-data"] as const).map((sev) => {
             const count = counts.get(sev);
             if (!count) return null;
+            const textClass = sev === "excellent" ? "text-gap-excellent-text"
+              : sev === "green" ? "text-gap-green"
+              : sev === "yellow" ? "text-gap-yellow"
+              : sev === "red" ? "text-gap-red"
+              : "text-gap-nodata";
             return (
               <span key={sev} className="flex items-center gap-0.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${SEVERITY_CONFIG[sev].dotClass}`} />
-                <span
-                  className="font-mono text-[11px] font-bold"
-                  style={{ color: sev === "excellent" ? "#8B6914" : sev === "green" ? "#2D6A4F" : sev === "yellow" ? "#B5942D" : sev === "red" ? "#A63D40" : "#B8B0A0" }}
-                >
+                <span className={`font-mono text-[11px] font-bold ${textClass}`}>
                   {count}
                 </span>
               </span>
@@ -312,7 +314,7 @@ function SchoolCard({
           const cfg = SEVERITY_CONFIG[r.severity];
           return (
             <span key={r.dimension} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${cfg.pillClass}`}>
-              {r.severity === "excellent" && <span className="text-[10px] text-[#E9C46A]">★</span>}
+              {r.severity === "excellent" && <span className="text-[10px] text-gap-excellent">★</span>}
               {cfg.pillText(r)}
             </span>
           );

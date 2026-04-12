@@ -71,6 +71,14 @@
   --color-vela-error: #E63946;
   --color-vela-info: #457B9D;
 
+  /* Gap severity (5-level) — single source of truth for gap page colors */
+  --color-gap-excellent: #E9C46A;
+  --color-gap-excellent-text: #8B6914;
+  --color-gap-green: #2D6A4F;
+  --color-gap-yellow: #B5942D;
+  --color-gap-red: #A63D40;
+  --color-gap-nodata: #B8B0A0;
+
   --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
