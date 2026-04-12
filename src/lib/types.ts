@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Gap analysis result type
-export type GapSeverity = "green" | "yellow" | "red" | "no-data";
+export type GapSeverity = "excellent" | "green" | "yellow" | "red" | "no-data";
 
 export type GapResult = {
   dimension: string;

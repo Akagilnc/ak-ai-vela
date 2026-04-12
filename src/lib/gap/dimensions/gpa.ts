@@ -101,7 +101,10 @@ export const gpaDimension: Dimension = {
     // Compute severity.
     const target = { min: school.avgGPA, max: school.avgGPA };
     let severity: GapResult["severity"];
-    if (normalized >= school.avgGPA) {
+    if (normalized >= school.avgGPA + YELLOW_GAP) {
+      // Excellent: well above average (same margin as yellow uses below)
+      severity = "excellent";
+    } else if (normalized >= school.avgGPA) {
       severity = "green";
     } else if (normalized >= school.avgGPA - YELLOW_GAP) {
       severity = "yellow";

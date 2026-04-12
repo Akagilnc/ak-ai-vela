@@ -18,7 +18,7 @@ const LABEL = "ACT";
 // M3.5 #9.
 function buildNoData(
   school: School,
-  reason: "missing-data" | "school-missing-data",
+  reason: "missing-data" | "school-missing-data" | "test-free",
   current: number | null,
 ): GapResult {
   return {
@@ -51,6 +51,11 @@ export const actDimension: Dimension = {
     const act25th = school.act25th;
     const act75th = school.act75th;
 
+    // Test-free school: ACT scores are irrelevant.
+    if (school.testPolicy === "free") {
+      return buildNoData(school, "test-free", actScore);
+    }
+
     // Student-missing wins over school-missing for the same reason as sat.ts.
     if (actScore == null) {
       return buildNoData(school, "missing-data", actScore);
@@ -60,8 +65,12 @@ export const actDimension: Dimension = {
     }
 
     const target = { min: act25th, max: act75th };
+    // Excellent threshold: far above 75th percentile (half the IQR above 75th)
+    const excellentThreshold = act75th + (act75th - act25th) * 0.5;
     let severity: GapResult["severity"];
-    if (actScore >= act75th) {
+    if (actScore >= excellentThreshold) {
+      severity = "excellent";
+    } else if (actScore >= act75th) {
       severity = "green";
     } else if (actScore >= act25th) {
       severity = "yellow";

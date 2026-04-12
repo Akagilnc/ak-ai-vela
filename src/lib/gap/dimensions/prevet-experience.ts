@@ -20,6 +20,7 @@ import { getRecommendation } from "../recommendations";
 
 const ID = "prevet-experience";
 const LABEL = "动科 / Pre-vet 经历";
+const EXCELLENT_THRESHOLD = 150;
 const GREEN_THRESHOLD = 100;
 const YELLOW_THRESHOLD = 40;
 
@@ -62,7 +63,9 @@ export const prevetExperienceDimension: Dimension = {
 
     const target = { min: YELLOW_THRESHOLD, max: GREEN_THRESHOLD };
     let severity: GapResult["severity"];
-    if (totalHours >= GREEN_THRESHOLD) {
+    if (totalHours >= EXCELLENT_THRESHOLD) {
+      severity = "excellent";
+    } else if (totalHours >= GREEN_THRESHOLD) {
       severity = "green";
     } else if (totalHours >= YELLOW_THRESHOLD) {
       severity = "yellow";

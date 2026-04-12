@@ -177,8 +177,9 @@ export default function ReviewPage() {
         const result: SubmitResult = await submitQuestionnaire(payload);
         if (result.success) {
           const childName = data.childName || "";
+          const studentId = result.studentId || "";
           clearAll();
-          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}`);
+          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}&studentId=${encodeURIComponent(studentId)}`);
         } else {
           setSubmitError(result.error || "提交失败");
           setIsSubmitting(false);

@@ -29,14 +29,74 @@ describe("satDimension — metadata", () => {
   });
 });
 
-describe("satDimension.compute — severity", () => {
-  it("SAT above sat75th → green", () => {
+describe("satDimension.compute — excellent", () => {
+  // Excellent threshold: satScore >= sat75th + (sat75th - sat25th) * 0.5
+  // With defaults (sat25th=1400, sat75th=1500): threshold = 1500 + 50 = 1550
+  it("SAT far above 75th → excellent", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1560 }),
+      makeSchool({ sat25th: 1400, sat75th: 1500 }),
+    );
+    expect(result.severity).toBe("excellent");
+    expect(result.action).toContain("远超");
+  });
+
+  it("SAT exactly at excellent threshold → excellent (inclusive)", () => {
     const result = satDimension.compute(
       makeAnswers({ satScore: 1550 }),
       makeSchool({ sat25th: 1400, sat75th: 1500 }),
     );
+    expect(result.severity).toBe("excellent");
+  });
+
+  it("SAT just below excellent threshold → green (not excellent)", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1549 }),
+      makeSchool({ sat25th: 1400, sat75th: 1500 }),
+    );
     expect(result.severity).toBe("green");
-    expect(result.current).toBe(1550);
+  });
+});
+
+describe("satDimension.compute — test-free school", () => {
+  it("test-free school → no-data with 不要求 copy", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1450 }),
+      makeSchool({ testPolicy: "free", sat25th: null, sat75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("不要求");
+    expect(result.action).not.toContain("补上");
+    expect(result.action).not.toContain("数据库");
+  });
+
+  it("test-free school with populated scores → still no-data (scores irrelevant)", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1450 }),
+      makeSchool({ testPolicy: "free", sat25th: 1200, sat75th: 1400 }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("不要求");
+  });
+
+  it("test-free school + student has no score → no-data test-free (not student-missing)", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: undefined }),
+      makeSchool({ testPolicy: "free" }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("不要求");
+  });
+});
+
+describe("satDimension.compute — severity", () => {
+  it("SAT above sat75th but below excellent → green", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1520 }),
+      makeSchool({ sat25th: 1400, sat75th: 1500 }),
+    );
+    expect(result.severity).toBe("green");
+    expect(result.current).toBe(1520);
     expect(result.target).toEqual({ min: 1400, max: 1500 });
   });
 

@@ -69,7 +69,7 @@ describe("analyzeStudentVsSchool — dimension filtering", () => {
 });
 
 describe("analyzeStudentVsSchool — integration scenarios", () => {
-  it("strong student all green", () => {
+  it("strong student all positive (green or excellent)", () => {
     const results = analyzeStudentVsSchool(
       makeAnswers({
         gpaPercentage: 95,
@@ -80,7 +80,7 @@ describe("analyzeStudentVsSchool — integration scenarios", () => {
       makeSchool({ avgGPA: 3.8, sat25th: 1400, sat75th: 1500, act25th: 31, act75th: 34 }),
     );
     const severities = results.map((r) => r.severity);
-    expect(severities.every((s) => s === "green")).toBe(true);
+    expect(severities.every((s) => s === "green" || s === "excellent")).toBe(true);
   });
 
   it("weak student all red", () => {
@@ -125,7 +125,7 @@ describe("analyzeStudentVsSchool — overrides", () => {
   it("numeric override flips severity", () => {
     const base = makeAnswers({ satScore: 1200 }); // red
     const withOverride = analyzeStudentVsSchool(base, makeSchool(), {
-      satScore: 1550,
+      satScore: 1520, // above 75th (1500) but below excellent (1550)
     });
     const sat = withOverride.find((r) => r.dimension === "sat");
     expect(sat?.severity).toBe("green");

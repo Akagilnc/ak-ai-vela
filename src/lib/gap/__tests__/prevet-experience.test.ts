@@ -63,16 +63,50 @@ describe("prevetExperienceDimension.appliesTo", () => {
   });
 });
 
-describe("prevetExperienceDimension.compute — severity", () => {
-  it("≥100 hours → green", () => {
+describe("prevetExperienceDimension.compute — excellent", () => {
+  // Excellent threshold: totalHours >= 150
+  it("≥150 hours → excellent", () => {
+    const result = prevetExperienceDimension.compute(
+      makeAnswers({
+        animalExperience: [{ type: "volunteer", hours: 160 }],
+      }),
+      makeSchool(),
+    );
+    expect(result.severity).toBe("excellent");
+    expect(result.action).toContain("远超");
+  });
+
+  it("exactly 150 hours → excellent (inclusive)", () => {
     const result = prevetExperienceDimension.compute(
       makeAnswers({
         animalExperience: [{ type: "volunteer", hours: 150 }],
       }),
       makeSchool(),
     );
+    expect(result.severity).toBe("excellent");
+  });
+
+  it("149 hours → green (not excellent)", () => {
+    const result = prevetExperienceDimension.compute(
+      makeAnswers({
+        animalExperience: [{ type: "volunteer", hours: 149 }],
+      }),
+      makeSchool(),
+    );
     expect(result.severity).toBe("green");
-    expect(result.current).toBe(150);
+  });
+});
+
+describe("prevetExperienceDimension.compute — severity", () => {
+  it("100 ≤ hours < 150 → green", () => {
+    const result = prevetExperienceDimension.compute(
+      makeAnswers({
+        animalExperience: [{ type: "volunteer", hours: 120 }],
+      }),
+      makeSchool(),
+    );
+    expect(result.severity).toBe("green");
+    expect(result.current).toBe(120);
     expect(result.target).toEqual({ min: 40, max: 100 });
   });
 

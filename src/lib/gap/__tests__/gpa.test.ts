@@ -46,9 +46,40 @@ describe("gpaDimension — metadata", () => {
 
 // ---------------- Severity: percentage path ----------------
 
+describe("gpaDimension.compute — excellent", () => {
+  // Excellent threshold: normalized >= school.avgGPA + 0.3
+  it("normalized well above avgGPA → excellent", () => {
+    // 95 → 3.95, school 3.5 → gap = +0.45 > 0.3 → excellent
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 3.5 }),
+    );
+    expect(result.severity).toBe("excellent");
+    expect(result.action).toContain("远超");
+  });
+
+  it("normalized exactly 0.3 above → excellent (inclusive)", () => {
+    // 90 → 3.8, school 3.5 → gap = +0.3 exactly → excellent
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 90 }),
+      makeSchool({ avgGPA: 3.5 }),
+    );
+    expect(result.severity).toBe("excellent");
+  });
+
+  it("normalized just under 0.3 above → green (not excellent)", () => {
+    // 90 → 3.8, school 3.55 → gap = +0.25 < 0.3 → green
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 90 }),
+      makeSchool({ avgGPA: 3.55 }),
+    );
+    expect(result.severity).toBe("green");
+  });
+});
+
 describe("gpaDimension.compute — percentage path severity", () => {
   it("normalized > avgGPA → green", () => {
-    // 95 → 3.95, school 3.8
+    // 95 → 3.95, school 3.8 → gap = +0.15 < 0.3 → green (not excellent)
     const result = gpaDimension.compute(
       makeAnswers({ gpaPercentage: 95 }),
       makeSchool({ avgGPA: 3.8 }),
