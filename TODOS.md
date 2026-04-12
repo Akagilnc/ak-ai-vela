@@ -83,6 +83,18 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** Next PR after #9 (M3.5) or in parallel if #9 is deferred.
 - **Depends on:** PR #7 (merged)
 
+### [M4] Radar chart: handle null radarSAT for test-free schools
+- **What:** `/schools/[id]/page.tsx:51` uses `school.radarSAT ?? 0`, rendering test-free schools (UC Davis, CSU) with SAT competitiveness of 0 ("worst") instead of "not applicable." Fix: skip the SAT dimension from the radar chart when `testPolicy === "free"` or `radarSAT === null`, and show 4-dimension radar instead of 5.
+- **Why:** Codex adversarial review on PR #18 (v0.3.3.0) flagged this as silent visual corruption: "no data" rendered as "worst score."
+- **When:** M4 interactive report, or earlier if schools page gets attention.
+- **Depends on:** `testPolicy` field (added in v0.3.3.0)
+
+### [M4] Gap recommendation copy: distinguish test-free from data-missing
+- **What:** `recommendations.ts` school-missing-data branch says "我们还没收录该校的 SAT 平均值" for all null SAT/ACT. Test-free schools should instead say "该校不要求 SAT/ACT，不影响你的申请." Add a sub-branch keyed on `school.testPolicy === "free"`.
+- **Why:** User's question during PR #18 work. "免试" and "暂未收录" are completely different semantics for a parent reading the report.
+- **When:** M4 interactive report, batched with other copy/tone work.
+- **Depends on:** `testPolicy` field (added in v0.3.3.0)
+
 ### [M4] Gap recommendation copy polish
 - **What:** Two defensive/tone improvements to `src/lib/gap/recommendations.ts` `school-missing-data` branches:
   1. **Empty `school.name` fallback** — if upstream imports ever produce `school.name === ""`, templates render `"当前数据库暂缺  的 X 平均值..."` (double space, subject gone). Add `school.name || "该学校"` fallback in the 3 school-missing templates, or enforce NOT NULL at a schema/validation layer.
