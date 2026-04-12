@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Gap analysis page** at `/questionnaire/complete/gaps` — the first user-visible surface consuming the gap engine. Server component renders school cards organized by match/reach/possible tiers with color-coded severity pills and expandable detail sections
-- **5-level severity system**: new "excellent" level (gold `#E9C46A` with ★) for scores far above target. Thresholds: GPA avgGPA+0.3, SAT/ACT 75th+0.5×IQR, pre-vet ≥150h. Yellow updated to deep goldenrod `#B8860B` to distinguish from gold
+- **5-level severity system**: new "excellent" level (gold `#E9C46A` with ★) for scores far above target. Thresholds: GPA avgGPA+0.3 (capped at normalize ceiling), SAT 75th+0.5×IQR (capped at 1600), ACT 75th+0.5×IQR (capped at 36), pre-vet ≥150h. GPA excellent guarded against collapsed threshold when avgGPA ≥ ceiling. Yellow updated to deep gold-yellow `#B5942D`, red to muted brick `#A63D40`
 - **Test-free dimension branches**: SAT/ACT dimensions return "该校不要求" copy when `school.testPolicy === "free"`, via new `reason: "test-free"` in recommendation templates. Fires regardless of whether score data is populated
 - **Tier classification engine** (`src/lib/gap/classify.ts`): proportion-based rules (positive/comparable ≥ 60% → match, red/comparable ≥ 50% → reach). Excludes no-data from denominator, fixing test-free school bias and dimension-count inequality
 - **studentId pass-through**: gap page uses `studentId` (not `name`) as lookup key. Review page redirect now includes `studentId` in URL
@@ -16,12 +16,13 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - `GapSeverity` type expanded from 4 to 5 levels: `"excellent" | "green" | "yellow" | "red" | "no-data"`
 - Complete page: placeholder "差距分析报告将在后续版本推出" replaced with "查看差距分析 →" link
-- Gap severity yellow in DESIGN.md and globals.css updated from `#E9C46A` to `#B8860B`
+- Gap severity yellow: `#E9C46A` → `#B5942D` (deep gold-yellow). Red: `#E63946` → `#A63D40` (muted brick). All gap colors extracted to CSS theme tokens (`bg-gap-*`, `text-gap-*`)
+- Tier sort uses positive ratio (not absolute count) to avoid test-free school bias in top-3 display
 
 ### For contributors
 - New files: `src/lib/gap/classify.ts`, `src/lib/gap/__tests__/classify.test.ts`, `src/app/questionnaire/complete/gaps/page.tsx`, `src/app/questionnaire/complete/gaps/loading.tsx`
 - Excellent thresholds and test-free branches in all 4 dimensions (sat, act, gpa, prevet-experience)
-- 280+ tests passing (was 255). New tests cover excellent severity, test-free branches, tier classification
+- 282 tests passing (was 255). New tests cover excellent severity (with ceiling cap regression fences), test-free branches, tier classification, GPA collapsed threshold guard
 - After merging, run `npm run db:reset` to sync your local `dev.db`
 
 ## [0.3.4.0] - 2026-04-12
