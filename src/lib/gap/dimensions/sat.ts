@@ -74,8 +74,9 @@ export const satDimension: Dimension = {
     }
 
     const target = { min: sat25th, max: sat75th };
-    // Excellent threshold: far above 75th percentile (half the IQR above 75th)
-    const excellentThreshold = sat75th + (sat75th - sat25th) * 0.5;
+    // Excellent threshold: far above 75th percentile (half the IQR above 75th).
+    // Cap at 1600 (SAT ceiling) so excellent is always reachable for a max-score student.
+    const excellentThreshold = Math.min(sat75th + (sat75th - sat25th) * 0.5, 1600);
     let severity: GapResult["severity"];
     if (satScore >= excellentThreshold) {
       severity = "excellent";

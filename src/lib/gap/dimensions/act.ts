@@ -65,8 +65,9 @@ export const actDimension: Dimension = {
     }
 
     const target = { min: act25th, max: act75th };
-    // Excellent threshold: far above 75th percentile (half the IQR above 75th)
-    const excellentThreshold = act75th + (act75th - act25th) * 0.5;
+    // Excellent threshold: far above 75th percentile (half the IQR above 75th).
+    // Cap at 36 (ACT ceiling) so excellent is always reachable for a max-score student.
+    const excellentThreshold = Math.min(act75th + (act75th - act25th) * 0.5, 36);
     let severity: GapResult["severity"];
     if (actScore >= excellentThreshold) {
       severity = "excellent";

@@ -214,7 +214,7 @@ export default async function GapsPage({
           <div className="mb-6 p-3 bg-vela-surface border border-vela-border rounded-lg text-sm text-vela-text-secondary">
             补充更多信息可以让分析更准确。
             <Link href="/questionnaire" className="text-vela-primary ml-1 hover:underline">
-              编辑问卷 →
+              重新填写问卷 →
             </Link>
           </div>
         )}

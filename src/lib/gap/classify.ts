@@ -21,6 +21,7 @@ export type ClassifiedSchool = {
   tier: SchoolTier;
   results: GapResult[];
   positiveCount: number;
+  positiveRatio: number;
   redCount: number;
   noDataCount: number;
 };
@@ -48,8 +49,9 @@ function countSeverities(results: GapResult[]) {
 }
 
 function tierSort(a: ClassifiedSchool, b: ClassifiedSchool): number {
-  // Primary: positive count desc
-  if (a.positiveCount !== b.positiveCount) return b.positiveCount - a.positiveCount;
+  // Primary: positive RATIO desc (not absolute count — avoids test-free school bias
+  // where 2/2 would rank below 3/4). Codex review P2 finding.
+  if (a.positiveRatio !== b.positiveRatio) return b.positiveRatio - a.positiveRatio;
   // Secondary: red count asc
   if (a.redCount !== b.redCount) return a.redCount - b.redCount;
   // Tertiary: no-data count asc
@@ -97,6 +99,7 @@ export function classifySchools(
       tier,
       results,
       positiveCount,
+      positiveRatio: comparable > 0 ? positiveCount / comparable : 0,
       redCount,
       noDataCount,
     };

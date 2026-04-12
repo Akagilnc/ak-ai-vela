@@ -137,7 +137,7 @@ describe("analyzeStudentVsSchool — overrides", () => {
       satScore: 1550,
     });
     const gpa = withOverride.find((r) => r.dimension === "gpa");
-    expect(gpa?.severity).toBe("green"); // GPA unchanged
+    expect(gpa?.severity).toBe("excellent"); // GPA unchanged (95→3.95, threshold capped)
   });
 
   it("targetMajor override from biology to pre-vet adds prevet-experience", () => {
