@@ -75,6 +75,29 @@ describe("gpaDimension.compute — excellent", () => {
     );
     expect(result.severity).toBe("green");
   });
+
+  // Regression: avgGPA at or above normalize ceiling means excellent is
+  // unreachable. A 95% student (3.95) at a 4.0 avgGPA school is BELOW
+  // the school's target — must NOT be excellent. Codex local review P1.
+  it("avgGPA >= ceiling → excellent not possible, student below target → yellow/red", () => {
+    // 95 → 3.95, school 4.0 → 3.95 < 4.0 → yellow (gap = 0.05 < 0.3)
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 4.0 }),
+    );
+    expect(result.severity).not.toBe("excellent");
+    expect(result.severity).toBe("yellow");
+  });
+
+  it("avgGPA === ceiling → excellent not possible, student at target → green", () => {
+    // 95 → 3.95, school 3.95 → threshold min(4.25, 3.95) = 3.95, but 3.95 > 3.95 is false
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 3.95 }),
+    );
+    expect(result.severity).not.toBe("excellent");
+    expect(result.severity).toBe("green");
+  });
 });
 
 describe("gpaDimension.compute — percentage path severity", () => {

@@ -103,10 +103,12 @@ export const gpaDimension: Dimension = {
     const target = { min: school.avgGPA, max: school.avgGPA };
     let severity: GapResult["severity"];
     // Excellent threshold: cap at normalize ceiling (3.95) so excellent is
-    // reachable for schools with avgGPA > 3.65. Without cap, avgGPA 3.8
-    // would require normalized 4.1 — impossible.
+    // reachable for mid-range schools. Guard: threshold must be strictly above
+    // avgGPA, otherwise the cap collapsed it to or below the target and
+    // "excellent" would fire for students who haven't even reached the baseline.
+    // For avgGPA >= 3.95, excellent is simply not possible (no headroom).
     const excellentThreshold = Math.min(school.avgGPA + YELLOW_GAP, NORMALIZE_CEILING);
-    if (normalized >= excellentThreshold) {
+    if (excellentThreshold > school.avgGPA && normalized >= excellentThreshold) {
       severity = "excellent";
     } else if (normalized >= school.avgGPA) {
       severity = "green";
