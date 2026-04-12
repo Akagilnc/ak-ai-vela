@@ -26,7 +26,7 @@ function CompleteContent() {
         <div className="space-y-3 pt-2">
           {studentId && (
             <Link
-              href={`./gaps?studentId=${encodeURIComponent(studentId)}`}
+              href={`/questionnaire/complete/gaps?studentId=${encodeURIComponent(studentId)}`}
               className="block min-h-[44px] px-6 py-3 text-base font-medium text-white bg-vela-primary rounded-md hover:bg-vela-primary-dark transition-colors"
             >
               查看差距分析 →
