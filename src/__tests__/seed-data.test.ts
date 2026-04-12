@@ -110,6 +110,8 @@ describe("seed data integrity", () => {
       expect(school.sat75th).toBeNull();
       expect(school.act25th).toBeNull();
       expect(school.act75th).toBeNull();
+      expect(school.medianSAT).toBeNull();
+      expect(school.medianACT).toBeNull();
     }
   });
 
