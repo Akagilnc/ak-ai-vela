@@ -2,6 +2,10 @@
 // globalSetup that provisions an isolated SQLite database for vitest.
 // Keeping this as a pure data module (no prisma import) lets tests import
 // it without triggering the PrismaClient singleton in seed.ts.
+//
+// Data provenance fields (dataSource, dataConfidence, etc.) track where
+// each school's admissions numbers came from and how much we trust them.
+// See prisma/schema.prisma for field definitions.
 
 export const schools = [
   {
@@ -39,6 +43,13 @@ export const schools = [
     radarSAT: 95,
     radarCost: 20,
     radarAid: 70,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "CDS 2023-2024 (unverified, inferred from commit 057e86e)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "partial",
   },
   {
     name: "University of California, Davis",
@@ -75,6 +86,13 @@ export const schools = [
     radarSAT: 70,
     radarCost: 35,
     radarAid: 75,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "CDS 2023-2024 (unverified, inferred from commit 057e86e)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "partial",
   },
   {
     name: "Colorado State University",
@@ -111,6 +129,13 @@ export const schools = [
     radarSAT: 40,
     radarCost: 65,
     radarAid: 80,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "CDS 2023-2024 (unverified, inferred from commit 057e86e)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "partial",
   },
   {
     name: "University of Pennsylvania",
@@ -147,6 +172,13 @@ export const schools = [
     radarSAT: 98,
     radarCost: 15,
     radarAid: 65,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "Tufts University",
@@ -183,6 +215,13 @@ export const schools = [
     radarSAT: 93,
     radarCost: 18,
     radarAid: 60,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "University of Wisconsin-Madison",
@@ -219,6 +258,13 @@ export const schools = [
     radarSAT: 80,
     radarCost: 45,
     radarAid: 65,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "Ohio State University",
@@ -255,6 +301,13 @@ export const schools = [
     radarSAT: 75,
     radarCost: 48,
     radarAid: 75,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "Texas A&M University",
@@ -291,6 +344,13 @@ export const schools = [
     radarSAT: 65,
     radarCost: 55,
     radarAid: 70,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "University of Florida",
@@ -327,6 +387,13 @@ export const schools = [
     radarSAT: 85,
     radarCost: 55,
     radarAid: 75,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "Purdue University",
@@ -363,6 +430,13 @@ export const schools = [
     radarSAT: 72,
     radarCost: 55,
     radarAid: 65,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "Michigan State University",
@@ -399,6 +473,13 @@ export const schools = [
     radarSAT: 50,
     radarCost: 48,
     radarAid: 75,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
   {
     name: "University of Georgia",
@@ -435,5 +516,12 @@ export const schools = [
     radarSAT: 75,
     radarCost: 52,
     radarAid: 68,
+    aavmcAccredited: true,
+    hasVetSchool: true,
+    dataSource: "mixed (unverified, to be re-verified against CDS)",
+    dataSourceUrl: null,
+    dataSourceRetrievedAt: null,
+    lastVerifiedAt: null,
+    dataConfidence: "unknown",
   },
 ];

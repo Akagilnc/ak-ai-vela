@@ -72,6 +72,41 @@ describe("seed data integrity", () => {
     }
   });
 
+  it("all schools have AAVMC classification fields", async () => {
+    const schools = await prisma.school.findMany();
+    for (const school of schools) {
+      expect(typeof school.aavmcAccredited).toBe("boolean");
+      expect(typeof school.hasVetSchool).toBe("boolean");
+    }
+  });
+
+  it("all current schools are AAVMC-accredited vet school hosts", async () => {
+    // All 12 initial schools have their own vet school. This test will
+    // need updating when pre-vet feeder schools (no vet school) are added.
+    const schools = await prisma.school.findMany();
+    for (const school of schools) {
+      expect(school.aavmcAccredited).toBe(true);
+      expect(school.hasVetSchool).toBe(true);
+    }
+  });
+
+  it("all schools have a dataConfidence value from the allowed set", async () => {
+    const allowed = ["verified", "partial", "estimated", "unknown"];
+    const schools = await prisma.school.findMany();
+    for (const school of schools) {
+      if (school.dataConfidence !== null) {
+        expect(allowed).toContain(school.dataConfidence);
+      }
+    }
+  });
+
+  it("all schools have a dataSource string", async () => {
+    const schools = await prisma.school.findMany();
+    for (const school of schools) {
+      expect(school.dataSource).toBeTruthy();
+    }
+  });
+
   it("target range fields are present for all schools", async () => {
     const schools = await prisma.school.findMany();
     for (const school of schools) {

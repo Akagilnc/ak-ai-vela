@@ -45,9 +45,18 @@ model School {
   financialAidPct         Float?   // % of students receiving aid
   needBlind               Boolean  @default(false)
 
-  // Pre-vet specific
+  // Pre-vet / veterinary program classification
   hasPreVetTrack          Boolean  @default(false)
   preVetNotes             String?  // Free text about program strength
+  aavmcAccredited         Boolean  @default(false)  // AAVMC-accredited vet school host
+  hasVetSchool            Boolean  @default(false)  // University operates its own vet school
+
+  // Data provenance
+  dataSource              String?  // e.g. "CDS 2023-2024", "AAVMC 2024", "school admissions page"
+  dataSourceUrl           String?  // URL to the primary source document (CDS PDF, admissions page)
+  dataSourceRetrievedAt   DateTime?  // When the source was fetched
+  lastVerifiedAt          DateTime?  // Last human-verified date (independent of retrieval)
+  dataConfidence          String?  // "verified" | "partial" | "estimated" | "unknown"
 
   // Radar chart dimensions (normalized 0-100)
   radarAcceptance         Float?
