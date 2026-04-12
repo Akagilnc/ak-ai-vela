@@ -11,9 +11,9 @@ describe("seed data integrity", () => {
     await prisma.$disconnect();
   });
 
-  it("has at least 10 schools", async () => {
+  it("has at least 26 schools", async () => {
     const count = await prisma.school.count();
-    expect(count).toBeGreaterThanOrEqual(10);
+    expect(count).toBeGreaterThanOrEqual(26);
   });
 
   it("all schools have required fields", async () => {
