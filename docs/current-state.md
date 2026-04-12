@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-12 · `main` @ `41a414c`
+**Last updated:** 2026-04-12 · `main` @ `e197d98` (v0.3.2.0 pending merge of PR #17)
 
 ## MVP Semantics
 
@@ -33,7 +33,7 @@ recommendation templates).
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4 v1
   dimensions (GPA, SAT, ACT, pre-vet experience), 16 hardcoded recommendation
   templates, dimension registry pattern. Lib-only — no UI consumers yet.
-- **Tests:** 248 passing via Vitest (as of v0.3.1.0). Coverage invariant fences
+- **Tests:** 252 passing via Vitest (as of v0.3.2.0). Coverage invariant fences
   the recommendation template matrix.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
@@ -41,10 +41,10 @@ recommendation templates).
 ## Active branch / PR / review state
 
 - **Current branch:** `main` (working tree clean before this doc landed).
-- **HEAD:** `41a414c chore: gitignore .context/ for gstack retro snapshots (#15)`
-- **Version:** `0.3.1.0`
-- **Open PRs:** none.
-- **In-flight feature branches:** none.
+- **HEAD:** `e197d98 docs: add long-term project status document (#16)`
+- **Version:** `0.3.2.0`
+- **Open PRs:** #17 `feat/db-schema-attribution` (data provenance + AAVMC classification).
+- **In-flight feature branches:** `feat/db-schema-attribution` (this PR).
 - **Planned but paused:** thin feedback layer v2.1 — 487-line design doc exists
   at `~/.gstack/projects/Akagilnc-ak-ai-vela/akagilnc-main-design-pause-await-audience-signal-*.md`
   (status: APPROVED + ROUTING COMPLETE). **Deliberately not implementing.**
