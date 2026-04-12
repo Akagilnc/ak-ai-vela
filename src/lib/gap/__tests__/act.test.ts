@@ -29,8 +29,50 @@ describe("actDimension — metadata", () => {
   });
 });
 
+describe("actDimension.compute — excellent", () => {
+  // Excellent threshold: actScore >= act75th + (act75th - act25th) * 0.5
+  // With defaults (act25th=31, act75th=34): threshold = 34 + 1.5 = 35.5 → 36
+  it("ACT far above 75th → excellent", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: 36 }),
+      makeSchool({ act25th: 31, act75th: 34 }),
+    );
+    expect(result.severity).toBe("excellent");
+    expect(result.action).toContain("远超");
+  });
+
+  it("ACT just below excellent threshold → green", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: 35 }),
+      makeSchool({ act25th: 31, act75th: 34 }),
+    );
+    expect(result.severity).toBe("green");
+  });
+});
+
+describe("actDimension.compute — test-free school", () => {
+  it("test-free school → no-data with 不要求 copy", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: 32 }),
+      makeSchool({ testPolicy: "free", act25th: null, act75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("不要求");
+    expect(result.action).not.toContain("补上");
+  });
+
+  it("test-free school with populated scores → still no-data", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: 32 }),
+      makeSchool({ testPolicy: "free", act25th: 28, act75th: 33 }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("不要求");
+  });
+});
+
 describe("actDimension.compute — severity", () => {
-  it("ACT above act75th → green", () => {
+  it("ACT above act75th but below excellent → green", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: 35 }),
       makeSchool({ act25th: 31, act75th: 34 }),

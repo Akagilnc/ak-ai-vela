@@ -1,9 +1,11 @@
 // SAT dimension. Compares student satScore against school sat25th/sat75th.
 //
-// Severity:
-//   - green:  satScore ≥ sat75th
-//   - yellow: sat25th ≤ satScore < sat75th
-//   - red:    satScore < sat25th
+// Severity (5-level):
+//   - excellent: satScore ≥ min(sat75th + 0.5×IQR, 1600) — far above 75th
+//   - green:     satScore ≥ sat75th
+//   - yellow:    sat25th ≤ satScore < sat75th
+//   - red:       satScore < sat25th
+//   - no-data:   student/school missing, or testPolicy === "free"
 //
 // `normalized` is always null — SAT is a raw score, no normalization needed.
 
@@ -21,7 +23,7 @@ const LABEL = "SAT";
 // student-facing "fill the form" copy and the DB-gap copy. M3.5 #9.
 function buildNoData(
   school: School,
-  reason: "missing-data" | "school-missing-data",
+  reason: "missing-data" | "school-missing-data" | "test-free",
   current: number | null,
 ): GapResult {
   return {
@@ -54,6 +56,12 @@ export const satDimension: Dimension = {
     const sat25th = school.sat25th;
     const sat75th = school.sat75th;
 
+    // Test-free school: SAT scores are irrelevant regardless of whether
+    // the student or school has data. Fires before any other check.
+    if (school.testPolicy === "free") {
+      return buildNoData(school, "test-free", satScore);
+    }
+
     // Student-side first: if the student hasn't submitted a score, tell
     // them to fill it in. This branch wins even when both student and
     // school are missing, because the user-actionable fix is to fill
@@ -68,8 +76,13 @@ export const satDimension: Dimension = {
     }
 
     const target = { min: sat25th, max: sat75th };
+    // Excellent threshold: far above 75th percentile (half the IQR above 75th).
+    // Cap at 1600 (SAT ceiling) so excellent is always reachable for a max-score student.
+    const excellentThreshold = Math.min(sat75th + (sat75th - sat25th) * 0.5, 1600);
     let severity: GapResult["severity"];
-    if (satScore >= sat75th) {
+    if (satScore >= excellentThreshold) {
+      severity = "excellent";
+    } else if (satScore >= sat75th) {
       severity = "green";
     } else if (satScore >= sat25th) {
       severity = "yellow";

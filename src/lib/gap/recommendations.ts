@@ -32,7 +32,7 @@ export interface RecommendationContext {
   // because the action is different: student-missing asks the user to
   // fill the form, school-missing flags a DB gap on our side and must
   // NOT blame the student. M3.5 #9 regression fence.
-  reason?: "international" | "unknown" | "missing-data" | "school-missing-data";
+  reason?: "international" | "unknown" | "missing-data" | "school-missing-data" | "test-free";
 }
 
 type RecommendationFn = (ctx: RecommendationContext) => string;
@@ -41,6 +41,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // GPA
   // ============================================================
+  "gpa:excellent": () => "GPA 远超目标，这是你的优势项",
   "gpa:green": () => "GPA 已达目标范围，保持稳定即可",
   "gpa:yellow": (ctx) =>
     `GPA 接近 ${ctx.schoolName} 平均线，下学期重点提升 0.3-0.5 分，优先冲弱势科目`,
@@ -59,6 +60,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // SAT
   // ============================================================
+  "sat:excellent": () => "SAT 分数远超学校 75 分位，这是你的优势项",
   "sat:green": () => "SAT 分数已进入学校 75 分位以上，建议保持",
   "sat:yellow": (ctx) =>
     `SAT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
@@ -70,6 +72,9 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       : `SAT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
   },
   "sat:no-data": (ctx) => {
+    if (ctx.reason === "test-free") {
+      return "该校不要求 SAT 考试成绩，不影响你的申请";
+    }
     if (ctx.reason === "school-missing-data") {
       return `当前数据库暂缺 ${ctx.schoolName} 的 SAT 分数段，无法精确对比，我们会在后续版本补齐`;
     }
@@ -79,6 +84,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // ACT
   // ============================================================
+  "act:excellent": () => "ACT 分数远超学校 75 分位，这是你的优势项",
   "act:green": () => "ACT 分数已进入学校 75 分位以上，建议保持",
   "act:yellow": (ctx) =>
     `ACT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
@@ -90,6 +96,9 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       : `ACT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
   },
   "act:no-data": (ctx) => {
+    if (ctx.reason === "test-free") {
+      return "该校不要求 ACT 考试成绩，不影响你的申请";
+    }
     if (ctx.reason === "school-missing-data") {
       return `当前数据库暂缺 ${ctx.schoolName} 的 ACT 分数段，无法精确对比，我们会在后续版本补齐`;
     }
@@ -99,6 +108,8 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // Pre-vet Experience (animal hours)
   // ============================================================
+  "prevet-experience:excellent": () =>
+    "动科经历远超门槛，是申请中的亮眼加分项",
   "prevet-experience:green": () =>
     "动科 / pre-vet 相关经历时长充足（≥100 小时），是申请中的明显加分项",
   "prevet-experience:yellow": () =>

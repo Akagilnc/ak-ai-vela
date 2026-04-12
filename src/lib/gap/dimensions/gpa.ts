@@ -31,6 +31,7 @@ import { getRecommendation } from "../recommendations";
 const ID = "gpa";
 const LABEL = "GPA";
 const YELLOW_GAP = 0.3;
+const NORMALIZE_CEILING = 3.95; // normalizeChineseGpa() output cap
 
 function buildNoData(
   school: School,
@@ -101,7 +102,15 @@ export const gpaDimension: Dimension = {
     // Compute severity.
     const target = { min: school.avgGPA, max: school.avgGPA };
     let severity: GapResult["severity"];
-    if (normalized >= school.avgGPA) {
+    // Excellent threshold: cap at normalize ceiling (3.95) so excellent is
+    // reachable for mid-range schools. Guard: threshold must be strictly above
+    // avgGPA, otherwise the cap collapsed it to or below the target and
+    // "excellent" would fire for students who haven't even reached the baseline.
+    // For avgGPA >= 3.95, excellent is simply not possible (no headroom).
+    const excellentThreshold = Math.min(school.avgGPA + YELLOW_GAP, NORMALIZE_CEILING);
+    if (excellentThreshold > school.avgGPA && normalized >= excellentThreshold) {
+      severity = "excellent";
+    } else if (normalized >= school.avgGPA) {
       severity = "green";
     } else if (normalized >= school.avgGPA - YELLOW_GAP) {
       severity = "yellow";

@@ -46,14 +46,69 @@ describe("gpaDimension — metadata", () => {
 
 // ---------------- Severity: percentage path ----------------
 
+describe("gpaDimension.compute — excellent", () => {
+  // Excellent threshold: normalized >= school.avgGPA + 0.3
+  it("normalized well above avgGPA → excellent", () => {
+    // 95 → 3.95, school 3.5 → gap = +0.45 > 0.3 → excellent
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 3.5 }),
+    );
+    expect(result.severity).toBe("excellent");
+    expect(result.action).toContain("远超");
+  });
+
+  it("normalized exactly 0.3 above → excellent (inclusive)", () => {
+    // 90 → 3.8, school 3.5 → gap = +0.3 exactly → excellent
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 90 }),
+      makeSchool({ avgGPA: 3.5 }),
+    );
+    expect(result.severity).toBe("excellent");
+  });
+
+  it("normalized just under 0.3 above → green (not excellent)", () => {
+    // 90 → 3.8, school 3.55 → gap = +0.25 < 0.3 → green
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 90 }),
+      makeSchool({ avgGPA: 3.55 }),
+    );
+    expect(result.severity).toBe("green");
+  });
+
+  // Regression: avgGPA at or above normalize ceiling means excellent is
+  // unreachable. A 95% student (3.95) at a 4.0 avgGPA school is BELOW
+  // the school's target — must NOT be excellent. Codex local review P1.
+  it("avgGPA >= ceiling → excellent not possible, student below target → yellow/red", () => {
+    // 95 → 3.95, school 4.0 → 3.95 < 4.0 → yellow (gap = 0.05 < 0.3)
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 4.0 }),
+    );
+    expect(result.severity).not.toBe("excellent");
+    expect(result.severity).toBe("yellow");
+  });
+
+  it("avgGPA === ceiling → excellent not possible, student at target → green", () => {
+    // 95 → 3.95, school 3.95 → threshold min(4.25, 3.95) = 3.95, but 3.95 > 3.95 is false
+    const result = gpaDimension.compute(
+      makeAnswers({ gpaPercentage: 95 }),
+      makeSchool({ avgGPA: 3.95 }),
+    );
+    expect(result.severity).not.toBe("excellent");
+    expect(result.severity).toBe("green");
+  });
+});
+
 describe("gpaDimension.compute — percentage path severity", () => {
-  it("normalized > avgGPA → green", () => {
-    // 95 → 3.95, school 3.8
+  it("normalized at ceiling with high avgGPA → excellent (threshold capped at 3.95)", () => {
+    // 95 → 3.95, school 3.8 → excellent threshold = min(3.8+0.3, 3.95) = 3.95
+    // 3.95 >= 3.95 → excellent
     const result = gpaDimension.compute(
       makeAnswers({ gpaPercentage: 95 }),
       makeSchool({ avgGPA: 3.8 }),
     );
-    expect(result.severity).toBe("green");
+    expect(result.severity).toBe("excellent");
     expect(result.normalized).toBe(3.95);
     expect(result.current).toBe(95);
     expect(result.target).toEqual({ min: 3.8, max: 3.8 });
@@ -102,8 +157,8 @@ describe("gpaDimension.compute — percentage path severity", () => {
 // ---------------- Severity: rank path ----------------
 
 describe("gpaDimension.compute — rank path severity", () => {
-  it("gpaType rank with top percentile → uses classRank", () => {
-    // rank 5/200 → 2.5% → top 2.5% → percentile 0.975 → 3.95
+  it("gpaType rank with top percentile → uses classRank → excellent (ceiling cap)", () => {
+    // rank 5/200 → 3.95 (ceiling), school 3.8 → threshold min(4.1, 3.95) = 3.95 → excellent
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "rank",
@@ -112,7 +167,7 @@ describe("gpaDimension.compute — rank path severity", () => {
       }),
       makeSchool({ avgGPA: 3.8 }),
     );
-    expect(result.severity).toBe("green");
+    expect(result.severity).toBe("excellent");
     expect(result.normalized).toBe(3.95);
   });
 
@@ -230,9 +285,9 @@ describe("gpaDimension.compute — gpaType contract", () => {
       }),
       makeSchool({ avgGPA: 3.8 }),
     );
-    // Rank path → 3.95 → green. Pre-fix: percentage path → 3.6 → yellow.
+    // Rank path → 3.95 → excellent (ceiling cap). Pre-fix: percentage path → 3.6 → yellow.
     expect(result.normalized).toBe(3.95);
-    expect(result.severity).toBe("green");
+    expect(result.severity).toBe("excellent");
   });
 
   it("gpaType='percentage' with stale classRank → uses percentage, ignores rank", () => {
