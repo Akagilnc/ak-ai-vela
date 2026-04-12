@@ -47,14 +47,14 @@ const SEVERITY_CONFIG: Record<
     },
   },
   yellow: {
-    dotClass: "bg-[#B8860B]",
-    pillClass: "bg-[#B8860B14] text-[#B8860B]",
+    dotClass: "bg-[#B5942D]",
+    pillClass: "bg-[#B5942D14] text-[#B5942D]",
     label: "接近",
     pillText: (r) => `${r.label} 接近`,
   },
   red: {
-    dotClass: "bg-vela-error",
-    pillClass: "bg-[#E6394612] text-vela-error",
+    dotClass: "bg-[#A63D40]",
+    pillClass: "bg-[#A63D4012] text-[#A63D40]",
     label: "差距大",
     pillText: (r) => {
       if (r.target && r.current != null) {
@@ -84,8 +84,8 @@ const TIER_CONFIG = {
   },
   reach: {
     label: "需努力",
-    chipClass: "bg-[#E6394612] text-vela-error border-[#E6394630]",
-    barColor: "bg-vela-error",
+    chipClass: "bg-[#A63D4012] text-[#A63D40] border-[#A63D4030]",
+    barColor: "bg-[#A63D40]",
   },
   possible: {
     label: "待评估",
@@ -176,10 +176,10 @@ export default async function GapsPage({
                 <div className="bg-vela-primary" style={{ width: `${(totalGreen / total) * 100}%` }} />
               )}
               {totalYellow > 0 && (
-                <div className="bg-[#B8860B]" style={{ width: `${(totalYellow / total) * 100}%` }} />
+                <div className="bg-[#B5942D]" style={{ width: `${(totalYellow / total) * 100}%` }} />
               )}
               {totalRed > 0 && (
-                <div className="bg-vela-error" style={{ width: `${(totalRed / total) * 100}%` }} />
+                <div className="bg-[#A63D40]" style={{ width: `${(totalRed / total) * 100}%` }} />
               )}
               {totalNoData > 0 && (
                 <div className="bg-vela-muted" style={{ width: `${(totalNoData / total) * 100}%` }} />
@@ -193,10 +193,10 @@ export default async function GapsPage({
                 <span className="w-2 h-2 rounded-full bg-vela-primary" />达标 {totalGreen}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#B8860B]" />接近 {totalYellow}
+                <span className="w-2 h-2 rounded-full bg-[#B5942D]" />接近 {totalYellow}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-vela-error" />差距大 {totalRed}
+                <span className="w-2 h-2 rounded-full bg-[#A63D40]" />差距大 {totalRed}
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-vela-muted" />暂无 {totalNoData}
@@ -296,7 +296,7 @@ function SchoolCard({
                 <span className={`w-1.5 h-1.5 rounded-full ${SEVERITY_CONFIG[sev].dotClass}`} />
                 <span
                   className="font-mono text-[11px] font-bold"
-                  style={{ color: sev === "excellent" ? "#8B6914" : sev === "green" ? "#2D6A4F" : sev === "yellow" ? "#B8860B" : sev === "red" ? "#E63946" : "#B8B0A0" }}
+                  style={{ color: sev === "excellent" ? "#8B6914" : sev === "green" ? "#2D6A4F" : sev === "yellow" ? "#B5942D" : sev === "red" ? "#A63D40" : "#B8B0A0" }}
                 >
                   {count}
                 </span>

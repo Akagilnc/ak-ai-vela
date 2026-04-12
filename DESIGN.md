@@ -55,8 +55,8 @@
 - **Gap severity (5-level, report-specific):**
   - Excellent (far above target): `#E9C46A` (gold, same as secondary) with ★ icon, pill text `#8B6914`
   - Green (on track): `#2D6A4F`
-  - Yellow (needs attention): `#B8860B` (deep goldenrod, distinct from gold excellent)
-  - Red (gap): `#E63946`
+  - Yellow (needs attention): `#B5942D` (deep gold-yellow, distinct from gold excellent)
+  - Red (gap): `#A63D40` (muted brick red, not alarming)
   - No data: `#B8B0A0`
 - **Dark mode strategy:**
   - Background: `#1A1715` → `#252220`
