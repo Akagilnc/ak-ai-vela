@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4.0] - 2026-04-12
+
+### Added
+- 14 new AAVMC-accredited universities added to the school catalogue, covering the major US public research universities with veterinary programs: Auburn, Iowa State, UIUC, Kansas State, LSU, Minnesota, Mississippi State, Missouri, NC State, Oklahoma State, Oregon State, Tennessee, Virginia Tech, and Washington State
+- School count expanded from 12 to 26, covering all Tier A (major public) AAVMC vet school host universities. Data sourced from CDS 2024-2025 PDFs where available, supplemented by CDS-derived web sources for schools with inaccessible PDFs (Oklahoma State, Mississippi State, Missouri)
+- Washington State correctly identified as test-free (3rd test-free school alongside UC Davis and Colorado State). Tennessee identified as the only test-required school in the database
+- Each new school includes full provenance: `dataSource`, `dataSourceUrl`, `dataSourceRetrievedAt`, `testPolicy`, `needBasedAidPct`, and AAVMC classification
+
+### For contributors
+- Seed data: 14 new school entries in `prisma/schools-data.ts` (~670 new lines)
+- Test minimum count bumped from 10 to 26 in `seed-data.test.ts`
+- After merging, run `npm run db:reset` to sync your local `dev.db`
+
 ## [0.3.3.0] - 2026-04-12
 
 ### Changed
