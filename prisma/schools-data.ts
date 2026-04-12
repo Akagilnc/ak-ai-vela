@@ -585,7 +585,7 @@ export const schools = [
     dataConfidence: "partial", // CDS fields verified; financialAidPct retained from prior seed
   },
   // ═══════════════════════════════════════════════════════════════════
-  // PR #3 EXPANSION: 14 Tier A AAVMC schools added below (v0.3.4.0)
+  // v0.3.4.0 EXPANSION: 14 Tier A AAVMC schools added below (PR #19)
   // All CDS 2024-2025 unless noted. GPA > 4.0 capped to 4.0 (weighted).
   // ═══════════════════════════════════════════════════════════════════
   {
@@ -954,7 +954,7 @@ export const schools = [
       "Home to the Mizzou CVM. One of the oldest vet schools in the US. Strong comparative medicine and veterinary pathobiology programs.",
     radarAcceptance: 82,
     radarInternational: 8,
-    radarSAT: 55,
+    radarSAT: 52, // consistent with Iowa State (same median SAT 1240)
     radarCost: 45,
     radarAid: 55,
     aavmcAccredited: true,
