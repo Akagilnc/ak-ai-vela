@@ -238,7 +238,7 @@ describe("determinism", () => {
 
 describe("recommendation coverage invariant", () => {
   it("every (dimension × severity) has a non-null, non-empty template", () => {
-    const severities = ["green", "yellow", "red", "no-data"] as const;
+    const severities = ["excellent", "green", "yellow", "red", "no-data"] as const;
     const stubCtx = {
       current: 42 as number | null,
       target: { min: 40, max: 100 },

@@ -8,7 +8,7 @@
 //   1. Absolute green count penalizes test-free schools (fewer comparable dims)
 //   2. Same threshold treats 3-dim and 4-dim students differently
 //
-// Sort within each tier: positive desc, red asc, no-data asc, school.id tie-breaker.
+// Sort within each tier: positiveRatio desc, red asc, no-data asc, school.id tie-breaker.
 
 import type { School } from "@prisma/client";
 import type { GapResult } from "@/lib/types";

@@ -81,7 +81,7 @@ describe("classifySchools — tier classification", () => {
 });
 
 describe("classifySchools — sort stability", () => {
-  it("within tier: higher positive count first", () => {
+  it("within tier: higher positive ratio first", () => {
     const s1 = makeSchool({ id: "s1" });
     const s2 = makeSchool({ id: "s2" });
     const results = new Map([

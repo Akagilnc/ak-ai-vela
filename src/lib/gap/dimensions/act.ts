@@ -1,10 +1,12 @@
 // ACT dimension. Parallels SAT — compares student actScore against school
 // act25th/act75th with identical severity logic.
 //
-// Severity:
-//   - green:  actScore ≥ act75th
-//   - yellow: act25th ≤ actScore < act75th
-//   - red:    actScore < act25th
+// Severity (5-level):
+//   - excellent: actScore ≥ min(act75th + 0.5×IQR, 36) — far above 75th
+//   - green:     actScore ≥ act75th
+//   - yellow:    act25th ≤ actScore < act75th
+//   - red:       actScore < act25th
+//   - no-data:   student/school missing, or testPolicy === "free"
 
 import type { School } from "@prisma/client";
 import type { GapResult, QuestionnaireAnswers } from "@/lib/types";

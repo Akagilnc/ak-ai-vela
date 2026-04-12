@@ -31,7 +31,7 @@ const SEVERITY_CONFIG: Record<
       if (r.target && r.current != null) {
         if (r.dimension === "gpa" && r.normalized != null)
           return `${r.label} +${(r.normalized - r.target.min).toFixed(2)}`;
-        return `${r.label} 超${r.target.max}分位`;
+        return `${r.label} 超${r.target.max}分`;
       }
       return `${r.label} 优秀`;
     },
@@ -161,7 +161,7 @@ export default async function GapsPage({
             {student.name} 的学校匹配分析
           </h1>
           <p className="text-sm text-vela-muted mt-1">
-            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? [...allResults.values()][0].length : 0} 个维度
+            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? allResults.values().next().value.length : 0} 个维度
           </p>
         </div>
 
@@ -287,7 +287,7 @@ function SchoolCard({
           </div>
         </div>
         {/* Summary badge */}
-        <div className="flex gap-1 items-center shrink-0 ml-2 px-2 py-0.5 rounded-md bg-white">
+        <div className="flex gap-1 items-center shrink-0 ml-2 px-2 py-0.5 rounded-md bg-vela-cream">
           {(["excellent", "green", "yellow", "red", "no-data"] as const).map((sev) => {
             const count = counts.get(sev);
             if (!count) return null;

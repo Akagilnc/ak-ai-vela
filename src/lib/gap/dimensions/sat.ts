@@ -1,9 +1,11 @@
 // SAT dimension. Compares student satScore against school sat25th/sat75th.
 //
-// Severity:
-//   - green:  satScore ≥ sat75th
-//   - yellow: sat25th ≤ satScore < sat75th
-//   - red:    satScore < sat25th
+// Severity (5-level):
+//   - excellent: satScore ≥ min(sat75th + 0.5×IQR, 1600) — far above 75th
+//   - green:     satScore ≥ sat75th
+//   - yellow:    sat25th ≤ satScore < sat75th
+//   - red:       satScore < sat25th
+//   - no-data:   student/school missing, or testPolicy === "free"
 //
 // `normalized` is always null — SAT is a raw score, no normalization needed.
 
