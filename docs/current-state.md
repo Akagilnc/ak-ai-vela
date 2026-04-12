@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-12 · `main` @ `89bbffc` (v0.3.4.0 pending merge of PR #19)
+**Last updated:** 2026-04-12 · `main` @ `bd6a204` (v0.3.4.0), PR #20 pending (v0.4.0.0 gap analysis page)
 
 ## MVP Semantics
 
@@ -18,9 +18,12 @@ programs). The week-1 MVP flow is:
    (IB/AP/A-Level vs GPA+rank), and localStorage draft persistence.
 3. Submission upserts a `Student` row and writes a `QuestionnaireResult` via a
    Zod-validated server action.
-4. The complete page shows a confirmation. The gap-analysis UI
-   (`/complete/gaps`) is **not yet wired** — gap engine lives as a lib.
-5. The interactive report (M4) does not exist yet.
+4. The complete page shows a confirmation with a "查看差距分析 →" link.
+5. The gap-analysis page (`/complete/gaps`) shows 26 schools organized by
+   match/reach/possible tiers with 5-level severity (excellent/green/yellow/
+   red/no-data), pill tags, expandable detail, and mobile-first layout.
+   Uses `studentId` as lookup key. Test-free schools show "该校不要求" copy.
+6. The interactive report (M4) does not exist yet.
 
 The system speaks Chinese by default (labels, validation errors, hints,
 recommendation templates).
