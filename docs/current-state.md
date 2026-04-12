@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-12 · `main` @ `089b234` (v0.3.3.0 pending merge of PR #18)
+**Last updated:** 2026-04-12 · `main` @ `89bbffc` (v0.3.4.0 pending merge of PR #19)
 
 ## MVP Semantics
 
@@ -33,7 +33,7 @@ recommendation templates).
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4 v1
   dimensions (GPA, SAT, ACT, pre-vet experience), 16 hardcoded recommendation
   templates, dimension registry pattern. Lib-only — no UI consumers yet.
-- **Tests:** 255 passing via Vitest (as of v0.3.3.0). Coverage invariant fences
+- **Tests:** 255 passing via Vitest (as of v0.3.4.0). Coverage invariant fences
   the recommendation template matrix.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
@@ -41,10 +41,10 @@ recommendation templates).
 ## Active branch / PR / review state
 
 - **Current branch:** `main` (working tree clean before this doc landed).
-- **HEAD:** `089b234 feat(schema): add data provenance and AAVMC classification fields (#17)`
-- **Version:** `0.3.3.0`
-- **Open PRs:** #18 `feat/db-cds-verification` (CDS 2024-2025 re-verification + testPolicy + needBasedAidPct).
-- **In-flight feature branches:** `feat/db-cds-verification` (this PR).
+- **HEAD:** `89bbffc feat(data): re-verify 12 schools against CDS 2024-2025 (#18)`
+- **Version:** `0.3.4.0`
+- **Open PRs:** #19 `feat/db-aavmc-expansion` (26 AAVMC schools).
+- **In-flight feature branches:** `feat/db-aavmc-expansion` (this PR).
 - **Planned but paused:** thin feedback layer v2.1 — 487-line design doc exists
   at `~/.gstack/projects/Akagilnc-ak-ai-vela/akagilnc-main-design-pause-await-audience-signal-*.md`
   (status: APPROVED + ROUTING COMPLETE). **Deliberately not implementing.**
