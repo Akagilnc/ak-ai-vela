@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0.0] - 2026-04-12
+
+### Added
+- **Gap analysis page** at `/questionnaire/complete/gaps` — the first user-visible surface consuming the gap engine. Server component renders school cards organized by match/reach/possible tiers with color-coded severity pills and expandable detail sections
+- **5-level severity system**: new "excellent" level (gold `#E9C46A` with ★) for scores far above target. Thresholds: GPA avgGPA+0.3, SAT/ACT 75th+0.5×IQR, pre-vet ≥150h. Yellow updated to deep goldenrod `#B8860B` to distinguish from gold
+- **Test-free dimension branches**: SAT/ACT dimensions return "该校不要求" copy when `school.testPolicy === "free"`, via new `reason: "test-free"` in recommendation templates. Fires regardless of whether score data is populated
+- **Tier classification engine** (`src/lib/gap/classify.ts`): proportion-based rules (positive/comparable ≥ 60% → match, red/comparable ≥ 50% → reach). Excludes no-data from denominator, fixing test-free school bias and dimension-count inequality
+- **studentId pass-through**: gap page uses `studentId` (not `name`) as lookup key. Review page redirect now includes `studentId` in URL
+- **Loading skeleton** for gap page server component
+- **Partial data prompt**: banner when >50% dimensions are no-data, linking to questionnaire edit
+
+### Changed
+- `GapSeverity` type expanded from 4 to 5 levels: `"excellent" | "green" | "yellow" | "red" | "no-data"`
+- Complete page: placeholder "差距分析报告将在后续版本推出" replaced with "查看差距分析 →" link
+- Gap severity yellow in DESIGN.md and globals.css updated from `#E9C46A` to `#B8860B`
+
+### For contributors
+- New files: `src/lib/gap/classify.ts`, `src/lib/gap/__tests__/classify.test.ts`, `src/app/questionnaire/complete/gaps/page.tsx`, `src/app/questionnaire/complete/gaps/loading.tsx`
+- Excellent thresholds and test-free branches in all 4 dimensions (sat, act, gpa, prevet-experience)
+- 280+ tests passing (was 255). New tests cover excellent severity, test-free branches, tier classification
+- After merging, run `npm run db:reset` to sync your local `dev.db`
+
 ## [0.3.4.0] - 2026-04-12
 
 ### Added

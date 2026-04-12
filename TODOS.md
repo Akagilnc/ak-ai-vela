@@ -89,11 +89,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** M4 interactive report, or earlier if schools page gets attention.
 - **Depends on:** `testPolicy` field (added in v0.3.3.0)
 
-### [M4] Gap recommendation copy: distinguish test-free from data-missing
-- **What:** `recommendations.ts` school-missing-data branch says "我们还没收录该校的 SAT 平均值" for all null SAT/ACT. Test-free schools should instead say "该校不要求 SAT/ACT，不影响你的申请." Add a sub-branch keyed on `school.testPolicy === "free"`.
-- **Why:** User's question during PR #18 work. "免试" and "暂未收录" are completely different semantics for a parent reading the report.
-- **When:** M4 interactive report, batched with other copy/tone work.
-- **Depends on:** `testPolicy` field (added in v0.3.3.0)
+### ~~[M4] Gap recommendation copy: distinguish test-free from data-missing~~ DONE
+- **Status:** Completed in feat/m3-gap-dump-page. Added `reason: "test-free"` to `RecommendationContext`, test-free templates for SAT/ACT no-data, early-return branch in `sat.ts`/`act.ts` when `school.testPolicy === "free"`.
+- **Completed:** v0.4.0.0 (2026-04-12)
 
 ### [M4] Gap recommendation copy polish
 - **What:** Two defensive/tone improvements to `src/lib/gap/recommendations.ts` `school-missing-data` branches:
@@ -110,3 +108,4 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Why:** Codex review P2.1 found this as a correctness risk for multi-user and for any post-submit edit flow. Deferred to its own PR because the fix touches schema, actions, provider, and complete/review pages — larger scope than the pre-M3 stabilization bundle.
 - **When:** Before multi-user or before shipping a "edit submitted questionnaire" flow. Safe to keep for current single-user MVP.
 - **Depends on:** Nothing. Independent PR with its own migration.
+- **Partial progress (v0.4.0.0):** Gap analysis page (`/complete/gaps`) now uses `studentId` from URL params. Review page redirect passes `studentId`. Remaining: complete page URL still uses `name` as primary, review page uses `name` from context.

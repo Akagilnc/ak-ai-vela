@@ -52,9 +52,10 @@
   - Warning: `#E9C46A` (same as secondary)
   - Error: `#E63946` (clear red, distinct from terracotta)
   - Info: `#457B9D` (calm blue)
-- **Gap severity (report-specific):**
+- **Gap severity (5-level, report-specific):**
+  - Excellent (far above target): `#E9C46A` (gold, same as secondary) with ★ icon, pill text `#8B6914`
   - Green (on track): `#2D6A4F`
-  - Yellow (needs attention): `#E9C46A`
+  - Yellow (needs attention): `#B8860B` (deep goldenrod, distinct from gold excellent)
   - Red (gap): `#E63946`
   - No data: `#B8B0A0`
 - **Dark mode strategy:**

@@ -29,9 +29,11 @@
   --color-error: #E63946;
   --color-info: #457B9D;
 
-  /* Gap severity */
+  /* Gap severity (5-level) */
+  --color-gap-excellent: #E9C46A;
+  --color-gap-excellent-text: #8B6914;
   --color-gap-green: #2D6A4F;
-  --color-gap-yellow: #E9C46A;
+  --color-gap-yellow: #B8860B;
   --color-gap-red: #E63946;
   --color-gap-nodata: #B8B0A0;
 

@@ -9,6 +9,8 @@ export { analyzeStudentVsSchool, analyzeStudentVsAllSchools } from "./engine";
 export type { AnswersOverride } from "./engine";
 export { normalizeChineseGpa } from "./normalize";
 export { getRecommendation } from "./recommendations";
+export { classifySchools } from "./classify";
+export type { ClassifiedSchool, ClassifiedResult, SchoolTier } from "./classify";
 export { ALL_DIMENSIONS_META } from "./dimensions";
 export type { Dimension } from "./types";
 export type { RecommendationContext } from "./recommendations";
