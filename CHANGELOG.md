@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0.1] - 2026-04-13
+
+### Added
+- Branded error boundary pages for `/schools` and `/schools/[id]` with retry button and Chinese copy
+- Loading skeleton for `/schools` list page with card grid placeholders
+- Not-found pages for `/schools` and `/schools/[id]` with navigation back to list/home
+
+### Fixed
+- `current-state.md` HEAD reference updated from `26f63eb` to `d84f0ab`
+
 ## [0.4.0.0] - 2026-04-12
 
 ### Added
