@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-13 · `main` @ `26f63eb` (v0.4.0.0)
+**Last updated:** 2026-04-13 · `main` @ `d84f0ab` (v0.4.0.0)
 
 ## MVP Semantics
 
@@ -45,7 +45,7 @@ recommendation templates).
 ## Active branch / PR / review state
 
 - **Current branch:** `main` (working tree clean).
-- **HEAD:** `26f63eb Merge pull request #20 from Akagilnc/feat/m3-gap-dump-page`
+- **HEAD:** `d84f0ab docs: update project documentation for v0.4.0.0`
 - **Version:** `0.4.0.0`
 - **Open PRs:** None.
 - **Recently merged:** PR #20 (gap analysis page, v0.4.0.0). QA passed with

@@ -27,11 +27,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.2.0.0. `QuestionnaireResult.answers` uses `Json` type. Prisma 7.7.0 + SQLite confirmed working.
 - **Completed:** v0.2.0.0 (2026-04-09)
 
-### [P2] Add error/loading/not-found pages for school routes
-- **What:** Create `src/app/schools/error.tsx`, `src/app/schools/loading.tsx`, `src/app/schools/not-found.tsx`, `src/app/schools/[id]/error.tsx`, `src/app/schools/[id]/not-found.tsx`.
-- **Why:** Design review identified missing technical state pages. Currently uses default Next.js error/404 pages which break brand continuity. Plan specifies warm Chinese-language empty states and branded error messages.
-- **When:** P2, next PR or when building M2 pages.
-- **Depends on:** None (can be done anytime)
+### ~~[P2] Add error/loading/not-found pages for school routes~~ DONE
+- **Status:** Completed in v0.4.0.1 (PR #21). Added `error.tsx`, `loading.tsx`, `not-found.tsx` for `/schools` and `error.tsx`, `not-found.tsx` for `/schools/[id]`. Chinese copy, brand styling, retry button on error boundaries.
+- **Completed:** v0.4.0.1 (2026-04-13)
 
 ## P2 — Do when the prerequisite is met
 
