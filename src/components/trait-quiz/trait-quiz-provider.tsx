@@ -112,12 +112,16 @@ function reducer(state: QuizState, action: QuizAction): QuizState {
 
     case "RESTORE_DRAFT": {
       const flow = buildQuestionFlow(action.answers);
-      // Validate questionId exists in the computed flow; fallback to first question
-      const validId = flow.includes(action.questionId) ? action.questionId : FIRST_QUESTION_ID;
+      const isValid = flow.includes(action.questionId);
+      if (!isValid) {
+        // Invalid draft, start fresh (hasDraft false to avoid writing empty draft back)
+        const freshFlow = buildQuestionFlow({});
+        return { answers: {}, currentQuestionId: FIRST_QUESTION_ID, questionFlow: freshFlow, phase: "quiz", hasDraft: false };
+      }
       return {
-        answers: flow.includes(action.questionId) ? action.answers : {},
-        currentQuestionId: validId,
-        questionFlow: flow.includes(action.questionId) ? flow : buildQuestionFlow({}),
+        answers: action.answers,
+        currentQuestionId: action.questionId,
+        questionFlow: flow,
         phase: "quiz",
         hasDraft: true,
       };

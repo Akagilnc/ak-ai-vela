@@ -57,9 +57,9 @@ function StageCard({ stage, defaultOpen }: { stage: Stage; defaultOpen?: boolean
                 section.type === "why" ? "text-vela-secondary-dark" :
                 "text-vela-primary"
               }`}>
-                {section.type === "action" && "📌"}
-                {section.type === "relax" && "💡"}
-                {section.type === "why" && "🎯"}
+                {section.type === "action" && <span aria-hidden="true">📌</span>}
+                {section.type === "relax" && <span aria-hidden="true">💡</span>}
+                {section.type === "why" && <span aria-hidden="true">🎯</span>}
                 {section.title}
               </h4>
               <div className="space-y-1">

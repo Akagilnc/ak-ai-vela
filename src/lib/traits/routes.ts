@@ -884,8 +884,9 @@ export const ROUTES: Record<string, Route> = {
 };
 
 // Get a route by ID, returns undefined if not found
+// Guard against prototype keys (__proto__, constructor, etc.)
 export function getRoute(routeId: string): Route | undefined {
-  return ROUTES[routeId];
+  return Object.hasOwn(ROUTES, routeId) ? ROUTES[routeId] : undefined;
 }
 
 // Get all valid route IDs
