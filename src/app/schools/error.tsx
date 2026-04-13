@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
+
 // Error boundary for /schools route.
 
 export default function SchoolsError({
-  error,
+  error: _error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -12,10 +14,10 @@ export default function SchoolsError({
   return (
     <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1200px] mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-[#E63946]/10">
+        <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-vela-error/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-[#E63946]"
+            className="h-6 w-6 text-vela-error"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -41,12 +43,12 @@ export default function SchoolsError({
           >
             重试
           </button>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center min-h-[44px] px-6 border border-vela-border text-vela-text-secondary font-medium rounded-lg hover:bg-vela-surface transition-colors"
           >
             返回首页
-          </a>
+          </Link>
         </div>
       </div>
     </main>
