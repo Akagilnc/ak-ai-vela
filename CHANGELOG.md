@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0.0] - 2026-04-14
+
+### Added
+- **Trait assessment quiz** at `/trait-quiz` — 10-question branching assessment that builds a personality portrait and staged growth roadmap for children aged G1-G9. Pure frontend (no database), localStorage draft persistence, auto-advance with back navigation
+- **24 predefined routes** covering 3 age groups × 4 interest areas × 2 resource levels, each with 3 life stages of actionable recommendations and fact-check annotations
+- **Mid-quiz insight card** — personalized feedback after Q3 (e.g., "看起来孩子是一个对动物很有爱的小观察者") to build trust during the assessment
+- **Result page** with portrait hero, expandable stage cards, and goal confirmation (前30/前50/还没想好)
+- **Homepage dual entry** — "特质测评" (NEW badge, primary) alongside existing "问卷评估" and "浏览学校"
+- 49 unit tests covering route matching (24 combos), portrait generation (12 titles), insight text (12 strings), question flow (all branching paths), and route data integrity
+
+### Changed
+- Homepage layout updated from 2-button to 3-button with trait assessment as primary CTA
+
+### Fixed
+- Timer race condition: back button now cancels pending auto-advance timers and is disabled during transitions (4 rounds of bot review)
+- Route lookup guards against prototype keys (`__proto__`, `constructor`)
+- Result page validates localStorage answers against current routeId with Zod schema
+- Draft restore validates questionId against computed flow, resets cleanly on invalid draft
+- Tailwind duration classes use arbitrary value syntax (`duration-[400ms]`)
+- Accessibility: aria-hidden on decorative emoji, aria-label on verified markers, contrast fixes for chevron and muted text
+
 ## [0.4.0.2] - 2026-04-13
 
 ### Fixed
