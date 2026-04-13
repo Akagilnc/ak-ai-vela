@@ -17,7 +17,7 @@ export function TraitProgress() {
         aria-valuemax={totalQuestions}
       >
         <div
-          className="h-full bg-vela-secondary rounded-full transition-all duration-400 ease-out"
+          className="h-full bg-vela-secondary rounded-full transition-all duration-[400ms] ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>

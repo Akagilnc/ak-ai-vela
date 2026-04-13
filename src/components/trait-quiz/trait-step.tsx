@@ -1,21 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTraitQuiz } from "./trait-quiz-provider";
 
 export function TraitStep() {
   const { currentQuestion, currentIndex, answer, goBack } = useTraitQuiz();
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [fading, setFading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear timers on unmount to prevent setState on unmounted component
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   if (!currentQuestion) return null;
 
   const handleSelect = (value: string) => {
     setSelectedValue(value);
     // 300ms delay with selected state, then auto-advance
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       setFading(true);
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         answer(currentQuestion.id, currentQuestion.key, value);
         setSelectedValue(null);
         setFading(false);
@@ -24,10 +32,15 @@ export function TraitStep() {
   };
 
   const handleBack = () => {
+    // Cancel any pending auto-advance timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setSelectedValue(null);
     setFading(true);
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       goBack();
-      setSelectedValue(null);
       setFading(false);
     }, 200);
   };

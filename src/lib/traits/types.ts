@@ -80,6 +80,7 @@ export const TraitAnswersSchema = z.object({
 export type TraitAnswers = z.infer<typeof TraitAnswersSchema>;
 
 // Route ID format: {ageGroup}-{foldedInterest}-{foldedResource}
+// 3 ages × 4 interests × 2 resources = 24 routes
 // foldedInterest: "animal" | "stem" | "humanities" | "exploring"
 // foldedResource: "high" | "std" (medium + limited fold to std)
 export type RouteId = string;

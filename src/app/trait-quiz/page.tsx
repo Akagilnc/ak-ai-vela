@@ -55,16 +55,16 @@ function QuizContent() {
 
   // Draft recovery prompt
   if (showDraftPrompt) {
-    const raw = localStorage.getItem(STORAGE_KEY);
     let draftQuestionNum = 1;
     let draftAnswers: Partial<TraitAnswers> = {};
     let draftQuestionId = "ageGroup";
     try {
+      const raw = localStorage.getItem(STORAGE_KEY);
       const draft = JSON.parse(raw ?? "{}");
       draftAnswers = draft.answers ?? {};
       draftQuestionId = draft.questionId ?? "ageGroup";
       draftQuestionNum = Object.keys(draftAnswers).length + 1;
-    } catch { /* noop */ }
+    } catch { /* localStorage unavailable or invalid draft */ }
 
     return (
       <div className="flex-1 flex items-center justify-center animate-fade-in">

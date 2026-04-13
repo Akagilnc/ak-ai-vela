@@ -112,12 +112,6 @@ describe("matchRoute", () => {
     }
 
     // 3 ages × 4 interests × 2 resource folds = 24 unique route IDs
-    // Wait — the plan says 12. Let me recalculate:
-    // 3 ages × 4 interests = 12 interest combos
-    // But each can be high or std = 24 combos
-    // The plan says "12 predefined routes (3 age × 2 interest × 2 resource)"
-    // Actually, looking at the plan more carefully: 3 age × 4 interest × 2 resource = 24
-    // Let me just check the unique count is correct
     expect(allRouteIds.size).toBe(24);
   });
 });

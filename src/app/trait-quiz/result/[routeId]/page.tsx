@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getRoute } from "@/lib/traits/routes";
 import { generatePortrait } from "@/lib/traits/portraits";
+import { matchRoute } from "@/lib/traits/match";
 import type { TraitAnswers } from "@/lib/traits/types";
 import type { Stage } from "@/lib/traits/types";
 
@@ -39,7 +40,7 @@ function StageCard({ stage, defaultOpen }: { stage: Stage; defaultOpen?: boolean
           <span className="font-semibold text-[15px] text-vela-heading">{stage.label}</span>
           <span className="text-[13px] text-vela-text-secondary ml-2">{stage.period}</span>
         </div>
-        <span className={`text-xs text-vela-muted transition-transform duration-250 ${open ? "rotate-90" : ""}`}>
+        <span className={`text-xs text-vela-muted transition-transform duration-[250ms] ${open ? "rotate-90" : ""}`}>
           ▶
         </span>
       </button>
@@ -155,10 +156,16 @@ export default function TraitResultPage() {
     try {
       const raw = localStorage.getItem("vela-trait-result");
       if (raw) {
-        setAnswers(JSON.parse(raw) as TraitAnswers);
+        const parsed = JSON.parse(raw) as TraitAnswers;
+        // Only use localStorage portrait if it matches this route
+        try {
+          if (matchRoute(parsed) === routeId) {
+            setAnswers(parsed);
+          }
+        } catch { /* invalid answers, skip portrait */ }
       }
     } catch { /* noop */ }
-  }, []);
+  }, [routeId]);
 
   const portrait = useMemo(() => {
     if (!answers) return null;

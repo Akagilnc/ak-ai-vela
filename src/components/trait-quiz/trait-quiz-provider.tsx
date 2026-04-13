@@ -7,7 +7,6 @@ import {
   useEffect,
   useMemo,
   useReducer,
-  useRef,
 } from "react";
 import type { ReactNode } from "react";
 import type { TraitAnswers } from "@/lib/traits/types";
@@ -117,10 +116,12 @@ function reducer(state: QuizState, action: QuizAction): QuizState {
 
     case "RESTORE_DRAFT": {
       const flow = buildQuestionFlow(action.answers);
+      // Validate questionId exists in the computed flow; fallback to first question
+      const validId = flow.includes(action.questionId) ? action.questionId : FIRST_QUESTION_ID;
       return {
-        answers: action.answers,
-        currentQuestionId: action.questionId,
-        questionFlow: flow,
+        answers: flow.includes(action.questionId) ? action.answers : {},
+        currentQuestionId: validId,
+        questionFlow: flow.includes(action.questionId) ? flow : buildQuestionFlow({}),
         phase: "quiz",
         hasDraft: true,
       };
@@ -179,9 +180,6 @@ export function TraitQuizProvider({ children }: { children: ReactNode }) {
   });
 
   // Save draft to localStorage
-  const stateRef = useRef(state);
-  stateRef.current = state;
-
   useEffect(() => {
     if (!state.hasDraft) return;
     try {
