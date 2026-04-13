@@ -45,6 +45,26 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.4.0.2 (PR #22). `submitQuestionnaire` now wraps `findFirst` + `update`/`create` + `questionnaireResult.create` in `prisma.$transaction()`. Shared `studentData` object extracted. 283 tests pass including atomicity regression test.
 - **Completed:** v0.4.0.2 (2026-04-13)
 
+## Deferred from Trait Assessment v3
+
+### [P2] A11y: Fix muted text contrast in trait quiz
+- **What:** Replace `#B8B0A0` (muted) with `#6B6560` (secondary text) for functional labels in trait quiz (step counter, feature badges, subtitles). Reserve `#B8B0A0` for purely decorative elements only.
+- **Why:** `#B8B0A0` on cream `#FEFAE0` = 2.3:1 contrast ratio, fails WCAG AA (4.5:1 required for normal text). Design review flagged this.
+- **When:** Phase 2 or next trait quiz iteration.
+- **Depends on:** v0.5.0.0 trait quiz implementation
+
+### [P2] Trait quiz Phase 2: Add persistence
+- **What:** Prisma TraitResult model, server actions for submit + history, retake history UI, radar chart.
+- **Why:** Phase 1 is pure frontend for content validation with Kailing. Phase 2 adds data persistence after content is validated.
+- **When:** After Kailing feedback (4/16 call)
+- **Depends on:** Resolve studentId stability (existing P2 TODO)
+
+### [P3] WeChat share card for trait results
+- **What:** Generate shareable image card from trait quiz results using html2canvas or server-side rendering.
+- **Why:** WeChat is the primary distribution channel for Chinese parents. Deferred pending html2canvas spike (existing TODO).
+- **When:** After html2canvas spike completed
+- **Depends on:** html2canvas spike (existing P1 TODO), Phase 2 persistence
+
 ## Deferred from CEO Review
 
 - "What If" simulator — P2, wait for seed user feedback to confirm demand (~50 min when gap engine exists)
