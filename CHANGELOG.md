@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0.2] - 2026-04-13
+
+### Fixed
+- Questionnaire submission now uses `prisma.$transaction()` to make student upsert and questionnaire result creation atomic. Previously a failure on `QuestionnaireResult.create` could orphan a student record.
+
+### Changed
+- Extracted shared `studentData` object to deduplicate field lists between update and create paths in `submitQuestionnaire`
+
 ## [0.4.0.1] - 2026-04-13
 
 ### Added

@@ -68,70 +68,66 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
   const data = result.data;
 
   try {
-    // 5. Upsert Student by name (MVP: single user, single child)
-    const existingStudent = await prisma.student.findFirst({
-      where: {
-        name: data.childName,
-      },
-    });
-
-    let studentId: string;
-
-    // Resolve normalizedGPA once per submission. Both update and create
-    // paths must agree on this value or the DB row will contradict what
-    // the gap engine reports at read time.
-    const normalizedGPA = computeNormalizedGpa(
-      data.gpaType,
-      data.gpaPercentage,
-      data.classRank,
-    );
-
-    if (existingStudent) {
-      // Update existing student with latest data
-      await prisma.student.update({
-        where: { id: existingStudent.id },
-        data: {
-          gradeLevel: data.currentGrade,
-          schoolSystem: data.schoolSystem,
-          gpaPercentage: data.gpaPercentage,
-          classRank: data.classRank,
-          normalizedGPA,
-          satScore: data.satScore,
-          actScore: data.actScore,
-          toeflScore: data.toeflScore,
-          ieltsScore: data.ieltsScore,
-          scienceGPA: data.scienceGPA,
-          targetMajor: data.targetMajor,
-        },
-      });
-      studentId = existingStudent.id;
-    } else {
-      // Create new student
-      const student = await prisma.student.create({
-        data: {
+    // 5–6. Upsert Student + create QuestionnaireResult atomically.
+    // Wrapping in $transaction ensures that if the QR insert fails,
+    // the student write is rolled back too.
+    const { studentId } = await prisma.$transaction(async (tx) => {
+      const existingStudent = await tx.student.findFirst({
+        where: {
           name: data.childName,
-          gradeLevel: data.currentGrade,
-          schoolSystem: data.schoolSystem,
-          gpaPercentage: data.gpaPercentage,
-          classRank: data.classRank,
-          normalizedGPA,
-          satScore: data.satScore,
-          actScore: data.actScore,
-          toeflScore: data.toeflScore,
-          ieltsScore: data.ieltsScore,
-          scienceGPA: data.scienceGPA,
-          targetMajor: data.targetMajor,
         },
       });
-      studentId = student.id;
-    }
 
-    // 6. Create QuestionnaireResult (always append, for growth tracking)
-    await prisma.questionnaireResult.create({
-      data: {
-        studentId,
-        answers: data as unknown as Prisma.InputJsonValue,
-      },
+      let sid: string;
+
+      // Resolve normalizedGPA once per submission. Both update and create
+      // paths must agree on this value or the DB row will contradict what
+      // the gap engine reports at read time.
+      const normalizedGPA = computeNormalizedGpa(
+        data.gpaType,
+        data.gpaPercentage,
+        data.classRank,
+      );
+
+      const studentData = {
+        gradeLevel: data.currentGrade,
+        schoolSystem: data.schoolSystem,
+        gpaPercentage: data.gpaPercentage,
+        classRank: data.classRank,
+        normalizedGPA,
+        satScore: data.satScore,
+        actScore: data.actScore,
+        toeflScore: data.toeflScore,
+        ieltsScore: data.ieltsScore,
+        scienceGPA: data.scienceGPA,
+        targetMajor: data.targetMajor,
+      };
+
+      if (existingStudent) {
+        await tx.student.update({
+          where: { id: existingStudent.id },
+          data: studentData,
+        });
+        sid = existingStudent.id;
+      } else {
+        const student = await tx.student.create({
+          data: {
+            name: data.childName,
+            ...studentData,
+          },
+        });
+        sid = student.id;
+      }
+
+      // Create QuestionnaireResult (always append, for growth tracking)
+      await tx.questionnaireResult.create({
+        data: {
+          studentId: sid,
+          answers: data as unknown as Prisma.InputJsonValue,
+        },
+      });
+
+      return { studentId: sid };
     });
 
     return { success: true, studentId };
