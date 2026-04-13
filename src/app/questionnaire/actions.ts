@@ -89,41 +89,31 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
         data.classRank,
       );
 
+      const studentData = {
+        gradeLevel: data.currentGrade,
+        schoolSystem: data.schoolSystem,
+        gpaPercentage: data.gpaPercentage,
+        classRank: data.classRank,
+        normalizedGPA,
+        satScore: data.satScore,
+        actScore: data.actScore,
+        toeflScore: data.toeflScore,
+        ieltsScore: data.ieltsScore,
+        scienceGPA: data.scienceGPA,
+        targetMajor: data.targetMajor,
+      };
+
       if (existingStudent) {
-        // Update existing student with latest data
         await tx.student.update({
           where: { id: existingStudent.id },
-          data: {
-            gradeLevel: data.currentGrade,
-            schoolSystem: data.schoolSystem,
-            gpaPercentage: data.gpaPercentage,
-            classRank: data.classRank,
-            normalizedGPA,
-            satScore: data.satScore,
-            actScore: data.actScore,
-            toeflScore: data.toeflScore,
-            ieltsScore: data.ieltsScore,
-            scienceGPA: data.scienceGPA,
-            targetMajor: data.targetMajor,
-          },
+          data: studentData,
         });
         sid = existingStudent.id;
       } else {
-        // Create new student
         const student = await tx.student.create({
           data: {
             name: data.childName,
-            gradeLevel: data.currentGrade,
-            schoolSystem: data.schoolSystem,
-            gpaPercentage: data.gpaPercentage,
-            classRank: data.classRank,
-            normalizedGPA,
-            satScore: data.satScore,
-            actScore: data.actScore,
-            toeflScore: data.toeflScore,
-            ieltsScore: data.ieltsScore,
-            scienceGPA: data.scienceGPA,
-            targetMajor: data.targetMajor,
+            ...studentData,
           },
         });
         sid = student.id;
