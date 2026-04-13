@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-13 · `main` @ `d84f0ab` (v0.4.0.0)
+**Last updated:** 2026-04-13 · `main` @ `9a599cb` (v0.4.0.2)
 
 ## MVP Semantics
 
@@ -16,8 +16,9 @@ programs). The week-1 MVP flow is:
 2. 8-step wizard captures the student's profile (scores, curriculum, target
    region, biggestConcern, etc.) with per-step validation, conditional fields
    (IB/AP/A-Level vs GPA+rank), and localStorage draft persistence.
-3. Submission upserts a `Student` row and writes a `QuestionnaireResult` via a
-   Zod-validated server action.
+3. Submission atomically upserts a `Student` row and writes a
+   `QuestionnaireResult` via a Zod-validated server action wrapped in
+   `prisma.$transaction()`.
 4. The complete page shows a confirmation with a "查看差距分析 →" link.
 5. The gap-analysis page (`/complete/gaps`) shows 26 schools organized by
    match/reach/possible tiers with 5-level severity (excellent/green/yellow/
@@ -32,29 +33,38 @@ recommendation templates).
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript strict.
 - **Database:** Prisma 7.7.0 on SQLite (`dev.db`, empty today — 0 students, 0
-  questionnaire_results).
+  questionnaire_results). Student upsert + QR create wrapped in
+  `$transaction()` for atomicity.
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4 v1
   dimensions (GPA, SAT, ACT, pre-vet experience), 5-level severity (excellent/
   green/yellow/red/no-data), tier classification (match/reach/possible), 20
   recommendation templates. UI consumer: `/questionnaire/complete/gaps`.
-- **Tests:** 282 passing via Vitest (as of v0.4.0.0). Coverage invariant fences
+- **Tests:** 283 passing via Vitest (as of v0.4.0.2). Coverage invariant fences
   the recommendation template matrix.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
+- **State pages:** `/schools` and `/schools/[id]` have branded error boundary,
+  loading skeleton, and not-found pages (v0.4.0.1).
 
 ## Active branch / PR / review state
 
 - **Current branch:** `main` (working tree clean).
-- **HEAD:** `d84f0ab docs: update project documentation for v0.4.0.0`
-- **Version:** `0.4.0.0`
+- **HEAD:** `9a599cb Merge pull request #22 from Akagilnc/fix/p2-transaction-wrapping`
+- **Version:** `0.4.0.2`
 - **Open PRs:** None.
-- **Recently merged:** PR #20 (gap analysis page, v0.4.0.0). QA passed with
-  health score 98/100, zero bugs. Bot reviews (Gemini, Copilot, Codex) all
-  addressed. 12 commits, 24 files changed.
+- **Open Issues:** None.
+- **Recently merged:**
+  - PR #21 (schools state pages, v0.4.0.1). 2 rounds bot review, all addressed.
+  - PR #22 (Prisma $transaction wrapping, v0.4.0.2). 2 rounds bot review, all
+    addressed. Codex gave 👍.
 - **Planned but paused:** thin feedback layer v2.1 — design doc exists.
   **Deliberately not implementing.** Waiting for seed user signal.
 
 ## Most recent real verification
+
+**2026-04-13** — post-merge test run on main.
+- `npx vitest run`: 283 / 283 green (17 test files, 2.65s).
+- Working tree clean, no open PRs or issues.
 
 **2026-04-11 late night (Tokyo)** — dry run tunnel + dev server session.
 - Quick tunnel via cloudflared `--protocol http2` (QUIC blocked on current
@@ -64,8 +74,6 @@ recommendation templates).
   half-hydrates on iOS Safari → buttons don't respond. Fix: hostname-only
   (no scheme). Ground truth is in `.env.example`. `curl` does not reproduce;
   must be verified in a real browser.
-- `pnpm test` green: 248 / 248.
-- Main is unchanged since PR #15 merge.
 
 ## Blockers and risks
 
@@ -79,16 +87,12 @@ recommendation templates).
   off that signal.
 
 **Correctness gaps tracked in `TODOS.md`:**
-- No Prisma `$transaction` around student upsert + `QuestionnaireResult.create`
-  → non-atomic writes can orphan a student row if the second call fails.
-  Acceptable for single-user MVP; must fix before multi-user.
+- ~~No Prisma `$transaction`~~ **Fixed in v0.4.0.2 (PR #22).**
+- ~~No state pages for `/schools`~~ **Fixed in v0.4.0.1 (PR #21).**
 - `Student.name` is the de-facto lookup key across questionnaire → review →
   complete → submit. Rename breaks references. Needs a stable `studentId`
   (cuid/uuid) + Prisma migration. Independent PR, not urgent for current
   single-user.
-- No `error.tsx` / `loading.tsx` / `not-found.tsx` for `/schools` or
-  `/schools/[id]`. Default Next.js fallbacks break brand continuity; design
-  review already flagged.
 - `recommendations.ts` has two copy nits tracked for M4: empty `school.name`
   fallback, and tone softening away from "数据库" language.
 
@@ -100,11 +104,9 @@ recommendation templates).
 ## Next-step recommendations
 
 **Default while Kailing is standby:**
-1. Ship P2 small fixes that are independent and testable:
-   - Error/loading/not-found pages for `/schools` routes
-   - Prisma `$transaction` wrapping student upsert + questionnaire result
-2. Start **M4 interactive report** (charts, What If simulator, html2canvas).
+1. Start **M4 interactive report** (charts, What If simulator, html2canvas).
    The gap page (v0.4.0.0) is the foundation; M4 adds interactivity.
+2. Replace `Student.name` de-facto key with stable `studentId` (P2, independent).
 3. **Do not touch** v2.1 thin feedback layer.
 
 **When Kailing signals "ready":**
