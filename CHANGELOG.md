@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0.0] - 2026-04-13
+## [0.5.0.0] - 2026-04-14
 
 ### Added
 - **Trait assessment quiz** at `/trait-quiz` — 10-question branching assessment that builds a personality portrait and staged growth roadmap for children aged G1-G9. Pure frontend (no database), localStorage draft persistence, auto-advance with back navigation
@@ -14,6 +14,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Homepage layout updated from 2-button to 3-button with trait assessment as primary CTA
+
+### Fixed
+- Timer race condition: back button now cancels pending auto-advance timers and is disabled during transitions (4 rounds of bot review)
+- Route lookup guards against prototype keys (`__proto__`, `constructor`)
+- Result page validates localStorage answers against current routeId with Zod schema
+- Draft restore validates questionId against computed flow, resets cleanly on invalid draft
+- Tailwind duration classes use arbitrary value syntax (`duration-[400ms]`)
+- Accessibility: aria-hidden on decorative emoji, aria-label on verified markers, contrast fixes for chevron and muted text
 
 ## [0.4.0.2] - 2026-04-13
 

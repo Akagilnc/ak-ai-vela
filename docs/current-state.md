@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-13 · `feat/trait-assessment` @ `15cff3d` (v0.5.0.0)
+**Last updated:** 2026-04-14 · `feat/trait-assessment` @ `a686674` (v0.5.0.0)
 
 ## Product Direction (Pivot)
 
@@ -60,7 +60,7 @@ The system speaks Chinese by default.
 ## Active branch / PR / review state
 
 - **Current branch:** `feat/trait-assessment`
-- **HEAD:** `15cff3d chore: bump version and changelog (v0.5.0.0)`
+- **HEAD:** `a686674 fix: address round-4 bot review findings`
 - **Version:** `0.5.0.0`
 - **Open PRs:** PR #23 (trait assessment quiz, v0.5.0.0)
 - **Open Issues:** None.
