@@ -31,6 +31,8 @@ export function TraitStep() {
     }, 300);
   };
 
+  const isTransitioning = selectedValue !== null || fading;
+
   const handleBack = () => {
     // Cancel any pending auto-advance timer
     if (timerRef.current) {
@@ -52,7 +54,8 @@ export function TraitStep() {
         <button
           type="button"
           onClick={handleBack}
-          className="self-start mb-4 min-h-[44px] px-3 py-2 text-sm text-vela-text-secondary hover:text-vela-primary transition-colors"
+          disabled={isTransitioning}
+          className="self-start mb-4 min-h-[44px] px-3 py-2 text-sm text-vela-text-secondary hover:text-vela-primary transition-colors disabled:opacity-50 disabled:cursor-default"
           aria-label="返回上一题"
         >
           ← 返回

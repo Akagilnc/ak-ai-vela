@@ -45,9 +45,12 @@ function reducer(state: QuizState, action: QuizAction): QuizState {
 
       // Check if we should show insight card
       if (currentIndex === INSIGHT_AFTER_QUESTION_INDEX && newAnswers.interest && newAnswers.interestDetail) {
+        // Advance currentQuestionId to next question so draft restore lands correctly
+        const nextAfterInsight = newFlow[currentIndex + 1] ?? newFlow[currentIndex];
         return {
           ...state,
           answers: newAnswers,
+          currentQuestionId: nextAfterInsight,
           questionFlow: newFlow,
           phase: "insight",
           hasDraft: true,
@@ -103,15 +106,8 @@ function reducer(state: QuizState, action: QuizAction): QuizState {
     }
 
     case "DISMISS_INSIGHT": {
-      // After insight card, continue to next question
-      const currentIndex = state.questionFlow.indexOf(state.currentQuestionId);
-      const nextId = state.questionFlow[currentIndex + 1];
-      if (!nextId) return { ...state, phase: "complete" };
-      return {
-        ...state,
-        currentQuestionId: nextId,
-        phase: "quiz",
-      };
+      // currentQuestionId was already advanced in ANSWER when entering insight phase
+      return { ...state, phase: "quiz" };
     }
 
     case "RESTORE_DRAFT": {

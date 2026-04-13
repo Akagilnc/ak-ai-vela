@@ -9,6 +9,8 @@ import { TraitInsight } from "@/components/trait-quiz/trait-insight";
 import { matchRoute } from "@/lib/traits/match";
 import type { TraitAnswers } from "@/lib/traits/types";
 
+const RESULT_STORAGE_KEY = "vela-trait-result";
+
 function QuizContent() {
   const router = useRouter();
   const { state, restoreDraft, restart } = useTraitQuiz();
@@ -45,7 +47,7 @@ function QuizContent() {
       if (routeId) {
         // Store answers in localStorage for result page
         try {
-          localStorage.setItem("vela-trait-result", JSON.stringify(state.answers));
+          localStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(state.answers));
           localStorage.removeItem(STORAGE_KEY);
         } catch { /* noop */ }
         router.push(`/trait-quiz/result/${routeId}`);

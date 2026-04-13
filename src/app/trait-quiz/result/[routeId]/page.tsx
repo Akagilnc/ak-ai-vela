@@ -6,8 +6,12 @@ import { useParams } from "next/navigation";
 import { getRoute } from "@/lib/traits/routes";
 import { generatePortrait } from "@/lib/traits/portraits";
 import { matchRoute } from "@/lib/traits/match";
+import { TraitAnswersSchema } from "@/lib/traits/types";
 import type { TraitAnswers } from "@/lib/traits/types";
 import type { Stage } from "@/lib/traits/types";
+
+const RESULT_STORAGE_KEY = RESULT_STORAGE_KEY;
+const GOAL_STORAGE_KEY = GOAL_STORAGE_KEY;
 
 function PortraitHero({ title, description }: { title: string; description: string }) {
   return (
@@ -40,7 +44,7 @@ function StageCard({ stage, defaultOpen }: { stage: Stage; defaultOpen?: boolean
           <span className="font-semibold text-[15px] text-vela-heading">{stage.label}</span>
           <span className="text-[13px] text-vela-text-secondary ml-2">{stage.period}</span>
         </div>
-        <span className={`text-xs text-vela-muted transition-transform duration-[250ms] ${open ? "rotate-90" : ""}`}>
+        <span className={`text-xs text-vela-text-secondary transition-transform duration-[250ms] ${open ? "rotate-90" : ""}`} aria-hidden="true">
           ▶
         </span>
       </button>
@@ -65,7 +69,7 @@ function StageCard({ stage, defaultOpen }: { stage: Stage; defaultOpen?: boolean
                     <span>
                       {item.text}
                       {item.verified && item.source && (
-                        <span className="text-xs text-vela-muted ml-1" title={item.source}>✓</span>
+                        <span className="text-xs text-vela-text-secondary ml-1" title={item.source} aria-label="已验证">✓</span>
                       )}
                     </span>
                   </div>
@@ -82,7 +86,7 @@ function StageCard({ stage, defaultOpen }: { stage: Stage; defaultOpen?: boolean
 function GoalConfirmation() {
   const [selected, setSelected] = useState<string | null>(() => {
     try {
-      return localStorage.getItem("vela-trait-goal") ?? null;
+      return localStorage.getItem(GOAL_STORAGE_KEY) ?? null;
     } catch {
       return null;
     }
@@ -91,7 +95,7 @@ function GoalConfirmation() {
   const handleSelect = (goal: string) => {
     setSelected(goal);
     try {
-      localStorage.setItem("vela-trait-goal", goal);
+      localStorage.setItem(GOAL_STORAGE_KEY, goal);
     } catch { /* noop */ }
   };
 
@@ -154,15 +158,12 @@ export default function TraitResultPage() {
   useEffect(() => {
     setLoaded(true);
     try {
-      const raw = localStorage.getItem("vela-trait-result");
+      const raw = localStorage.getItem(RESULT_STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as TraitAnswers;
-        // Only use localStorage portrait if it matches this route
-        try {
-          if (matchRoute(parsed) === routeId) {
-            setAnswers(parsed);
-          }
-        } catch { /* invalid answers, skip portrait */ }
+        const result = TraitAnswersSchema.safeParse(JSON.parse(raw));
+        if (result.success && matchRoute(result.data) === routeId) {
+          setAnswers(result.data);
+        }
       }
     } catch { /* noop */ }
   }, [routeId]);
