@@ -47,6 +47,12 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## Deferred from Trait Assessment v3
 
+### [P1] Insight + portrait 文案去 AI slop，扩展为随机池
+- **What:** 两件事。(1) 消灭 AI slop：insight 12 句话全部以"看起来"开头，portrait description 句式雷同，需要逐句重写，确保每句读起来像一个真人观察者说的话而不是 AI 生成的模板。(2) 扩展随机池：每个格子从 1 句扩展到 12-24 句，随机抽取。同一个孩子两次测评、或两个孩子对比时，看到不同表达。12 格 × 24 句 = 288 句文案。
+- **Why:** "看起来" × 12 是最经典的 AI slop 句式。用户一眼就能感知到是机器生成的模板。这直接损害"我们懂你孩子"的核心体验。随机池的成本几乎为零，但用户感受天壤之别。
+- **When:** Kailing 电话之后，Phase 2 之前。这比接 LLM 优先级高，因为 288 句好文案比一个 API 有用。
+- **Depends on:** v0.5.0.0 (已完成)
+
 ### [P2] A11y: Fix muted text contrast in trait quiz
 - **What:** Replace `#B8B0A0` (muted) with `#6B6560` (secondary text) for functional labels in trait quiz (step counter, feature badges, subtitles). Reserve `#B8B0A0` for purely decorative elements only.
 - **Why:** `#B8B0A0` on cream `#FEFAE0` = 2.3:1 contrast ratio, fails WCAG AA (4.5:1 required for normal text). Design review flagged this.
