@@ -43,10 +43,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in `chore/docs-current-state` branch (2026-04-12).
   Covers MVP semantics, active branch/PR state, latest verification, blockers, and next-step recommendations per CLAUDE.md §长期状态文档.
 
-### [P2] Wrap student upsert + questionnaire result in Prisma transaction
-- **What:** Use `prisma.$transaction()` to make student create/update and QuestionnaireResult.create atomic.
-- **Why:** Adversarial review (Claude + Codex) found non-atomic writes: if student create succeeds but QuestionnaireResult.create fails, student record is orphaned.
-- **When:** Before multi-user deployment. Acceptable for MVP single-user.
+### ~~[P2] Wrap student upsert + questionnaire result in Prisma transaction~~ DONE
+- **Status:** Completed in v0.4.0.2 (PR #22). `submitQuestionnaire` now wraps `findFirst` + `update`/`create` + `questionnaireResult.create` in `prisma.$transaction()`. Shared `studentData` object extracted. 283 tests pass including atomicity regression test.
+- **Completed:** v0.4.0.2 (2026-04-13)
 
 ## Deferred from CEO Review
 
