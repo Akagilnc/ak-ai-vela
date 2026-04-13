@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Mock prisma
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
+vi.mock("@/lib/prisma", () => {
+  const mockPrisma = {
     student: {
       findFirst: vi.fn(),
       create: vi.fn(),
@@ -11,8 +11,14 @@ vi.mock("@/lib/prisma", () => ({
     questionnaireResult: {
       create: vi.fn(),
     },
-  },
-}));
+    $transaction: vi.fn(),
+  };
+  // $transaction passes the mock prisma itself as the tx argument
+  mockPrisma.$transaction.mockImplementation(
+    (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma),
+  );
+  return { prisma: mockPrisma };
+});
 
 import { submitQuestionnaire } from "@/app/questionnaire/actions";
 import { prisma } from "@/lib/prisma";
@@ -437,5 +443,35 @@ describe("submitQuestionnaire server action", () => {
     await submitQuestionnaire(JSON.stringify(payload));
     const createCall = vi.mocked(prisma.student.create).mock.calls[0][0];
     expect(createCall.data.normalizedGPA).toBe(null);
+  });
+
+  it("returns error when questionnaireResult.create fails inside transaction", async () => {
+    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.student.create).mockResolvedValue({
+      id: "s-tx",
+      name: "张小明",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "international",
+      gpaPercentage: null,
+      classRank: null,
+      normalizedGPA: null,
+      gpaPercentile: null,
+      satScore: 1420,
+      actScore: null,
+      toeflScore: 105,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockRejectedValue(
+      new Error("QR insert failed"),
+    );
+
+    const result = await submitQuestionnaire(JSON.stringify(validPayload));
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("数据保存失败，请稍后重试");
   });
 });
