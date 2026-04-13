@@ -10,8 +10,8 @@ import { TraitAnswersSchema } from "@/lib/traits/types";
 import type { TraitAnswers } from "@/lib/traits/types";
 import type { Stage } from "@/lib/traits/types";
 
-const RESULT_STORAGE_KEY = RESULT_STORAGE_KEY;
-const GOAL_STORAGE_KEY = GOAL_STORAGE_KEY;
+const RESULT_STORAGE_KEY = "vela-trait-result";
+const GOAL_STORAGE_KEY = "vela-trait-goal";
 
 function PortraitHero({ title, description }: { title: string; description: string }) {
   return (

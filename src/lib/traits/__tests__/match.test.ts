@@ -97,7 +97,7 @@ describe("matchRoute", () => {
     expect(matchRoute(base)).toBe(matchRoute(withDifferentModifiers));
   });
 
-  it("produces exactly 12 unique route IDs across all combinations", () => {
+  it("produces exactly 24 unique route IDs across all combinations", () => {
     const allRouteIds = new Set<string>();
     const ageGroups: TraitAnswers["ageGroup"][] = ["lower", "upper", "middle-school"];
     const interests: TraitAnswers["interest"][] = ["animal-science", "stem", "humanities", "exploring"];

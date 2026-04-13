@@ -104,7 +104,7 @@ export type StageSectionItem = {
   source?: string;      // fact-check source URL or reference
 };
 
-// A complete route (one of 12 predefined)
+// A complete route (one of 24 predefined)
 export type Route = {
   id: RouteId;
   name: string;         // e.g. "动物科学探索路线"

@@ -85,7 +85,7 @@ describe("buildQuestionFlow", () => {
     expect(flow).toHaveLength(TOTAL_TRAIT_QUESTIONS);
   });
 
-  it("all 9 branching paths produce 10 questions", () => {
+  it("all 36 branching combinations produce 10 questions", () => {
     // 4 interest × 3 drive × 3 social = 36 combos, all should be 10 questions
     const interests: TraitAnswers["interest"][] = ["animal-science", "stem", "humanities", "exploring"];
     const drives: TraitAnswers["learningDrive"][] = ["self-driven", "guided-start", "companion"];
