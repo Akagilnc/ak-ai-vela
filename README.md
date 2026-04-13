@@ -1,8 +1,8 @@
 # Vela
 
-AI college planning tool for Chinese families targeting US university admissions.
+AI-powered growth guidance for Chinese families planning their child's path to US universities.
 
-Replaces expensive study-abroad agencies with data-driven gap analysis and actionable recommendations. Built for a seed user pursuing pre-vet/animal science programs at top 30 US universities.
+Two tools: a **trait assessment quiz** that builds a personality portrait and staged roadmap (G1-G9), and a **gap analysis engine** for high schoolers targeting specific universities. Built for a seed user with a child interested in pre-vet/animal science.
 
 ## Stack
 
@@ -27,7 +27,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (282 tests) |
+| `npm test` | Run all tests (332 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -39,6 +39,8 @@ npm run dev            # Start dev server at http://localhost:3000
 ```
 src/
   app/                    # Next.js App Router pages
+    trait-quiz/           # 10-question trait assessment (v0.5.0.0)
+      result/[routeId]/   # Result page with portrait + roadmap
     schools/              # School browse + detail pages
       [id]/               # Detail page with radar chart
     questionnaire/        # 8-step questionnaire wizard
@@ -47,8 +49,13 @@ src/
       complete/           # Submission success page
         gaps/             # Gap analysis page (tier cards, severity pills)
       actions.ts          # Server action (Zod → Prisma)
-    page.tsx              # Homepage (Chinese-first)
+    page.tsx              # Homepage (dual entry: trait quiz + questionnaire)
   components/
+    trait-quiz/           # Trait assessment UI components
+      trait-quiz-provider.tsx  # Context + Reducer + localStorage draft
+      trait-step.tsx           # Question card with auto-advance
+      trait-progress.tsx       # Gold progress bar
+      trait-insight.tsx        # Mid-quiz personalized feedback card
     questionnaire/        # Questionnaire UI components
       steps/              # Per-step form components (1-8)
       questionnaire-provider.tsx  # State + localStorage draft persistence
@@ -58,6 +65,14 @@ src/
     prisma.ts             # Prisma client singleton (hot-reload safe)
     backup.ts             # SQLite backup via VACUUM INTO
     types.ts              # Zod questionnaire schema + GapResult type
+    traits/               # Trait assessment engine (pure functions, @/lib/traits)
+      types.ts            # Zod schemas for 10 trait dimensions
+      questions.ts        # 19 question defs with declarative branching
+      routes.ts           # 24 predefined growth routes with fact-check annotations
+      match.ts            # matchRoute() — answers → route ID
+      portraits.ts        # 12 personality portrait titles + descriptions
+      insights.ts         # 12 mid-quiz insight strings
+      __tests__/          # Trait engine tests (49 tests)
     gap/                  # M3 Gap Analysis Engine (pure functions, @/lib/gap)
       dimensions/         # 4 v1 dimensions (gpa, sat, act, prevet-experience)
       classify.ts         # Tier classification (match/reach/possible)
@@ -101,9 +116,11 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | M3: Gap analysis engine | Done (v0.3.0.0) |
 | M3.5: Gap engine polish (#9) | Done (v0.3.1.0) |
 | M3 Gap page | Done (v0.4.0.0) |
+| Trait Assessment Phase 1 (pure frontend) | Done (v0.5.0.0) |
+| Trait Assessment Phase 2 (persistence) | Planned (after seed user feedback) |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |
-| M7: Export (html2canvas) | Planned |
+| M7: Export (html2canvas + WeChat share) | Planned |
 
 ## Local deployment
 

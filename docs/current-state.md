@@ -4,30 +4,39 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-13 · `main` @ `9a599cb` (v0.4.0.2)
+**Last updated:** 2026-04-13 · `feat/trait-assessment` @ `15cff3d` (v0.5.0.0)
+
+## Product Direction (Pivot)
+
+**v0.5.0.0 marks a product pivot.** Based on seed user feedback (Kailing):
+- FROM: Pre-vet US college application planning tool (gap analysis for high schoolers)
+- TO: Trait-based growth guidance system (personality assessment for all ages, gap analysis as one vertical)
+
+The moat is the ability to **deeply understand the child**, not any single feature.
+Trait assessment is step 1 of understanding.
 
 ## MVP Semantics
 
-Vela is an AI college planning assistant with a **pre-vet specialization** as
-the seed vertical (biology / animal science students targeting veterinary
-programs). The week-1 MVP flow is:
+Vela has two independent tools:
 
-1. Parent opens the welcome page and starts a questionnaire for their child.
-2. 8-step wizard captures the student's profile (scores, curriculum, target
-   region, biggestConcern, etc.) with per-step validation, conditional fields
-   (IB/AP/A-Level vs GPA+rank), and localStorage draft persistence.
-3. Submission atomically upserts a `Student` row and writes a
-   `QuestionnaireResult` via a Zod-validated server action wrapped in
-   `prisma.$transaction()`.
-4. The complete page shows a confirmation with a "查看差距分析 →" link.
-5. The gap-analysis page (`/complete/gaps`) shows 26 schools organized by
-   match/reach/possible tiers with 5-level severity (excellent/green/yellow/
-   red/no-data), pill tags, expandable detail, and mobile-first layout.
-   Uses `studentId` as lookup key. Test-free schools show "该校不要求" copy.
-6. The interactive report (M4) does not exist yet.
+**Tool 1: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
+1. Parent opens the welcome page and clicks "特质测评"
+2. 10-question branching quiz captures the child's interests, learning style,
+   social preferences, and environment (3 branch points, 10 questions per path)
+3. Mid-quiz insight card shows personalized feedback after Q3 ("看起来孩子是一个...")
+4. matchRoute() maps answers to one of 24 predefined routes
+5. Result page shows personality portrait (hero) + staged roadmap (3 life stages
+   with expandable action items, fact-check annotations)
+6. Goal confirmation card collects target (前30/前50/还没想好) for future use
+7. All client-side. localStorage for draft persistence. No database.
 
-The system speaks Chinese by default (labels, validation errors, hints,
-recommendation templates).
+**Tool 2: Gap Analysis** (`/questionnaire` → `/complete/gaps`, v0.4.0.0)
+1. 8-step wizard captures the student's profile (scores, curriculum, etc.)
+2. Submission atomically upserts Student + QuestionnaireResult via `$transaction()`
+3. Gap analysis page shows 26 schools by match/reach/possible tiers with 5-level
+   severity and expandable detail
+
+The system speaks Chinese by default.
 
 ## Architecture snapshot
 
@@ -39,8 +48,10 @@ recommendation templates).
   dimensions (GPA, SAT, ACT, pre-vet experience), 5-level severity (excellent/
   green/yellow/red/no-data), tier classification (match/reach/possible), 20
   recommendation templates. UI consumer: `/questionnaire/complete/gaps`.
-- **Tests:** 283 passing via Vitest (as of v0.4.0.2). Coverage invariant fences
-  the recommendation template matrix.
+- **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
+  portrait generator, insight text. Pure functions, no DB. 49 tests.
+- **Tests:** 332 passing via Vitest (as of v0.5.0.0). Coverage invariant fences
+  the recommendation template matrix. Trait tests cover all route combos.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
 - **State pages:** `/schools` and `/schools/[id]` have branded error boundary,
@@ -48,32 +59,28 @@ recommendation templates).
 
 ## Active branch / PR / review state
 
-- **Current branch:** `main` (working tree clean).
-- **HEAD:** `9a599cb Merge pull request #22 from Akagilnc/fix/p2-transaction-wrapping`
-- **Version:** `0.4.0.2`
-- **Open PRs:** None.
+- **Current branch:** `feat/trait-assessment`
+- **HEAD:** `15cff3d chore: bump version and changelog (v0.5.0.0)`
+- **Version:** `0.5.0.0`
+- **Open PRs:** PR #23 (trait assessment quiz, v0.5.0.0)
 - **Open Issues:** None.
 - **Recently merged:**
-  - PR #21 (schools state pages, v0.4.0.1). 2 rounds bot review, all addressed.
-  - PR #22 (Prisma $transaction wrapping, v0.4.0.2). 2 rounds bot review, all
-    addressed. Codex gave 👍.
-- **Planned but paused:** thin feedback layer v2.1 — design doc exists.
-  **Deliberately not implementing.** Waiting for seed user signal.
+  - PR #22 (Prisma $transaction wrapping, v0.4.0.2)
+  - PR #21 (schools state pages, v0.4.0.1)
+- **Plan reviews passed:** CEO v3 (SELECTIVE EXPANSION), Eng review, Design review (4→8/10)
 
 ## Most recent real verification
 
-**2026-04-13** — post-merge test run on main.
-- `npx vitest run`: 283 / 283 green (17 test files, 2.65s).
-- Working tree clean, no open PRs or issues.
+**2026-04-13** — trait quiz browser verification on feat/trait-assessment.
+- `npx vitest run`: 332 / 332 green (22 test files, 2.8s).
+- Browser walkthrough: welcome → Q1-Q10 → insight card ("看起来孩子是一个对动物
+  很有爱的小观察者") → result page (portrait "温柔观察者" + 3 stage cards +
+  goal confirmation). Route `lower-animal-std` verified.
+- Homepage dual entry with NEW badge confirmed.
 
 **2026-04-11 late night (Tokyo)** — dry run tunnel + dev server session.
-- Quick tunnel via cloudflared `--protocol http2` (QUIC blocked on current
-  network).
-- Caught a real bug: `.env.local` had `DEV_TUNNEL_ORIGIN=https://abc.trycloudflare.com`
-  with scheme, which Next.js `allowedDevOrigins` treats as invalid → page
-  half-hydrates on iOS Safari → buttons don't respond. Fix: hostname-only
-  (no scheme). Ground truth is in `.env.example`. `curl` does not reproduce;
-  must be verified in a real browser.
+- Quick tunnel via cloudflared `--protocol http2` (QUIC blocked).
+- Hostname-only in `.env.local` (no scheme). Ground truth in `.env.example`.
 
 ## Blockers and risks
 
@@ -103,20 +110,21 @@ recommendation templates).
 
 ## Next-step recommendations
 
-**Default while Kailing is standby:**
-1. Start **M4 interactive report** (charts, What If simulator, html2canvas).
-   The gap page (v0.4.0.0) is the foundation; M4 adds interactivity.
-2. Replace `Student.name` de-facto key with stable `studentId` (P2, independent).
-3. **Do not touch** v2.1 thin feedback layer.
+**Immediate (before 4/16 Kailing call):**
+1. Merge PR #23 (trait assessment v0.5.0.0)
+2. Tunnel to Kailing for trait quiz feedback:
+   `cloudflared tunnel --url http://localhost:3000 --protocol http2`
+3. Content polish based on Kailing feedback
 
-**When Kailing signals "ready":**
-- Run the restart playbook in the pause doc §14.5: tunnel → capture URL →
-  write `.env.local` (hostname only) → start dev server → curl sanity →
-  founder phone sanity → send link. ~20 seconds AI + ~1 minute founder.
+**After Kailing call (4/16):**
+1. Trait Assessment Phase 2: Prisma persistence, retake history, radar chart
+2. Resolve studentId stability (P2 TODO, needed for Phase 2)
+3. Content direction adjustments from Kailing's meeting with study-abroad friend
 
-**When Kailing returns survey + questions:**
-- Founder answers in his own voice (not via AI). AI stays out until founder
-  explicitly requests a short debrief with raw material attached.
+**Longer term:**
+- WeChat share card (blocked by html2canvas spike)
+- M4 interactive report (gap analysis side)
+- AI-generated personalized routes (v2, replaces hardcoded 24 routes)
 
 ## Conventions enforced by this repo
 
