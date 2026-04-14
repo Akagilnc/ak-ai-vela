@@ -106,6 +106,18 @@ function QuizContent() {
     return <TraitInsight />;
   }
 
+  // Loading state while navigating to result page
+  // Without this, the quiz renders the last question while router.push is in flight,
+  // and users tap the option again thinking it didn't register.
+  if (state.phase === "complete") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-fade-in">
+        <div className="w-12 h-12 border-4 border-vela-border border-t-vela-primary rounded-full animate-spin" />
+        <p className="text-vela-text-secondary text-sm">正在为你生成专属画像...</p>
+      </div>
+    );
+  }
+
   // Quiz questions
   return (
     <>
