@@ -53,6 +53,13 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** v0.6，v0.5 文案池扩充（P1 TODO）完成后启动。
 - **Depends on:** v0.5.0.0（已完成）, 更多家长反馈
 
+### [P0] Path Explorer: 路径卡片探路器（新功能）
+- **Tracking:** #25 (完整的功能形态、设计决策、内容来源策略、分阶段实施、open questions 都记录在 issue 里)
+- **TL;DR:** 比 trait quiz 更前置的产品层。家长大部分时候还不知道"美本/美高路径长什么样"——让他们先答 quiz 是错位的。新功能用卡片+场景切换（美少女梦工厂风格）带家长从 G1 走到美本毕业，每张卡一个人生阶段，有叙事 + 视觉 + 结构化信息 + 来源引用。
+- **Scope v1:** 3 张原型卡（一个典型阶段 + 一个分叉决策点 + 一个申请冲刺）验证格式，再决定是否扩到 10-15 张完整版。
+- **When:** 先跑 `/gstack-office-hours` 压力测试方向，再启动 Phase 1 内容调研。不和 #24（科学化 trait quiz）抢优先级，两件事独立，顺序待定。
+- **Depends on:** Office hours session, v0.5.0.0（已完成）
+
 ### [P1] Insight + portrait 文案去 AI slop，扩展为随机池
 - **What:** 两件事。(1) 消灭 AI slop：insight 12 句话全部以"看起来"开头，portrait description 句式雷同，需要逐句重写，确保每句读起来像一个真人观察者说的话而不是 AI 生成的模板。(2) 扩展随机池：每个格子从 1 句扩展到 12-24 句，随机抽取。同一个孩子两次测评、或两个孩子对比时，看到不同表达。12 格 × 24 句 = 288 句文案。
 - **Why:** "看起来" × 12 是最经典的 AI slop 句式。用户一眼就能感知到是机器生成的模板。这直接损害"我们懂你孩子"的核心体验。随机池的成本几乎为零，但用户感受天壤之别。
