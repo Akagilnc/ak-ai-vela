@@ -48,21 +48,10 @@ Deferred work items tracked by engineering and CEO reviews.
 ## Deferred from Trait Assessment v3
 
 ### [P0] v0.6 特质测评科学化：用学术框架替换自造问题
-- **What:** 当前 10 题是我们自己造的 quiz，用户反馈"看不出个所以然的个性"——不是文案问题，是问题设计深度和科学性不够。下个版本要用已验证的儿童心理学/发展心理学框架替换自造题目。调研并评估以下 4 个框架，选出最适合的组合：
-  1. **气质理论（Temperament, Thomas & Chess）** — 9 维度气质模型，简化版分容易型/困难型/慢热型。美国儿科学会和 Zero to Three 用于儿童早期评估。
-  2. **VIA 性格优势（VIA Youth Survey）** — 宾大积极心理学中心开发，24 个性格优势维度，青少年版 96 题，免费开放使用。
-  3. **大五人格儿童版（Big Five for Children / BFI-C）** — 五大人格模型的儿童适配版，学术界标准，适合家长代评。
-  5. **多元智能（Gardner Multiple Intelligences）** — 哈佛加德纳的 8 智能类型，家长认知度高，直接对应学业方向。
-  （学习风格模型 VARK/Kolb 已排除：学术界对其有效性有争议。）
-- **Why:** 用户明确反馈"这是一个严肃的事情，不是朋友圈传播的简单人格测评"。朋友圈的 MBTI 简化版都有 32 题，我们 10 题自造题无法建立信任。不造轮子，找已验证框架改编。气质理论 + 多元智能 的组合可能最合适（前者解决"孩子是什么类型的人"，后者解决"擅长什么方向"），但需要正式调研。
-- **Scope:**
-  - Phase 1：调研 4 个框架的学术文献、问卷版本、授权/license、题量、信效度数据
-  - Phase 2：选定框架（或组合），设计适配 Vela 场景的问题集（保留分支逻辑）
-  - Phase 3：前置维度介绍屏幕（让家长带地图答题），改欢迎页文案（去掉"2 分钟"，改成"你可以随时回来继续"），实现新问题集
-  - Phase 4：重跑 CEO + design review，Kailing + 更多家长测试对比
-- **When:** v0.6（下一个大版本）。现阶段先跑完 Phase 1 P1 文案池扩充，等 288 句内容稳定后再开始科学化改造。
-- **Depends on:** v0.5.0.0（已完成）, Kailing + 朋友 更多反馈
-- **Branch:** `feat/trait-quiz-v2-scientific`（待创建）
+- **Tracking:** #24 (详细调研方向、4 个候选框架、分阶段 scope、open questions 都记录在 issue 里)
+- **TL;DR:** 用户反馈"10 题看不出个性"。v0.6 不继续造轮子，用已验证的儿童心理学框架（Temperament + VIA + Big5-C + Gardner MI 四选组合）替换自造题目。
+- **When:** v0.6，v0.5 文案池扩充（P1 TODO）完成后启动。
+- **Depends on:** v0.5.0.0（已完成）, 更多家长反馈
 
 ### [P1] Insight + portrait 文案去 AI slop，扩展为随机池
 - **What:** 两件事。(1) 消灭 AI slop：insight 12 句话全部以"看起来"开头，portrait description 句式雷同，需要逐句重写，确保每句读起来像一个真人观察者说的话而不是 AI 生成的模板。(2) 扩展随机池：每个格子从 1 句扩展到 12-24 句，随机抽取。同一个孩子两次测评、或两个孩子对比时，看到不同表达。12 格 × 24 句 = 288 句文案。
