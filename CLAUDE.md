@@ -16,6 +16,10 @@
 - 代码注释使用英文。
 - commit message 使用英文。
 - PR 标题和描述默认使用英文；如我另有要求，按我要求执行。
+- 写在 `~/.gstack/projects/` 下面的长文本（design doc / plan / checkpoint / retro /
+  builder journey / learnings export / 本地便签）**属于沟通材料不属于工程产物**，
+  必须**默认用中文写**，不是英文写完再翻译。英文仅限代码注释、commit message、
+  PR 标题和描述。**本规则历史上出现过多次 regression，要主动自检**。
 
 ## 沟通风格
 - 简洁直接，少说废话。
@@ -89,6 +93,7 @@
 - 遇到环境相关失败时，不要直接下代码结论；先记录失败环境、命令和现象，并在可行时用另一执行环境交叉验证。
 - 不要把单一环境下的通过结果视为充分证据，尤其是涉及真实文件系统、网络、子进程或平台工具链时。
 - 凡是修改发帖链路、调度、Worker dispatch、平台集成或真实 API 交互相关逻辑，完成前必须说明本次实际验证覆盖了哪些路径；仅有单元测试通常不算充分验证。
+- 任何 `throw new Error("...先 X 再重试...")` 形式的 user-facing 恢复提示，必须配套一条端到端测试：模拟做 X，断言再次走同一路径不再抛同一错。只测"X 前会抛"不够——必须同时测"X 后不再抛"。这是为了防止"错误提示描述的恢复流程"和"实现行为"之间出现单测捕获不到的 drift（反面例子：某次 PR round-4 P1 bug 的根因：提示说"跑 add-quality-rule 再重试"，但实现只认 git commit，recovery loop 死循环）。
 
 ## 实现原则
 - 优先最小改动，不要顺手大改。
@@ -196,6 +201,29 @@ Git 具体规则（Branch、Commit、PR、Review）遵循 `docs/process.md`。
 - 这类内容统一放在 `docs/retrospectives/`。
 - `current-state` 负责"现在是什么状态"，`retrospectives` 负责"我们从过去学到了什么"。
 
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke gstack-office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke gstack-investigate
+- Ship, deploy, push, create PR → invoke gstack-ship
+- QA, test the site, find bugs → invoke gstack-qa
+- Code review, check my diff → invoke gstack-review
+- Update docs after shipping → invoke gstack-document-release
+- Weekly retro → invoke gstack-retro
+- Design system, brand → invoke gstack-design-consultation
+- Visual audit, design polish → invoke gstack-design-review
+- Architecture review → invoke gstack-plan-eng-review
+- Save progress, checkpoint, resume → invoke gstack-checkpoint
+- Code quality, health check → invoke gstack-health
+
+<!-- TEMPLATE_END — 项目特有 sections 写在下面，sync script 不会覆盖下方内容 -->
+
+
 ## Design System
 Always read DESIGN.md before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.
@@ -268,24 +296,3 @@ In QA mode, flag any code that doesn't match DESIGN.md.
   （fixed / deferred / intentional）。这样 review trail 可读、反馈闭环。
 
 ---
-
-## Skill routing
-
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
-
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke gstack-office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke gstack-investigate
-- Ship, deploy, push, create PR → invoke gstack-ship
-- QA, test the site, find bugs → invoke gstack-qa
-- Code review, check my diff → invoke gstack-review
-- Update docs after shipping → invoke gstack-document-release
-- Weekly retro → invoke gstack-retro
-- Design system, brand → invoke gstack-design-consultation
-- Visual audit, design polish → invoke gstack-design-review
-- Architecture review → invoke gstack-plan-eng-review
-- Save progress, checkpoint, resume → invoke gstack-checkpoint
-- Code quality, health check → invoke gstack-health
-
