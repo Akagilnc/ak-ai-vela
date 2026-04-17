@@ -105,6 +105,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 - `docs/process.md` — Git workflow, PR review, and project management
 - `docs/designs/vela-mvp.md` — CEO plan with scope decisions and milestones
 - `docs/project-context.md` — Project scope and constraints
+- `docs/research/` — Internal research artifacts (e.g., Path Explorer v0.1 source manifest)
 
 ## Milestones
 
