@@ -199,21 +199,21 @@ Kailing-facing roadmap 示例里用到的 Shanghai-native resources，Day 1
 
 | 资源 | 类型 | 官方入口（待验证） | 用途 | 状态 |
 |------|------|-------------------|------|------|
-| 上海动物园 | 机构 | shanghaizoo.cn | 低年龄段 observation | [待访问] |
-| 上海自然博物馆 | 机构 | www.snhm.org.cn | 低年龄段 observation + 夏令营 | [待访问] |
-| 上海野生动物园 | 机构 | www.shwzoo.com | 低年龄段 observation | [待访问] |
-| 上海海洋水族馆 | 机构 | sh-soa.com | 低年龄段 observation | [待访问] |
-| 崇明东滩鸟类国家级自然保护区 | 机构 | www.dongtan.cn | 鸟类迁徙观察 | [待访问] |
-| 上海观鸟会 | 民间 | www.shwbs.org | 家庭公开观鸟活动 | [待访问] |
-| 《博物》杂志 | 出版物 | www.dili360.com/nh/ | 中文少年科普 | [待访问] |
-| B 站 "无穷小亮" | UP 主 | space.bilibili.com/14804670 | 科普视频 | [待访问] |
-| B 站 "星球研究所" | UP 主 | space.bilibili.com/326427334 | 地理/生态 | [待访问] |
-| iNaturalist APP | 工具 | inaturalist.org | 物种观察日志 | [待访问] |
-| 中国观鸟记录中心 | 工具 | birdreport.cn | 本地物种记录 | [待访问] |
-| 英才计划 | 项目 | www.ycjh.org.cn | 高中生科研入口 | [待访问] |
-| 丘成桐中学生科学奖 | 项目 | www.yau-awards.com | 中学生科研赛道 | [待访问] |
-| Johns Hopkins CTY | 项目 | cty.jhu.edu | 海外 summer program | [待访问] |
-| Cornell Summer College | 项目 | sce.cornell.edu/precollege | 海外 summer program | [待访问] |
+| 上海动物园 | 机构 | https://shanghaizoo.cn | 低年龄段 observation | [待访问] |
+| 上海自然博物馆 | 机构 | https://www.snhm.org.cn | 低年龄段 observation + 夏令营 | [待访问] |
+| 上海野生动物园 | 机构 | https://www.shwzoo.com | 低年龄段 observation | [待访问] |
+| 上海海洋水族馆 | 机构 | https://sh-soa.com | 低年龄段 observation | [待访问] |
+| 崇明东滩鸟类国家级自然保护区 | 机构 | https://www.dongtan.cn | 鸟类迁徙观察 | [待访问] |
+| 上海观鸟会 | 民间 | https://www.shwbs.org | 家庭公开观鸟活动 | [待访问] |
+| 《博物》杂志 | 出版物 | https://www.dili360.com/nh/ | 中文少年科普 | [待访问] |
+| B 站 "无穷小亮" | UP 主 | https://space.bilibili.com/14804670 | 科普视频 | [待访问] |
+| B 站 "星球研究所" | UP 主 | https://space.bilibili.com/326427334 | 地理/生态 | [待访问] |
+| iNaturalist APP | 工具 | https://inaturalist.org | 物种观察日志 | [待访问] |
+| 中国观鸟记录中心 | 工具 | https://birdreport.cn | 本地物种记录 | [待访问] |
+| 英才计划 | 项目 | https://www.ycjh.org.cn | 高中生科研入口 | [待访问] |
+| 丘成桐中学生科学奖 | 项目 | https://www.yau-awards.com | 中学生科研赛道 | [待访问] |
+| Johns Hopkins CTY | 项目 | https://cty.jhu.edu | 海外 summer program | [待访问] |
+| Cornell Summer College | 项目 | https://sce.cornell.edu/precollege | 海外 summer program | [待访问] |
 
 ---
 
