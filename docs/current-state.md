@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-14 · `feat/trait-assessment` @ `a686674` (v0.5.0.0)
+**Last updated:** 2026-04-18 · `feat/path-explorer-v01` @ `a3c073a` (v0.5.0.1)
 
 ## Product Direction (Pivot)
 
@@ -13,11 +13,12 @@ retrospectives under `docs/retrospectives/` (when they exist).
 - TO: Trait-based growth guidance system (personality assessment for all ages, gap analysis as one vertical)
 
 The moat is the ability to **deeply understand the child**, not any single feature.
-Trait assessment is step 1 of understanding.
+Trait assessment is step 1 of understanding; Path Explorer (v0.6 research track) is
+the upstream literacy layer that precedes matching.
 
 ## MVP Semantics
 
-Vela has two independent tools:
+Vela has two shipped tools plus one research track in progress:
 
 **Tool 1: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
 1. Parent opens the welcome page and clicks "特质测评"
@@ -36,6 +37,14 @@ Vela has two independent tools:
 3. Gap analysis page shows 26 schools by match/reach/possible tiers with 5-level
    severity and expandable detail
 
+**Research track: Path Explorer v0.1** (v0.5.0.1, docs only — no UI yet)
+- `docs/research/path-explorer-sources.md` — source manifest for upcoming
+  pre-vet literacy cards (Shanghai G4-G7 小升初 audience).
+- 3-school shortlist across foreign-only + bilingual categories and top /
+  top-mid / mid tiers. Selection philosophy + criteria + research schema
+  + supplementary sources all documented. URLs verified via WebFetch/WebSearch.
+- Day 0 (manifest) shipped. Day 1 content authoring has not started.
+
 The system speaks Chinese by default.
 
 ## Architecture snapshot
@@ -50,8 +59,9 @@ The system speaks Chinese by default.
   recommendation templates. UI consumer: `/questionnaire/complete/gaps`.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
   portrait generator, insight text. Pure functions, no DB. 49 tests.
-- **Tests:** 332 passing via Vitest (as of v0.5.0.0). Coverage invariant fences
-  the recommendation template matrix. Trait tests cover all route combos.
+- **Tests:** 332 passing via Vitest (as of v0.5.0.0, unchanged in v0.5.0.1
+  because v0.5.0.1 is docs-only). Coverage invariant fences the recommendation
+  template matrix. Trait tests cover all route combos.
 - **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
   Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
 - **State pages:** `/schools` and `/schools/[id]` have branded error boundary,
@@ -59,43 +69,47 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/trait-assessment`
-- **HEAD:** `a686674 fix: address round-4 bot review findings`
-- **Version:** `0.5.0.0`
-- **Open PRs:** PR #23 (trait assessment quiz, v0.5.0.0)
-- **Open Issues:** None.
+- **Current branch:** `feat/path-explorer-v01`
+- **HEAD:** `a3c073a docs(research): add https:// protocol prefix to all supplementary URLs`
+- **Version:** `0.5.0.1`
+- **Open PRs:** PR #26 (Path Explorer v0.1 source manifest, docs-only).
+  3-round bot review complete: Gemini 3 轮 all COMMENTED (replies posted),
+  Codex round 2 👍 (round 3 no response, likely usage limit), Copilot silent.
+  Mergeable, no approval / no changes-requested.
+- **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
+  #25 (Path Explorer feature, P0).
 - **Recently merged:**
+  - PR #23 (trait assessment quiz, v0.5.0.0, merged 2026-04-13)
   - PR #22 (Prisma $transaction wrapping, v0.4.0.2)
   - PR #21 (schools state pages, v0.4.0.1)
-- **Plan reviews passed:** CEO v3 (SELECTIVE EXPANSION), Eng review, Design review (4→8/10)
+- **Plan reviews passed** (for shipped features):
+  CEO v3 (SELECTIVE EXPANSION), Eng review, Design review (4→8/10) on trait quiz.
 
 ## Most recent real verification
 
-**2026-04-13** — trait quiz browser verification on feat/trait-assessment.
-- `npx vitest run`: 332 / 332 green (22 test files, 2.8s).
-- Browser walkthrough: welcome → Q1-Q10 → insight card ("看起来孩子是一个对动物
-  很有爱的小观察者") → result page (portrait "温柔观察者" + 3 stage cards +
-  goal confirmation). Route `lower-animal-std` verified.
-- Homepage dual entry with NEW badge confirmed.
+**2026-04-17** — PR #26 URL verification pass.
+- Every `[待访问]` URL in the Path Explorer source manifest ran through
+  WebFetch. 7 URLs with errors/typos surfaced and were corrected
+  (自然博物馆, 东滩, 博物, 英才, 丘奖, 2 个 B 站 UID, 观鸟会) plus
+  2 Gemini-flagged items (SSBS https, zoo typo). All 15 URLs now carry
+  `https://` protocol prefix.
+- Still `[待访问]` per entry — URL reachability verified, but Day 1 content
+  authors must still consume each page before citing.
 
-**2026-04-11 late night (Tokyo)** — dry run tunnel + dev server session.
-- Quick tunnel via cloudflared `--protocol http2` (QUIC blocked).
-- Hostname-only in `.env.local` (no scheme). Ground truth in `.env.example`.
+**2026-04-13** — trait quiz browser verification on feat/trait-assessment
+(last real end-to-end product verification).
+- `npx vitest run`: 332 / 332 green (22 test files, 2.8s).
+- Browser walkthrough: welcome → Q1-Q10 → insight card → result page.
+  Route `lower-animal-std` verified.
 
 ## Blockers and risks
 
 **Product-level (seed user):**
-- Kailing is the only seed user and is currently **standby**. She is on a
-  business trip (Ningbo), cannot fill the questionnaire tonight, and said
-  "later when I have time." Founder rule: no nudging, no chasing. One light
-  check-in allowed after ~1 week.
-- Path 3 routing: her upcoming meeting with a study-abroad friend is a domain
-  interview, tool is not on the table. No product direction can be triggered
-  off that signal.
+- Kailing 4/16 call status: **unverified in this snapshot** — session owner
+  should update this block after the call. Prior rule: no nudging, one light
+  check-in allowed ~1 week after 4/11 stand-by.
 
 **Correctness gaps tracked in `TODOS.md`:**
-- ~~No Prisma `$transaction`~~ **Fixed in v0.4.0.2 (PR #22).**
-- ~~No state pages for `/schools`~~ **Fixed in v0.4.0.1 (PR #21).**
 - `Student.name` is the de-facto lookup key across questionnaire → review →
   complete → submit. Rename breaks references. Needs a stable `studentId`
   (cuid/uuid) + Prisma migration. Independent PR, not urgent for current
@@ -110,31 +124,44 @@ The system speaks Chinese by default.
 
 ## Next-step recommendations
 
-**Immediate (before 4/16 Kailing call):**
-1. Merge PR #23 (trait assessment v0.5.0.0)
-2. Tunnel to Kailing for trait quiz feedback:
-   `cloudflared tunnel --url http://localhost:3000 --protocol http2`
-3. Content polish based on Kailing feedback
+**Immediate:**
+1. Merge PR #26 (Path Explorer v0.1 source manifest, v0.5.0.1). Docs-only,
+   low merge risk, 3-round review cap reached.
+2. Post-merge: delete `feat/path-explorer-v01`, pull `main`.
+3. Sync Kailing 4/16 call outcome into this file (new branch / PR / issue
+   depending on what surfaced).
 
-**After Kailing call (4/16):**
-1. Trait Assessment Phase 2: Prisma persistence, retake history, radar chart
-2. Resolve studentId stability (P2 TODO, needed for Phase 2)
-3. Content direction adjustments from Kailing's meeting with study-abroad friend
+**Path Explorer next (issue #25):**
+1. Run `/gstack-office-hours` to pressure-test the Path Explorer direction
+   before Day 1 content authoring.
+2. Day 1: content authoring against the 3 shortlisted schools, using the
+   per-school research matrix schema already defined in the manifest.
+3. Decide Tier 1 SHSID vs SAS/Dulwich after Ethan passport confirmation.
+
+**Trait quiz next (issue #24):**
+1. v0.5 insight + portrait copy de-slop + random pool expansion (P1 TODO).
+2. v0.6 scientific trait quiz: replace DIY 10-q with Temperament / VIA /
+   Big5-C / Gardner MI hybrid. Not blocked by Path Explorer — independent
+   track.
+3. Phase 2 persistence (Prisma TraitResult) after content is validated.
 
 **Longer term:**
-- WeChat share card (blocked by html2canvas spike)
-- M4 interactive report (gap analysis side)
-- AI-generated personalized routes (v2, replaces hardcoded 24 routes)
+- WeChat share card (blocked by html2canvas spike).
+- M4 interactive report (gap analysis side).
+- AI-generated personalized routes (v2, replaces hardcoded 24 routes).
 
 ## Conventions enforced by this repo
 
 - Feature work happens on feature branches. `main` only receives merges via
   PR, and every PR gets at minimum one round of bot review (Codex + Gemini +
-  Copilot) before merge. Trivial infra PRs (like gitignore changes) can skip
-  bot review with a note.
+  Copilot) before merge. 3-round cap. Trivial infra PRs (like gitignore
+  changes) can skip bot review with a note.
 - Version in root `VERSION` file. Changelog follows Keep a Changelog format.
 - Commit messages in English. User-facing UI in Chinese. PR titles in English
   unless otherwise requested.
+- Design docs / plans / checkpoints / retros (under `~/.gstack/projects/` or
+  `vault/创业/`) are **communication material, not engineering artifacts** —
+  default to Chinese. English stays in code comments, commits, PRs.
 - Retrospective snapshots live under `.context/retros/` (gitignored). They
   are consumed by `/gstack-retro` for trend analysis — do not hand-edit.
 - Skill routing rules are encoded in `CLAUDE.md` for consistent gstack

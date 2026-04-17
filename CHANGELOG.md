@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0.1] - 2026-04-18
+
+### Added
+- **Path Explorer v0.1 source manifest** (`docs/research/path-explorer-sources.md`) — internal research artifact for upcoming pre-vet literacy feature. Curated 3-school shortlist across two categories (foreign-only + bilingual) and three tiers (top / top-mid / mid), documents selection criteria, research schema for content authoring, and supplementary Shanghai-native sources. All 18 referenced URLs verified via WebFetch/WebSearch before shipping.
+
+### Changed
+- **CLAUDE.md synced from `template-workflow-base`** and extended with 12 accumulated project preferences exported from `/gstack-learn` (communication style, content quality standards, engineering workflow rules). Affects how AI agents interpret future work; no behavior change for shipped code.
+
+### Notes
+- Internal planning and meta-documentation changes only; no user-facing changes.
+
 ## [0.5.0.0] - 2026-04-14
 
 ### Added
