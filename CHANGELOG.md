@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0.1] - 2026-04-18
+
+### Added
+- **Path Explorer v0.1 source manifest** (`docs/research/path-explorer-sources.md`) — internal research artifact for upcoming pre-vet literacy feature. Curated 3-school shortlist across two categories (foreign-only + bilingual) and three tiers (top / top-mid / mid), documents selection criteria, research schema for content authoring, and supplementary Shanghai-native sources.
+
+### Notes
+- Internal planning docs only; no user-facing changes.
+
 ## [0.5.0.0] - 2026-04-14
 
 ### Added
