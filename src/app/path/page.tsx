@@ -127,7 +127,7 @@ export default async function PathOverviewPage() {
                   textAlign: "center",
                 }}
               >
-                本月卡片整理中，先留个邮箱。6 月卡出来我们发你。
+                本月卡片整理中，先留个邮箱。6 月卡出来我们发给你。
               </p>
             ) : null}
 

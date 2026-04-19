@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 /**
  * Keyboard + touch navigation for the detail page. Mirrors demo:
@@ -20,6 +20,23 @@ export function PathDetailNav({
   nextSlug?: string | null;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  // Navigation lock — set while a push is in flight so holding arrow keys
+  // doesn't enqueue multiple transitions. useRef survives re-renders but is
+  // reset below when the route actually changes (pathname dep on the effect)
+  // or after an 800ms safety timeout so a failed / silent router.push can't
+  // wedge nav permanently.
+  const navigatingRef = useRef(false);
+  const unlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // Route actually changed — release the lock.
+    navigatingRef.current = false;
+    if (unlockTimerRef.current) {
+      clearTimeout(unlockTimerRef.current);
+      unlockTimerRef.current = null;
+    }
+  }, [pathname]);
 
   useEffect(() => {
     function isModalOpen(): boolean {
@@ -27,15 +44,21 @@ export function PathDetailNav({
     }
 
     // Guard against hijacking keyboard / swipe while the user is interacting
-    // with a form control, editable content, or a horizontally-scrollable
+    // with a form control, editable content, a focusable custom button
+    // (e.g. the id-table image wrappers), or a horizontally-scrollable
     // region (e.g. dragging the sub-nav pills). Without this, pressing arrow
-    // keys to move the text caret in the CTA email field would teleport the
-    // user to another activity page.
+    // keys while focus is on one of those elements teleports the user to
+    // another activity page instead of the expected local action.
     function isInInteractiveTarget(target: EventTarget | null): boolean {
       if (!(target instanceof Element)) return false;
       const tag = target.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
-      if ((target as HTMLElement).isContentEditable) return true;
+      const el = target as HTMLElement;
+      if (el.isContentEditable) return true;
+      if (el.getAttribute("role") === "button") return true;
+      // tabindex=0 means the element was deliberately made focusable; treat
+      // arrow keys as local there, not as app-wide navigation.
+      if (el.closest<HTMLElement>('[tabindex="0"]')) return true;
       return false;
     }
 
@@ -56,12 +79,16 @@ export function PathDetailNav({
     }
 
     // Nav lock: once a router.push fires, ignore further arrow/swipe until
-    // the route actually changes. Otherwise holding Left/Right on a hardware
-    // keyboard enqueues multiple navigations that skip cards on slow links.
-    let navigating = false;
+    // the route actually changes (pathname dep on the outer effect releases
+    // the lock) or the safety timeout fires (prevents wedge on failed push).
     function navTo(href: string) {
-      if (navigating) return;
-      navigating = true;
+      if (navigatingRef.current) return;
+      navigatingRef.current = true;
+      if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+      unlockTimerRef.current = setTimeout(() => {
+        navigatingRef.current = false;
+        unlockTimerRef.current = null;
+      }, 800);
       router.push(href);
     }
 
@@ -107,6 +134,10 @@ export function PathDetailNav({
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("touchstart", onTouchStart);
       document.removeEventListener("touchend", onTouchEnd);
+      if (unlockTimerRef.current) {
+        clearTimeout(unlockTimerRef.current);
+        unlockTimerRef.current = null;
+      }
     };
   }, [prevSlug, nextSlug, router]);
 

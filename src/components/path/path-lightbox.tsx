@@ -35,7 +35,9 @@ export function PathLightbox() {
       const img = wrapper.querySelector<HTMLImageElement>("img");
       if (!img) return;
       const srcAttr = img.getAttribute("src") ?? "";
-      const isSafe = /^\/assets\/img\/[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp)$/i.test(
+      // Leading char constrained to alphanumeric so "..png" / ".hidden.jpg"
+      // don't pass the allowlist even though they're not technically traversal.
+      const isSafe = /^\/assets\/img\/[a-zA-Z0-9][a-zA-Z0-9._-]*\.(png|jpg|jpeg|webp)$/i.test(
         srcAttr,
       );
       if (!isSafe) return;
@@ -101,7 +103,10 @@ export function PathLightbox() {
       return () => {
         document.body.classList.remove("no-scroll");
         // Return focus to the triggering wrapper after the overlay unmounts.
-        triggerRef.current?.focus();
+        // preventScroll avoids the jarring auto-scroll that the browser
+        // otherwise does if the wrapper has drifted off-screen while the
+        // lightbox was open.
+        triggerRef.current?.focus({ preventScroll: true });
       };
     }
     document.body.classList.remove("no-scroll");

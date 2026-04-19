@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { canonicalSourcePath } from "@/lib/path/canonical-source";
 
 /**
  * POST /api/path/interest — capture email + optional context for Path Explorer CTA.
@@ -27,22 +28,6 @@ const bodySchema = z.object({
 });
 
 const isProd = process.env.NODE_ENV === "production";
-
-/**
- * Canonicalize sourcePath so `/path`, `/path `, `/path?x=1`, `/path#anchor`
- * all collapse to the same key — otherwise the @@unique(email, sourcePath)
- * dedup is trivially bypassed by URL drift.
- */
-function canonicalSourcePath(raw: string): string {
-  const trimmed = raw.trim();
-  const qIdx = trimmed.indexOf("?");
-  const hIdx = trimmed.indexOf("#");
-  const cut =
-    qIdx === -1 && hIdx === -1
-      ? trimmed
-      : trimmed.slice(0, Math.min(...[qIdx, hIdx].filter((i) => i !== -1)));
-  return cut.replace(/\/+$/g, "") || "/";
-}
 
 export async function POST(request: Request) {
   let raw: unknown;
@@ -104,9 +89,11 @@ export async function POST(request: Request) {
     // we don't stream the user's email (embedded in Prisma P2002 `meta`) to
     // stderr, which could land in CI / container log aggregators.
     if (!isProd) {
+      // Log only the error class name — never the message. Prisma errors can
+      // echo the query object (including the user's email) in `.message`
+      // even when `meta` is scrubbed, so interpolating it risks PII in stderr.
       const code = error instanceof Error ? error.name : "unknown";
-      const msg = error instanceof Error ? error.message.split("\n")[0] : "unknown";
-      console.error(`[api/path/interest] write failed: ${code} — ${msg}`);
+      console.error(`[api/path/interest] write failed: ${code}`);
     }
     return NextResponse.json(
       { ok: false, error: "write_failed", retryable: true },

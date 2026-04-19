@@ -1397,6 +1397,20 @@ a.cite{
   display: flex; align-items: center; gap: 8px;
   line-height: 1.3;
   text-decoration: none;
+  /* min-width: 0 on the flex cell itself so the inner .stack can actually
+     shrink past its content-implicit min-width on narrow screens (360/375/390
+     devices); without this, title text overflows regardless of ellipsis. */
+  min-width: 0;
+  overflow: hidden;
+}
+.d-footer button .stack,
+.d-footer a .stack{
+  flex: 1;
+  min-width: 0;
+}
+.d-footer button .ti,
+.d-footer a .ti{
+  max-width: 100%;
 }
 .d-footer button:disabled{opacity: 0.35; cursor: not-allowed}
 .d-footer button:hover:not(:disabled),

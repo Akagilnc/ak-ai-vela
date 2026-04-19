@@ -67,14 +67,17 @@ export async function generateMetadata({
 
   const { activity } = ctx;
   const previews = (activity.previews as unknown as string[]) ?? [];
-  const description = truncate(stripHtml(activity.summary), 80);
+  // 140 chars ≈ WeChat/Weibo OG description sweet spot (previously 80 was
+  // over-corrected when switching to the emoji-safe truncate helper).
+  const description = truncate(stripHtml(activity.summary), 140);
   // Allowlist preview filename shape before interpolating into an og:image URL
   // — prevents a future malformed seed from leaking "..\/..\/etc\/passwd" or
-  // absolute attacker URLs into social preview metadata.
+  // absolute attacker URLs into social preview metadata. Leading char must be
+  // alphanumeric so "..png" / ".hidden.jpg" / "-foo.jpg" get rejected.
   const firstPreview = previews[0];
   const previewIsSafe =
     typeof firstPreview === "string" &&
-    /^[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp)$/i.test(firstPreview);
+    /^[a-zA-Z0-9][a-zA-Z0-9._-]*\.(png|jpg|jpeg|webp)$/i.test(firstPreview);
   const ogImage = previewIsSafe ? `/assets/img/${firstPreview}` : undefined;
 
   return {

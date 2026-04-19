@@ -258,7 +258,7 @@ export function BlockRenderer({ block }: { block: Block }) {
                   className="img has-photo"
                   tabIndex={0}
                   role="button"
-                  aria-label={`放大 ${row.zh} 照片`}
+                  aria-label={`放大${row.zh}照片`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

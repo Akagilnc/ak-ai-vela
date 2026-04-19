@@ -10,8 +10,6 @@
  * cannot nest — enforced at the compiler level, no runtime depth guard needed.
  */
 
-import type { Block, SubBlock } from "../../../docs/research/data/g1-may-seed";
-
 export type {
   ActivitySection,
   Block,
@@ -32,7 +30,3 @@ export type {
   SourcesBlock,
   AsideNoteBlock,
 } from "../../../docs/research/data/g1-may-seed";
-
-/** All Block variants except `sub-block`. Exposed for callers that consume
- *  SubBlock.blocks (e.g. BlockRenderer's sub-block case). */
-export type NonSubBlock = Exclude<Block, SubBlock>;

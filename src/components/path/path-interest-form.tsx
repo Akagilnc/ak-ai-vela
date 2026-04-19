@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { canonicalSourcePath } from "@/lib/path/canonical-source";
 
 /**
  * Visually-hidden class equivalent — pushed off-screen but still announced
@@ -25,22 +26,6 @@ const srOnlyStyle: React.CSSProperties = {
  */
 
 type Status = "idle" | "submitting" | "ok" | "error";
-
-/**
- * Canonicalize sourcePath to prevent "/path", "/path ", "/path?x=1" all
- * creating separate PathInterest rows for the same email. Strip trailing
- * whitespace + query/hash + collapse multiple slashes.
- */
-function canonicalSourcePath(raw: string): string {
-  const trimmed = raw.trim();
-  const qIdx = trimmed.indexOf("?");
-  const hIdx = trimmed.indexOf("#");
-  const cut =
-    qIdx === -1 && hIdx === -1
-      ? trimmed
-      : trimmed.slice(0, Math.min(...[qIdx, hIdx].filter((i) => i !== -1)));
-  return cut.replace(/\/+$/g, "") || "/";
-}
 
 export function PathInterestForm({
   sourcePath = "/path",
