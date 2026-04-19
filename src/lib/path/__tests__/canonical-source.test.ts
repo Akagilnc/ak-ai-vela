@@ -167,6 +167,17 @@ describe("canonicalSourcePath — confusable separators (R8)", () => {
   it("IDEOGRAPHIC FULL STOP (U+3002) folds to . and resolves as ..", () => {
     expect(canonicalSourcePath("/foo/\u3002\u3002/admin")).toBe("/admin");
   });
+
+  it.each([
+    ["\u2216", "SET MINUS `∖`"],
+    ["\u2571", "BOX DRAWINGS DIAGONAL `╱`"],
+    ["\u2AFD", "DOUBLE SOLIDUS OPERATOR `⫽`"],
+    ["\u29F5", "REVERSE SOLIDUS OPERATOR `⧵`"],
+    ["\u29F8", "BIG SOLIDUS `⧸`"],
+    ["\u29F9", "BIG REVERSE SOLIDUS `⧹`"],
+  ])("NFKC-inert math/box-drawing separator %p (%s) folds to /", (char) => {
+    expect(canonicalSourcePath(`/foo${char}bar`)).toBe("/foo/bar");
+  });
 });
 
 describe("canonicalSourcePath — DoS resistance", () => {

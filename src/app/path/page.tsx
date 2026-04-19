@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PathActivityTile } from "@/components/path/path-activity-tile";
 import { PathInterestForm } from "@/components/path/path-interest-form";
-import { MoreIcon } from "@/components/path/path-icons";
 
 export default async function PathOverviewPage() {
   // v0.1: single stage (G1-G3), single month (5). Query is scoped to that
@@ -40,9 +39,9 @@ export default async function PathOverviewPage() {
               </span>
               <span className="sub">Path Explorer · 预览</span>
             </div>
-            <button className="icon-btn" aria-label="更多" type="button">
-              <MoreIcon />
-            </button>
+            {/* "更多" menu removed in R9: v0.1 has no menu behind it, so
+                leaving the button focusable-but-inert failed WCAG 2.5.3.
+                Re-add when a menu exists. */}
           </header>
 
           <div className="app-body">
@@ -52,39 +51,46 @@ export default async function PathOverviewPage() {
               </h1>
             </section>
 
-            <div className="stage-tabs" role="tablist" aria-label="阶段">
-              <button aria-current="true" role="tab" type="button">
+            {/* R9: active stage shown as a non-interactive <span> (keyboard-
+                skipped state indicator, not a tab — there's no real tabpanel
+                relationship). Future-stage buttons keep `disabled` so they're
+                visible-but-focus-skipped. */}
+            <div className="stage-tabs" aria-label="学段">
+              <span className="is-active" aria-current="page">
                 <span className="t">G1–G3 · 一~三年级</span>
                 <span className="s">好奇心扎根</span>
-              </button>
-              <button disabled role="tab" aria-disabled="true" type="button">
+              </span>
+              <button disabled aria-disabled="true" type="button">
                 <span className="t">G4–G6 · 四~六年级</span>
                 <span className="s">目的性探索</span>
               </button>
-              <button disabled role="tab" aria-disabled="true" type="button">
+              <button disabled aria-disabled="true" type="button">
                 <span className="t">G7–G9 · 初中</span>
                 <span className="s">理解转换</span>
               </button>
             </div>
 
             <div className="month-scroll compact">
-              <div className="months" role="tablist" aria-label="月份（左右滑动）">
-                <button className="m-pill" data-status="ghost" type="button">
+              {/* R9: active month as <span>, ghost months as `disabled`
+                  buttons so keyboard users skip them (visible hint without
+                  a dead focusable control). */}
+              <div className="months" aria-label="月份（左右滑动）">
+                <button className="m-pill" data-status="ghost" type="button" disabled>
                   3 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button">
+                <button className="m-pill" data-status="ghost" type="button" disabled>
                   4 月
                 </button>
-                <button className="m-pill" aria-current="true" type="button">
+                <span className="m-pill" aria-current="page">
                   5 月 · G1
-                </button>
-                <button className="m-pill" data-status="ghost" type="button">
+                </span>
+                <button className="m-pill" data-status="ghost" type="button" disabled>
                   6 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button">
+                <button className="m-pill" data-status="ghost" type="button" disabled>
                   7 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button">
+                <button className="m-pill" data-status="ghost" type="button" disabled>
                   8 月
                 </button>
               </div>

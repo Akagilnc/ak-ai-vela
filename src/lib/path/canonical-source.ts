@@ -72,9 +72,25 @@ export function canonicalSourcePath(raw: string): string {
     // `/foo⁄bar`, or `/foo/。。/admin` stay as distinct dedup keys even
     // though they represent the same logical page under a Chinese-parent
     // target audience where these characters are commonplace.
+    // Full confusable-separator set — ASCII backslash, NFKC-inert
+    // mathematical/box-drawing solidus variants that LOOK like `/` or
+    // `\` but never fold under NFKC:
+    //   `\`        ASCII backslash
+    //   U+FF3C     full-width backslash (already NFKC → `\`, kept for belt)
+    //   U+2044     FRACTION SLASH `⁄`
+    //   U+2215     DIVISION SLASH `∕`
+    //   U+2216     SET MINUS `∖`
+    //   U+2571     BOX DRAWINGS DIAGONAL `╱`
+    //   U+2AFD     DOUBLE SOLIDUS OPERATOR `⫽`
+    //   U+29F5     REVERSE SOLIDUS OPERATOR `⧵`
+    //   U+29F8     BIG SOLIDUS `⧸`
+    //   U+29F9     BIG REVERSE SOLIDUS `⧹`
+    // Dot-side: U+3002 IDEOGRAPHIC FULL STOP `。` (common in Chinese text).
+    // Add to these lists only if a new confusable is found in a real
+    // submission — over-folding risks false-positive dedup.
     const normalized = s
       .normalize("NFKC")
-      .replace(/[\\\uFF3C\u2044\u2215]/g, "/")
+      .replace(/[\\\uFF3C\u2044\u2215\u2216\u2571\u2AFD\u29F5\u29F8\u29F9]/g, "/")
       .replace(/[\u3002]/g, ".");
     const decoded = normalized.split("/").map(safeDecodeSegment).join("/");
     if (decoded === s) break;
