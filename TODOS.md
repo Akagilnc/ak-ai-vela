@@ -4,6 +4,22 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## P1 — Must do before or during the relevant milestone
 
+### [PathExplorer v0.5+] CSP header + HTML sanitization for BlockRenderer
+- **What:** Add a Content Security Policy header (start with `default-src 'self'; script-src 'self' 'unsafe-inline'`) AND pick a sanitization story for the 12 `dangerouslySetInnerHTML` sinks in `src/components/path/block-renderer.tsx`. Options: (a) DOMPurify at write time with an allowlist (b/em/i/a) rejecting everything else; (b) DOMPurify at render time as defense in depth; (c) migrate schema fields from raw HTML to a restricted markdown flavor.
+- **Why:** v0.1 trusts the seed file as the only writer — zero untrusted paths to the Json fields. v0.5+ reintroduces 升学决策卡 which likely involves admin-editable content, importers, and possibly LLM-generated cards. Every `<b>` slot becomes a stored-XSS sink the moment any of that lands. Flagged by all 3 Claude subagents + Codex during the cross-review on 2026-04-19.
+- **When:** BEFORE any non-seed write path is added to `PathActivity.sections` / `summary` / `triggerText` / `chips`. That likely lands with v0.5+ admin UI or import tooling.
+- **Signal to start:** a PR adds the first non-seed writer to any field consumed by BlockRenderer.
+
+### [PathExplorer v0.5+] PathInterest UA retention + privacy posture
+- **What:** Decide + implement retention policy for `PathInterest.userAgent` (full UA strings). Options: (a) hash UA with a server-side secret, keep only digest for bot detection; (b) keep raw UA with a 30/90-day cron purge; (c) drop UA field entirely if bot filtering moves to middleware. Also add a one-line privacy disclosure under the CTA form once a privacy page exists.
+- **Why:** Current form copy says "不 spam，不转售" but raw UA paired with email is PII under GDPR/PIPL. Pre-monetization so low exposure, but needs decision before any marketing push or privacy page. Flagged by Security subagent 2026-04-19.
+- **When:** Before public launch of Path Explorer / any marketing campaign driving form signups.
+
+### [PathExplorer v0.5+] PathDecisionBranch.downstreamStageSlugs FK integrity
+- **What:** Replace `PathDecisionBranch.downstreamStageSlugs: Json` with a join table `PathDecisionBranchDownstream(branchId, stageId)` with proper FK to `PathStage`, OR add a seed-time validator asserting every slug in the JSON array matches a `PathStage.slug`.
+- **Why:** Current schema stores an array of slug strings with no referential integrity — renames drift silently. v0.1 doesn't seed this table (0 rows) so impact is zero, but the 升学决策卡 回归 in v0.5+ will exercise it. Flagged by Correctness subagent 2026-04-19.
+- **When:** Before first seed of `PathDecisionBranch` rows (v0.5+ 升学卡 回归).
+
 ### [M4-POST] html2canvas spike
 - **What:** Test html2canvas screenshot with Google Fonts (Fraunces, Plus Jakarta Sans) + Recharts SVG charts on the actual report page.
 - **Why:** WeChat sharing is the MVP's core distribution channel. html2canvas + CDN fonts + SVG is the combo most likely to produce rendering artifacts. CEO review flagged html2canvas silent failure as a gap. Codex independently flagged the same risk.
@@ -31,6 +47,31 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.4.0.1 (PR #21). Added `error.tsx`, `loading.tsx`, `not-found.tsx` for `/schools` and `error.tsx`, `not-found.tsx` for `/schools/[id]`. Chinese copy, brand styling, retry button on error boundaries.
 - **Completed:** v0.4.0.1 (2026-04-13)
 
+## Deferred from Path Explorer v0.1 ship review (2026-04-19)
+
+### ~~[P2] ShareButton `useEffect` cleanup on unmount~~ DONE (R1)
+- **Status:** Completed in PR #27 round 1 (Gemini review flagged as MEDIUM). `useEffect` cleanup added at `src/components/path/share-button.tsx`.
+- **Completed:** v0.6.0.0 R1 fix
+
+### ~~[P2] Pinch-zoom multi-touch guard in path-detail-nav~~ DONE (R1)
+- **Status:** Completed in PR #27 round 1 (Gemini review flagged as MEDIUM). `e.touches.length > 1` early-bail added to `onTouchStart` at `src/components/path/path-detail-nav.tsx`.
+- **Completed:** v0.6.0.0 R1 fix
+
+### [P2] `--mute-2` color contrast (brand decision)
+- **What:** `--mute-2: #8F8B72` computes to ~3.1:1 on `--cream: #FBF7E4` — fails WCAG AA 4.5:1 for small text. Affected sites include ghost month pills, `.aside-note`, `.overview-foot .stamp`, and `.m-pill .zh`. Brand-compliant fix is `#6B6560` (DESIGN.md secondary text tier, ~6.0:1). Other option: keep `--mute-2` and ensure affected text is ≥18.66px or ≥14px bold to qualify for AA large-text (3:1).
+- **Why:** Flagged by UX subagent R12-R15 repeatedly. Deferred because changing the brand neutral affects visual feel across the app — not a per-screen fix. Needs design decision.
+- **When:** With next brand/design pass OR when adding the first non-gated public user (the affected text is mostly "ghost" / meta labels, not conversion-critical).
+
+### [P2] `/schools` landscape safe-area edge
+- **What:** With `viewport-fit=cover` now global (R14), on landscape iPhone 14/15 Pro the Dynamic Island inset can sit over the left edge of `/schools` cards (base padding `px-4` = 16px, less than the ~59px notch inset). Fix: wrap `px-4` → `px-[max(16px,env(safe-area-inset-left))]` in `src/app/schools/page.tsx:45`.
+- **Why:** Introduced as side-effect of R14's root-level viewport-fit fix. `/path` compensates via `.stage-inner` + `.d-footer` env padding; `/schools` uses Tailwind container without env awareness.
+- **When:** Landscape iPhone users report clipping, OR next schools design pass.
+
+### [P2] error.tsx dev-mode error display
+- **What:** In `src/app/path/error.tsx`, conditionally render `error.message` + `error.stack` when `process.env.NODE_ENV !== "production"`. Currently the error prop is discarded (`error: _error`) — production correct, but dev-mode debugging slow.
+- **Why:** Flagged by UX subagent R15. Low value (Next.js logs server-side, dev rarely hits this boundary) but quick win for fast iteration.
+- **When:** Next time error.tsx is touched.
+
 ## P2 — Do when the prerequisite is met
 
 ### [M2] ~~Seed script safety: split db:seed and db:reset~~ DONE
@@ -53,13 +94,9 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** v0.6，v0.5 文案池扩充（P1 TODO）完成后启动。
 - **Depends on:** v0.5.0.0（已完成）, 更多家长反馈
 
-### [P0] Path Explorer: 路径卡片探路器（新功能）
-- **Tracking:** #25 (完整的功能形态、设计决策、内容来源策略、分阶段实施、open questions 都记录在 issue 里)
-- **TL;DR:** 比 trait quiz 更前置的产品层。家长大部分时候还不知道"美本/美高路径长什么样"——让他们先答 quiz 是错位的。新功能用卡片+场景切换（美少女梦工厂风格）带家长从 G1 走到美本毕业，每张卡一个人生阶段，有叙事 + 视觉 + 结构化信息 + 来源引用。
-- **Scope v1:** 3 张原型卡（一个典型阶段 + 一个分叉决策点 + 一个申请冲刺）验证格式，再决定是否扩到 10-15 张完整版。
-- **When:** 先跑 `/gstack-office-hours` 压力测试方向，再启动 Phase 1 内容调研。不和 #24（科学化 trait quiz）抢优先级，两件事独立，顺序待定。
-- **Depends on:** Office hours session, v0.5.0.0（已完成）
-- **Progress:** Day 0 source manifest shipped in v0.5.0.1 (PR #26, `docs/research/path-explorer-sources.md`). 3-school shortlist (SHSID / YK Pao / 星河湾) + selection philosophy + research schema + 15 supplementary sources all with verified URLs. Day 1 content authoring not yet started.
+### ~~[P0] Path Explorer: 路径卡片探路器（新功能）~~ DONE (v0.1)
+- **Status:** Completed in v0.6.0.0 (2026-04-19). Scope pivoted 4/18 from "17 升学决策卡" to "G1 五月 · 5 月度活动卡" per seed-user validation (Kailing + 4 peers). Shipped: 6 Prisma models, seed for 5 activity cards, overview + detail pages, CTA form + API, 17-block-type renderer, sub-nav scroll-spy, species photo lightbox, keyboard + touch nav, Web Share + WeChat UA fallback, error / not-found pages, 97 canonical-source regression tests, 15 rounds of adversarial cross-review.
+- **Completed:** v0.6.0.0 (2026-04-19)
 
 ### [P1] Insight + portrait 文案去 AI slop，扩展为随机池
 - **What:** 两件事。(1) 消灭 AI slop：insight 12 句话全部以"看起来"开头，portrait description 句式雷同，需要逐句重写，确保每句读起来像一个真人观察者说的话而不是 AI 生成的模板。(2) 扩展随机池：每个格子从 1 句扩展到 12-24 句，随机抽取。同一个孩子两次测评、或两个孩子对比时，看到不同表达。12 格 × 24 句 = 288 句文案。
