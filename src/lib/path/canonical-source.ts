@@ -23,15 +23,22 @@
  * already did — don't trust client input.
  */
 /**
- * Decode one segment safely. If the segment has an invalid escape sequence,
- * the whole segment is returned unchanged — rather than letting one broken
- * escape disable decoding for the entire path.
+ * Decode one segment safely. Tries the whole segment first (common case),
+ * then falls back to decoding each `%XX` pair independently so that one
+ * malformed escape (e.g. overlong UTF-8 `%c0%ae`) doesn't disable decoding
+ * for VALID escapes in the same segment (`%2F`, `%2E%2E`).
  */
 function safeDecodeSegment(seg: string): string {
   try {
     return decodeURIComponent(seg);
   } catch {
-    return seg;
+    return seg.replace(/%[0-9A-Fa-f]{2}/g, (esc) => {
+      try {
+        return decodeURIComponent(esc);
+      } catch {
+        return esc; // Keep invalid escape literal (e.g. lone `%c0`).
+      }
+    });
   }
 }
 
@@ -43,21 +50,23 @@ export function canonicalSourcePath(raw: string): string {
   //    function defensive when called from the client or reused elsewhere.
   let s = raw.length > 2000 ? raw.slice(0, 2000) : raw;
 
-  // 1. Unicode normalize (NFKC folds full-width / compatibility forms).
-  s = s.normalize("NFKC");
-
-  // 2. Multi-pass per-segment decode. Handles both:
-  //    - nested-encoded dot segments (`%252525...2E` → ... → `..`)
-  //    - mixed-validity paths (`%c0%ae/%2E%2E/admin` must still decode
-  //      the valid `%2E%2E` segment even though `%c0%ae` is malformed)
-  //    Loop until stable, bounded by `s.length`: each pass that changes
-  //    `s` strictly shortens it (`%XX` → 1 byte is -2 chars), so the
-  //    worst-case iteration count is at most `s.length / 2`. Combined
-  //    with the 2000-char cap at step 0 this is always finite and fast.
-  //    Hard 5-pass cap was bypassable within Zod's 200-char limit
-  //    (stacking `%25` 5+ times in 33 bytes).
+  // 1 + 2 merged: Multi-pass NORMALIZE + DECODE until stable.
+  //
+  // NFKC must run INSIDE the loop rather than once at the top, because
+  // decoded bytes often contain compatibility-form characters that then
+  // need folding before the next decode+split cycle:
+  //   `%EF%BC%8F` → `／` (full-width slash) → `/` after NFKC → re-splits
+  //   `%EF%BC%B0%EF%BC%A1%EF%BC%B4%EF%BC%A8` → `ｐａｔｈ` → `path`
+  // Doing NFKC only once at the top would leave these decoded variants
+  // as distinct dedup keys.
+  //
+  // Each pass that changes `s` strictly shortens it (`%XX` → ≤1 byte,
+  // NFKC of compatibility forms also shrinks or stays same), so the
+  // `pass < s.length` bound is finite and fast. Combined with the
+  // 2000-char cap in step 0, worst case is ~20ms.
   for (let pass = 0; pass < s.length; pass++) {
-    const decoded = s.split("/").map(safeDecodeSegment).join("/");
+    const normalized = s.normalize("NFKC");
+    const decoded = normalized.split("/").map(safeDecodeSegment).join("/");
     if (decoded === s) break;
     s = decoded;
   }
