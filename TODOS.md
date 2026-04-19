@@ -47,6 +47,14 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.4.0.1 (PR #21). Added `error.tsx`, `loading.tsx`, `not-found.tsx` for `/schools` and `error.tsx`, `not-found.tsx` for `/schools/[id]`. Chinese copy, brand styling, retry button on error boundaries.
 - **Completed:** v0.4.0.1 (2026-04-13)
 
+## Deferred from Path Explorer v0.1 post-ship user feedback (Kailing, 2026-04-19)
+
+### [P1] CTA contact channel — email → WeChat ID / phone
+- **What:** Replace the CTA form's `<input type="email">` primary channel with a more China-native contact option. Options: WeChat ID (`微信号`), phone, or a QR-code-first flow where parent scans a WeChat QR to add founder account. Email can remain as optional fallback.
+- **Why:** Kailing flagged that Chinese parents rarely check email — leaving an email address feels weird and probably gets low conversion. WeChat and phone are the default "how do I hear back" channels in mainland. Current form works (verified via 201/200 responses in preview) but UX-hostile for target audience.
+- **When:** Alongside v0.2+ Path Explorer iteration OR whenever we pivot to real seed-user distribution. Probably after Kailing signal + before any wider launch.
+- **Note:** Prisma `PathInterest` schema will need a new column (`wechatId` / `phone`) + the Zod body schema will need to accept at least one of email / wechatId / phone. Legal: phone numbers are PII — revisit UA retention policy together (already tracked as a separate v0.5+ item).
+
 ## Deferred from Path Explorer v0.1 ship review (2026-04-19)
 
 ### ~~[P2] ShareButton `useEffect` cleanup on unmount~~ DONE (R1)

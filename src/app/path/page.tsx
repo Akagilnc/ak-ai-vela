@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { PathActivityTile } from "@/components/path/path-activity-tile";
 import { PathInterestForm } from "@/components/path/path-interest-form";
+import { PathOverviewScrollRestore } from "@/components/path/path-overview-scroll-restore";
 
 export default async function PathOverviewPage() {
   // v0.1: single stage (G1-G3), single month (5). Query is scoped to that
@@ -45,6 +46,7 @@ export default async function PathOverviewPage() {
           </header>
 
           <main className="app-body" id="path-main">
+            <PathOverviewScrollRestore />
             <section className="path-head">
               <h1>
                 小小<span className="accent">动物科学家</span>
@@ -57,25 +59,25 @@ export default async function PathOverviewPage() {
                 visible-but-focus-skipped. */}
             <div className="stage-tabs" aria-label="学段">
               <span className="is-active" aria-current="true">
-                <span className="t">G1–G3 · 一~三年级</span>
+                <span className="t">一~三年级</span>
                 <span className="s">好奇心扎根</span>
               </span>
               <button
                 disabled
                 aria-disabled="true"
                 type="button"
-                aria-label="G4–G6 四~六年级 · 整理中"
+                aria-label="四~六年级 · 整理中"
               >
-                <span className="t">G4–G6 · 四~六年级</span>
+                <span className="t">四~六年级</span>
                 <span className="s">目的性探索</span>
               </button>
               <button
                 disabled
                 aria-disabled="true"
                 type="button"
-                aria-label="G7–G9 初中 · 整理中"
+                aria-label="初中 · 整理中"
               >
-                <span className="t">G7–G9 · 初中</span>
+                <span className="t">初中</span>
                 <span className="s">理解转换</span>
               </button>
             </div>

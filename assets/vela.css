@@ -339,7 +339,7 @@ body{
 }
 .stage-tabs > button .t,
 .stage-tabs > span .t{
-  font-family: var(--en); font-weight: 700; font-size: 11.5px; letter-spacing: 0.08em; display:block;
+  font-family: var(--zh-sans); font-weight: 600; font-size: 13px; letter-spacing: 0.04em; display:block;
   margin-bottom: 1px;
 }
 .stage-tabs > button .s,
