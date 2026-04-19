@@ -31,6 +31,14 @@
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+/* Belt-and-suspenders: if any inner element's min-content width exceeds
+   the viewport, clip at body. `overflow-x: clip` (no scroll, no accidental
+   escape) is stricter than `hidden` and doesn't establish a scroll
+   container on mobile Safari. Without this, .stage-tabs grid min-content
+   can push .stage wider than viewport on narrow Android phones and let
+   the whole page scroll horizontally. */
+html{ overflow-x: clip; }
+body{ overflow-x: clip; }
 body{
   background:
     radial-gradient(1200px 600px at 50% -100px, #FFF8D5 0%, transparent 60%),
@@ -54,6 +62,12 @@ body{
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
+  /* Flex children default to min-width: auto (= min-content). When a deep
+     descendant like .stage-tabs has a 3×1fr grid whose cells can't shrink
+     below min-content ("G7-G9·初中" ≈ 130px each), the cascade pushes
+     .stage wider than viewport. min-width: 0 breaks the chain. */
+  min-width: 0;
+  width: 100%;
 }
 @media (min-width: 720px){
   body::before{
@@ -91,6 +105,16 @@ body{
   height: 100dvh;         /* iOS Safari / WeChat webview — toolbar-safe */
   display: flex; flex-direction: column;
   padding-bottom: env(safe-area-inset-bottom);
+  /* See .stage: prevent min-content cascade from widening the stage on
+     narrow viewports. */
+  min-width: 0;
+  width: 100%;
+}
+/* Every flex child inside stage-inner: allow shrinking below min-content.
+   Without this, wide buttons / grids / long Chinese words force parent
+   wider than viewport. */
+.stage-inner > *{
+  min-width: 0;
 }
 
 /* ============ STATUS ============ */
@@ -285,7 +309,12 @@ body{
 .stage-tabs{
   margin: 0 22px 14px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  /* `minmax(0, 1fr)` instead of `1fr` so columns can shrink below their
+     min-content width. With `1fr`, cells refuse to go narrower than their
+     content (wider Chinese labels like "G7-G9·初中" force ≥130px each),
+     overflowing narrow phones. With minmax(0, 1fr), cells share available
+     space equally and content wraps within them. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   background: var(--cream-2);
   border: 1px solid var(--hair);
   border-radius: 14px;
