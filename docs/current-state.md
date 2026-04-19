@@ -4,158 +4,197 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-18 · `feat/path-explorer-v01` @ `a3c073a` (v0.5.0.1)
+**Last updated:** 2026-04-19 · `feat/path-explorer-v01-impl` @ `0e0c939` (v0.6.0.0)
 
-## Product Direction (Pivot)
-
-**v0.5.0.0 marks a product pivot.** Based on seed user feedback (Kailing):
-- FROM: Pre-vet US college application planning tool (gap analysis for high schoolers)
-- TO: Trait-based growth guidance system (personality assessment for all ages, gap analysis as one vertical)
+## Product Direction
 
 The moat is the ability to **deeply understand the child**, not any single feature.
-Trait assessment is step 1 of understanding; Path Explorer (v0.6 research track) is
-the upstream literacy layer that precedes matching.
+Vela has three layered tools aimed at different stages of that understanding:
+
+1. **Path literacy** — help parents see what a path actually looks like before
+   they worry about matching (Path Explorer).
+2. **Trait reading** — capture who the child is today (Trait assessment).
+3. **Gap closing** — for high schoolers with known targets, diagnose distance
+   to selective US universities (Gap analysis).
+
+v0.5 marked the pivot from "gap analysis only" to "growth guidance." v0.6
+extends upstream with Path Explorer v0.1 — the literacy layer.
 
 ## MVP Semantics
 
-Vela has two shipped tools plus one research track in progress:
+**Tool 1: Path Explorer** (`/path`, v0.6.0.0, shipped 2026-04-19)
+1. Parent opens `/path` and sees 小小动物科学家 theme for G1–G3, May month.
+2. Overview shows 5 activity tiles (1 baseline 月度节奏 + 4 event cards:
+   上海自博物馆 · 海洋馆 · 小故事 · 产出).
+3. Each tile → detail page `/path/{slug}` with chips, trigger, time pacing,
+   and 2–5 themed sections rendered from 17 block types (paragraph / triad /
+   route / trivia / callout / callout-trio / path-opts / sub-block / list-
+   check / list-bullets / photo-row / id-table / steps / philosophy /
+   sources / aside-note / callout).
+4. Sticky sub-nav scroll-spy + species-photo lightbox + keyboard (←/→/Esc)
+   and touch-swipe navigation between cards.
+5. CTA form at bottom of overview: email + optional grade → future months.
+6. WeChat share button: native share sheet outside WeChat, clipboard copy
+   inside WeChat webview (+ iOS Safari `execCommand` legacy fallback).
+7. Brand-styled 404 (`/path/not-found`) and error boundary (`/path/error`).
 
-**Tool 1: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
+**Tool 2: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
 1. Parent opens the welcome page and clicks "特质测评"
 2. 10-question branching quiz captures the child's interests, learning style,
    social preferences, and environment (3 branch points, 10 questions per path)
-3. Mid-quiz insight card shows personalized feedback after Q3 ("看起来孩子是一个...")
+3. Mid-quiz insight card shows personalized feedback after Q3
 4. matchRoute() maps answers to one of 24 predefined routes
-5. Result page shows personality portrait (hero) + staged roadmap (3 life stages
+5. Result page shows personality portrait + staged roadmap (3 life stages
    with expandable action items, fact-check annotations)
-6. Goal confirmation card collects target (前30/前50/还没想好) for future use
-7. All client-side. localStorage for draft persistence. No database.
+6. All client-side, localStorage for draft persistence, no database.
 
-**Tool 2: Gap Analysis** (`/questionnaire` → `/complete/gaps`, v0.4.0.0)
-1. 8-step wizard captures the student's profile (scores, curriculum, etc.)
+**Tool 3: Gap Analysis** (`/questionnaire` → `/complete/gaps`, v0.4.0.0)
+1. 8-step wizard captures student profile (scores, curriculum, etc.)
 2. Submission atomically upserts Student + QuestionnaireResult via `$transaction()`
-3. Gap analysis page shows 26 schools by match/reach/possible tiers with 5-level
-   severity and expandable detail
-
-**Research track: Path Explorer v0.1** (v0.5.0.1, docs only — no UI yet)
-- `docs/research/path-explorer-sources.md` — source manifest for upcoming
-  pre-vet literacy cards (Shanghai G4-G7 小升初 audience).
-- 3-school shortlist across foreign-only + bilingual categories and top /
-  top-mid / mid tiers. Selection philosophy + criteria + research schema
-  + supplementary sources all documented. URLs verified via WebFetch/WebSearch.
-- Day 0 (manifest) shipped. Day 1 content authoring has not started.
+3. Gap page shows 26 schools by match/reach/possible tier with 5-level severity.
 
 The system speaks Chinese by default.
 
-## Architecture snapshot
+## Architecture Snapshot
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript strict.
-- **Database:** Prisma 7.7.0 on SQLite (`dev.db`, empty today — 0 students, 0
-  questionnaire_results). Student upsert + QR create wrapped in
-  `$transaction()` for atomicity.
-- **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4 v1
-  dimensions (GPA, SAT, ACT, pre-vet experience), 5-level severity (excellent/
-  green/yellow/red/no-data), tier classification (match/reach/possible), 20
-  recommendation templates. UI consumer: `/questionnaire/complete/gaps`.
+- **Database:** Prisma 7.7.0 on SQLite (`dev.db`). Path Explorer adds 6 new
+  models: PathStage / PathGoal / PathActivity / PathDecision /
+  PathDecisionBranch / PathInterest. Existing: School / Student /
+  QuestionnaireResult.
+- **Path Explorer engine:** `src/lib/path/` — pure utilities. The key
+  security-boundary function is `canonicalSourcePath` (100 regression
+  tests covering NFKC normalization, multi-pass percent decoding with
+  per-segment fallback, `\p{Default_Ignorable_Code_Point}` strip,
+  confusable-separator folding, dot-segment resolution, iteration cap
+  at 10 for DoS resistance).
+- **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4
+  v1 dimensions (GPA / SAT / ACT / pre-vet experience), 5-level severity,
+  tier classification, 20 recommendation templates.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
-  portrait generator, insight text. Pure functions, no DB. 49 tests.
-- **Tests:** 332 passing via Vitest (as of v0.5.0.0, unchanged in v0.5.0.1
-  because v0.5.0.1 is docs-only). Coverage invariant fences the recommendation
-  template matrix. Trait tests cover all route combos.
-- **Design system:** Tokens + rules in `DESIGN.md`. Fonts: Fraunces (display),
-  Plus Jakarta Sans (body). Loaded via `<link>` with preconnect.
-- **State pages:** `/schools` and `/schools/[id]` have branded error boundary,
-  loading skeleton, and not-found pages (v0.4.0.1).
+  portrait generator, insight text. 49 tests.
+- **Tests:** 432 passing via Vitest (23 files, 2.8s). Coverage invariant
+  fences the recommendation template matrix. canonical-source suite pins
+  every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
+  MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
+- **Design system:** Tokens + rules in `DESIGN.md` for the trait-quiz +
+  gap flows. Path Explorer uses `vela.css` (scoped via `<link>` in
+  `src/app/path/layout.tsx`) with its own warm palette layered on the
+  shared brand. Fonts: Fraunces (display), Plus Jakarta Sans (body).
+- **Accessibility (Path Explorer v0.6.0.0):** WCAG 2.5.5 AAA tap targets
+  (44px min across every interactive element), 2.4.7 AA focus-visible
+  rings (gold 2px on cream), 2.3.3 AAA `prefers-reduced-motion`, `<main>`
+  landmarks + skip-to-content links, iOS `viewport-fit=cover` + safe-
+  area-aware toast / footer / lightbox positioning.
+- **State pages:** `/schools`, `/schools/[id]`, `/path`, `/path/*` all
+  have branded error boundary + not-found + loading skeleton.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/path-explorer-v01`
-- **HEAD:** `a3c073a docs(research): add https:// protocol prefix to all supplementary URLs`
-- **Version:** `0.5.0.1`
-- **Open PRs:** PR #26 (Path Explorer v0.1 source manifest, docs-only).
-  3-round bot review complete: Gemini 3 轮 all COMMENTED (replies posted),
-  Codex round 2 👍 (round 3 no response, likely usage limit), Copilot silent.
-  Mergeable, no approval / no changes-requested.
+- **Current branch:** `feat/path-explorer-v01-impl`
+- **HEAD:** `0e0c939 fix(path-explorer): R3 PR review — Gemini (1 SECURITY HIGH + 2 HIGH/MEDIUM)`
+- **Version:** `0.6.0.0`
+- **Open PR:** #27 (Path Explorer v0.1 implementation). 3-round bot review
+  complete on 2026-04-19:
+  - **Gemini** 3 rounds, all COMMENTED, 8 findings total (1 SEC HIGH + 2 HIGH + 5 MEDIUM), all fixed + replied.
+  - **Codex** R1 only (1 P1 missing assets — fixed). R2-R3 not processed (this repo is not configured for Codex environment; bot posted "create an environment for this repo").
+  - **Copilot** not participating in this repo.
+  - Mergeable. No approvals requested; reviews are informational.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
-  #25 (Path Explorer feature, P0).
+  #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
+  - PR #26 (Path Explorer v0.1 source manifest, v0.5.0.1, merged 2026-04-18)
   - PR #23 (trait assessment quiz, v0.5.0.0, merged 2026-04-13)
   - PR #22 (Prisma $transaction wrapping, v0.4.0.2)
   - PR #21 (schools state pages, v0.4.0.1)
-- **Plan reviews passed** (for shipped features):
-  CEO v3 (SELECTIVE EXPANSION), Eng review, Design review (4→8/10) on trait quiz.
 
 ## Most recent real verification
 
-**2026-04-17** — PR #26 URL verification pass.
-- Every `[待访问]` URL in the Path Explorer source manifest ran through
-  WebFetch. 7 URLs with errors/typos surfaced and were corrected
-  (自然博物馆, 东滩, 博物, 英才, 丘奖, 2 个 B 站 UID, 观鸟会) plus
-  2 Gemini-flagged items (SSBS https, zoo typo). All 15 URLs now carry
-  `https://` protocol prefix.
-- Still `[待访问]` per entry — URL reachability verified, but Day 1 content
-  authors must still consume each page before citing.
+**2026-04-19** — Path Explorer v0.1 end-to-end through 15 rounds of adversarial
+cross-model review (R1–R15) + 3 rounds of PR bot review (R1–R3 via Gemini),
+verified in Claude Preview MCP:
+- Overview render: 5 activity tiles with preview images, ghost month pills
+  for 3/4/6/7/8 月, stage tabs G1-G3 active + G4-G6 / G7-G9 disabled.
+- Detail render for `g1-may-routine`: sub-nav scroll-spy correctly activates
+  "海洋馆路线" pill at scrollTop 1200 (sec-2 at offsetTop 1117).
+- Navigation reset verified: `/path/g1-may-routine` → scroll to sec-2 →
+  next → `/path/g1-may-labor-day-holiday` loads with scrollTop=0, active
+  idx=0, fresh targets ["3 种路径", "避坑", "产出 · 心法"].
+- API idempotency: POST `/api/path/interest` returns 201 + new id on first
+  submit, 200 + same id on repeat (create-then-update-on-P2002 pattern).
+- `bun run test`: 432 / 432 green (23 test files, 2.8s).
+- `canonicalSourcePath` regression suite: 100 / 100 green. Includes new
+  R3 tests pinning `%2\u200BE` smuggling and 2000-char DoS convergence.
 
-**2026-04-13** — trait quiz browser verification on feat/trait-assessment
-(last real end-to-end product verification).
-- `npx vitest run`: 332 / 332 green (22 test files, 2.8s).
-- Browser walkthrough: welcome → Q1-Q10 → insight card → result page.
-  Route `lower-animal-std` verified.
-
-## Blockers and risks
+## Blockers and Risks
 
 **Product-level (seed user):**
-- Kailing 4/16 call status: **unverified in this snapshot** — session owner
-  should update this block after the call. Prior rule: no nudging, one light
-  check-in allowed ~1 week after 4/11 stand-by.
+- Kailing 4/16 call outcome: still unverified in this snapshot. Session
+  owner should update this block after the call. Prior rule: no nudging,
+  one light check-in allowed ~1 week after 4/11 stand-by.
 
 **Correctness gaps tracked in `TODOS.md`:**
-- `Student.name` is the de-facto lookup key across questionnaire → review →
-  complete → submit. Rename breaks references. Needs a stable `studentId`
-  (cuid/uuid) + Prisma migration. Independent PR, not urgent for current
-  single-user.
+- `Student.name` de-facto lookup key across questionnaire flow. Rename
+  would break references. Needs stable `studentId` (cuid/uuid) + Prisma
+  migration. Independent PR, not urgent for current single-user.
 - `recommendations.ts` has two copy nits tracked for M4: empty `school.name`
   fallback, and tone softening away from "数据库" language.
 
+**Path Explorer v0.5+ deferred (architectural, not urgent for v0.1):**
+- CSP header + HTML sanitization for `BlockRenderer` — v0.1 trusts the
+  seed file as the only writer. Must land BEFORE any non-seed write path
+  opens up.
+- `PathInterest.userAgent` retention policy — full UA + email is PII.
+  Needs decision before public launch.
+- `PathDecisionBranch.downstreamStageSlugs: Json` → proper FK join table.
+  v0.1 doesn't seed this model (0 rows) so impact is zero.
+
+**Path Explorer v0.6.0.0 P2 deferred (polish, not shipping blockers):**
+- `--mute-2` (#8F8B72) on cream is 3.1:1 (fails WCAG AA 4.5:1 for small
+  text). Brand-compliant fix exists (DESIGN.md #6B6560 secondary tier).
+  Awaiting brand decision.
+- `/schools` landscape safe-area edge — side-effect of global
+  `viewport-fit=cover`. `px-4` < notch inset in landscape.
+- `error.tsx` dev-mode error display — currently discards error prop.
+
 **Operational / infra:**
-- Local-only deployment. No WeChat QR sharing, no calendar export (.ics),
-  no html2canvas spike yet — all deferred until M4 exists.
+- Local-only deployment. No WeChat QR sharing beyond the share button's
+  clipboard copy, no calendar export (.ics), no html2canvas spike yet.
 - Pre-push hook relaxed to allow root `VERSION` (PR #13).
 
 ## Next-step recommendations
 
 **Immediate:**
-1. Merge PR #26 (Path Explorer v0.1 source manifest, v0.5.0.1). Docs-only,
-   low merge risk, 3-round review cap reached.
-2. Post-merge: delete `feat/path-explorer-v01`, pull `main`.
-3. Sync Kailing 4/16 call outcome into this file (new branch / PR / issue
-   depending on what surfaced).
+1. Merge PR #27 (Path Explorer v0.1 implementation, v0.6.0.0). 3-round
+   Gemini review cleared. Ready.
+2. Post-merge: delete `feat/path-explorer-v01-impl`, pull `main`, delete
+   the local branch.
+3. Sync Kailing 4/16 call outcome into this file.
+4. Decide on Path Explorer v0.2 scope (June cards? Different stage?) based
+   on Kailing signal.
 
-**Path Explorer next (issue #25):**
-1. Run `/gstack-office-hours` to pressure-test the Path Explorer direction
-   before Day 1 content authoring.
-2. Day 1: content authoring against the 3 shortlisted schools, using the
-   per-school research matrix schema already defined in the manifest.
-3. Decide Tier 1 SHSID vs SAS/Dulwich after Ethan passport confirmation.
+**Path Explorer v0.2+ (issue #25, new branch):**
+1. Decide which month ships next. June is natural if Kailing tests v0.1
+   in May/June window.
+2. Decide whether to add a second stage (G4–G6) or go deeper on G1–G3.
+3. Address deferred P2 items as they become blocking (see above).
 
-**Trait quiz next (issue #24):**
+**Trait quiz next (issue #24, independent track):**
 1. v0.5 insight + portrait copy de-slop + random pool expansion (P1 TODO).
 2. v0.6 scientific trait quiz: replace DIY 10-q with Temperament / VIA /
-   Big5-C / Gardner MI hybrid. Not blocked by Path Explorer — independent
-   track.
+   Big5-C / Gardner MI hybrid. Not blocked by Path Explorer.
 3. Phase 2 persistence (Prisma TraitResult) after content is validated.
 
 **Longer term:**
-- WeChat share card (blocked by html2canvas spike).
+- WeChat share card polish (html2canvas spike still unrun).
 - M4 interactive report (gap analysis side).
 - AI-generated personalized routes (v2, replaces hardcoded 24 routes).
 
 ## Conventions enforced by this repo
 
 - Feature work happens on feature branches. `main` only receives merges via
-  PR, and every PR gets at minimum one round of bot review (Codex + Gemini +
-  Copilot) before merge. 3-round cap. Trivial infra PRs (like gitignore
-  changes) can skip bot review with a note.
+  PR, and every PR gets at minimum one round of bot review before merge.
+  3-round cap. Trivial infra PRs can skip with a note.
 - Version in root `VERSION` file. Changelog follows Keep a Changelog format.
 - Commit messages in English. User-facing UI in Chinese. PR titles in English
   unless otherwise requested.
