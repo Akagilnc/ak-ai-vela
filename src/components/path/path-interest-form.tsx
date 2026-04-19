@@ -168,6 +168,10 @@ export function PathInterestForm({
             border: "1px solid var(--hair)",
             borderRadius: 10,
             padding: "10px 12px",
+            // R13 fix: WCAG 2.5.5 AAA tap target 44x44. Padding+font alone
+            // resolved to ~37px (10+14+10 + line gap), missing finger
+            // contact reliability on iPhone SE.
+            minHeight: 44,
             fontSize: 14,
             fontFamily: "inherit",
             background: "var(--cream)",
@@ -186,6 +190,7 @@ export function PathInterestForm({
             border: "1px solid var(--hair)",
             borderRadius: 10,
             padding: "10px 12px",
+            minHeight: 44,
             fontSize: 14,
             fontFamily: "inherit",
             background: "var(--cream)",
@@ -209,6 +214,7 @@ export function PathInterestForm({
             border: "none",
             borderRadius: 10,
             padding: "11px 14px",
+            minHeight: 44,
             fontSize: 14,
             fontFamily: "var(--zh-sans)",
             fontWeight: 600,

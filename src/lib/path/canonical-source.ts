@@ -101,10 +101,30 @@ export function canonicalSourcePath(raw: string): string {
   }
 
   // 3. Strip ASCII control bytes (incl. NUL `\u0000` from decoded `%00`)
-  //    + zero-width / BOM-style characters that .trim() doesn't touch.
-  //    A surviving `\u0000` in the DB uniqueness key would silently create
-  //    byte-distinct rows for the same apparent sourcePath.
-  s = s.replace(/[\u0000-\u001F\u007F\u00A0\u200B-\u200F\u2028\u2029\uFEFF]/g, "");
+  //    + zero-width / BOM-style / Default_Ignorable_Code_Point / bidi-isolate
+  //    / Hangul-Filler / TAG (steganography) characters that .trim() doesn't
+  //    touch. A surviving invisible char in the DB uniqueness key would
+  //    silently create byte-distinct rows for the same apparent sourcePath.
+  //
+  //    R13 expanded coverage. Verified bypasses against the previous regex:
+  //    - U+034F COMBINING GRAPHEME JOINER (Default_Ignorable, zero-width)
+  //    - U+115F / U+1160 HANGUL CHOSEONG/JUNGSEONG FILLER (renders blank)
+  //    - U+180E MONGOLIAN VOWEL SEPARATOR (was-whitespace, still ignorable)
+  //    - U+202A-U+202E LRE / RLE / PDF / LRO / RLO (bidi formatting)
+  //    - U+2060 WORD JOINER + U+2061-U+2064 invisible math ops
+  //    - U+2066-U+2069 LRI / RLI / FSI / PDI (bidi isolates)
+  //    - U+3164 HANGUL FILLER (the "invisible char" exploit class made
+  //      famous by Discord/Fortnite username-spoofing attacks)
+  //    - U+FFA0 HALFWIDTH HANGUL FILLER (same class)
+  //    - U+FFF0-U+FFFB SPECIALS block (Interlinear Annotation, etc.)
+  //    - U+E0000-U+E007F TAG characters (modern Unicode steganography)
+  //    The `u` flag enables `\u{...}` for supplementary-plane TAG chars,
+  //    and makes the engine surrogate-pair-safe so a single TAG char's
+  //    DB40 + DCxx pair is matched as one unit.
+  s = s.replace(
+    /[\u0000-\u001F\u007F\u00A0\u034F\u115F\u1160\u180E\u200B-\u200F\u202A-\u202E\u2028\u2029\u2060-\u206F\u3164\uFEFF\uFFA0\uFFF0-\uFFFB\u{E0000}-\u{E007F}]/gu,
+    "",
+  );
 
   // 4. Trim ordinary whitespace.
   s = s.trim();

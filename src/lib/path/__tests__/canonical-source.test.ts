@@ -184,6 +184,57 @@ describe("canonicalSourcePath — confusable separators (R8)", () => {
   });
 });
 
+describe("canonicalSourcePath — Default_Ignorable / bidi / TAG smuggling (R13)", () => {
+  it.each([
+    ["U+034F COMBINING GRAPHEME JOINER", "/pa\u034Fth"],
+    ["U+115F HANGUL CHOSEONG FILLER", "/pa\u115Fth"],
+    ["U+1160 HANGUL JUNGSEONG FILLER", "/pa\u1160th"],
+    ["U+180E MONGOLIAN VOWEL SEPARATOR", "/pa\u180Eth"],
+    ["U+202A LEFT-TO-RIGHT EMBEDDING", "/pa\u202Ath"],
+    ["U+202B RIGHT-TO-LEFT EMBEDDING", "/pa\u202Bth"],
+    ["U+202C POP DIRECTIONAL FORMATTING", "/pa\u202Cth"],
+    ["U+202D LEFT-TO-RIGHT OVERRIDE", "/pa\u202Dth"],
+    ["U+202E RIGHT-TO-LEFT OVERRIDE", "/pa\u202Eth"],
+    ["U+2060 WORD JOINER", "/pa\u2060th"],
+    ["U+2066 LEFT-TO-RIGHT ISOLATE", "/pa\u2066th"],
+    ["U+2067 RIGHT-TO-LEFT ISOLATE", "/pa\u2067th"],
+    ["U+2068 FIRST STRONG ISOLATE", "/pa\u2068th"],
+    ["U+2069 POP DIRECTIONAL ISOLATE", "/pa\u2069th"],
+    ["U+3164 HANGUL FILLER", "/pa\u3164th"],
+    ["U+FFA0 HALFWIDTH HANGUL FILLER", "/pa\uFFA0th"],
+  ])("%s strips to /path", (_name, input) => {
+    expect(canonicalSourcePath(input)).toBe("/path");
+  });
+
+  it("U+E0000 TAG (steganography supplementary-plane char) strips", () => {
+    expect(canonicalSourcePath("/pa\u{E0000}th")).toBe("/path");
+  });
+
+  it("U+E0061 TAG LATIN SMALL LETTER A strips", () => {
+    expect(canonicalSourcePath("/pa\u{E0061}th")).toBe("/path");
+  });
+
+  it("U+E007F CANCEL TAG (high end of TAG range) strips", () => {
+    expect(canonicalSourcePath("/pa\u{E007F}th")).toBe("/path");
+  });
+
+  it("multiple invisible chars in one segment all strip", () => {
+    expect(
+      canonicalSourcePath("/pa\u3164\u200B\u202A\u{E0000}th"),
+    ).toBe("/path");
+  });
+
+  it("percent-encoded TAG char (UTF-8 F3A08080) decodes then strips", () => {
+    // %F3%A0%80%80 = U+E0000 in UTF-8
+    expect(canonicalSourcePath("/pa%F3%A0%80%80th")).toBe("/path");
+  });
+
+  it("percent-encoded HANGUL FILLER (UTF-8 E385A4) decodes then strips", () => {
+    // %E3%85%A4 = U+3164 in UTF-8
+    expect(canonicalSourcePath("/pa%E3%85%A4th")).toBe("/path");
+  });
+});
+
 describe("canonicalSourcePath — DoS resistance", () => {
   it("caps overlong input at 2000 chars", () => {
     const huge = "/" + "x".repeat(5000);
