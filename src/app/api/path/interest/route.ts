@@ -89,11 +89,15 @@ export async function POST(request: Request) {
     // we don't stream the user's email (embedded in Prisma P2002 `meta`) to
     // stderr, which could land in CI / container log aggregators.
     if (!isProd) {
-      // Log only the error class name — never the message. Prisma errors can
-      // echo the query object (including the user's email) in `.message`
-      // even when `meta` is scrubbed, so interpolating it risks PII in stderr.
-      const code = error instanceof Error ? error.name : "unknown";
-      console.error(`[api/path/interest] write failed: ${code}`);
+      // Log error class + Prisma `.code` (P2002 / P2003 / P2025 etc) so
+      // schema-level debugging still works. Never touch `.message` — Prisma
+      // can echo the query object (including the user email) even when
+      // `meta` is scrubbed.
+      const name = error instanceof Error ? error.name : "unknown";
+      const codeField = (error as { code?: unknown })?.code;
+      const prismaCode =
+        typeof codeField === "string" ? ` ${codeField}` : "";
+      console.error(`[api/path/interest] write failed: ${name}${prismaCode}`);
     }
     return NextResponse.json(
       { ok: false, error: "write_failed", retryable: true },

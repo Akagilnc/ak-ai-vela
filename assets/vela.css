@@ -1408,10 +1408,9 @@ a.cite{
   flex: 1;
   min-width: 0;
 }
-.d-footer button .ti,
-.d-footer a .ti{
-  max-width: 100%;
-}
+/* NOTE: .ti already has `max-width: 140px` further down in this file —
+   that works alongside the `min-width: 0` cascade above to let the title
+   ellipsify on narrow screens while capping at 140px on wider phones. */
 .d-footer button:disabled{opacity: 0.35; cursor: not-allowed}
 .d-footer button:hover:not(:disabled),
 .d-footer a:hover{background: var(--cream-2)}

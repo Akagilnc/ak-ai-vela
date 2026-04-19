@@ -14,15 +14,20 @@ import { useEffect, useRef, useState } from "react";
 export function PathSubNav({ targets }: { targets: string[] }) {
   const [active, setActive] = useState(0);
   const navRef = useRef<HTMLElement | null>(null);
+  const firstMountRef = useRef(true);
   // Content-based key so effects re-run when the actual target list changes,
   // not just when the length happens to differ. Two 5-section cards with
   // different content previously reused the old `active` state.
   const targetsKey = targets.join("|");
 
-  // Reset active pill + detail-body scroll on every activity switch. Without
-  // this, navigating from the middle of c1 to c2 leaves c2 scrolled halfway
-  // down with the wrong pill highlighted.
+  // Reset active pill + detail-body scroll on activity switch. Skipped on
+  // the very first mount so future deep-link anchors like `/path/xx#sec-3`
+  // don't get zeroed-out at load.
   useEffect(() => {
+    if (firstMountRef.current) {
+      firstMountRef.current = false;
+      return;
+    }
     setActive(0);
     const body = document.getElementById("detail-body");
     if (body) body.scrollTop = 0;
@@ -30,6 +35,8 @@ export function PathSubNav({ targets }: { targets: string[] }) {
 
   // Scroll-spy: watch #detail-body scroll, find the section whose offsetTop
   // is closest to but not past the current scrollTop + 20px cushion.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- targets ref
+  //   is fresh each render; targetsKey is the stable content hash.
   useEffect(() => {
     const body = document.getElementById("detail-body");
     if (!body) return;
@@ -47,7 +54,7 @@ export function PathSubNav({ targets }: { targets: string[] }) {
     body.addEventListener("scroll", update, { passive: true });
     update();
     return () => body.removeEventListener("scroll", update);
-  }, [targets, targetsKey]);
+  }, [targetsKey]);
 
   // Keep the active pill visible in the horizontally-scrolling nav bar.
   useEffect(() => {

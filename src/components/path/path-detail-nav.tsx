@@ -44,11 +44,10 @@ export function PathDetailNav({
     }
 
     // Guard against hijacking keyboard / swipe while the user is interacting
-    // with a form control, editable content, a focusable custom button
-    // (e.g. the id-table image wrappers), or a horizontally-scrollable
-    // region (e.g. dragging the sub-nav pills). Without this, pressing arrow
-    // keys while focus is on one of those elements teleports the user to
-    // another activity page instead of the expected local action.
+    // with a form control, editable content, a focusable wrapper, or a
+    // native button / link. EXCEPT the footer prev/next links — those ARE
+    // the nav action, so the arrow-key shortcut and the link click have the
+    // same semantics, no conflict.
     function isInInteractiveTarget(target: EventTarget | null): boolean {
       if (!(target instanceof Element)) return false;
       const tag = target.tagName;
@@ -59,6 +58,13 @@ export function PathDetailNav({
       // tabindex=0 means the element was deliberately made focusable; treat
       // arrow keys as local there, not as app-wide navigation.
       if (el.closest<HTMLElement>('[tabindex="0"]')) return true;
+      // Native <button> / <a> — sub-nav pills, back button, share, form
+      // submit. Focused user pressing arrow keys should interact with THAT
+      // control, not teleport between activities. Footer prev/next links
+      // are the one exception (arrow = click for those).
+      if (tag === "BUTTON" || tag === "A") {
+        if (!el.closest(".d-footer")) return true;
+      }
       return false;
     }
 
@@ -85,10 +91,14 @@ export function PathDetailNav({
       if (navigatingRef.current) return;
       navigatingRef.current = true;
       if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+      // 2s safety unlock — covers cold WeChat WebView / slow 4G where a real
+      // transition can exceed 800ms. The pathname effect still releases the
+      // lock earlier on fast transitions; the timer only fires if router.push
+      // silently fails or hangs.
       unlockTimerRef.current = setTimeout(() => {
         navigatingRef.current = false;
         unlockTimerRef.current = null;
-      }, 800);
+      }, 2000);
       router.push(href);
     }
 

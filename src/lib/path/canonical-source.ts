@@ -25,45 +25,61 @@
 export function canonicalSourcePath(raw: string): string {
   if (typeof raw !== "string") return "/";
 
-  // 1. Unicode normalize
-  let s = raw.normalize("NFKC");
+  // 0. Length cap — NFKC + regex on unbounded input is an easy DoS vector.
+  //    The server boundary enforces Zod max(200) separately; this keeps the
+  //    function defensive when called from the client or reused elsewhere.
+  let s = raw.length > 2000 ? raw.slice(0, 2000) : raw;
 
-  // 2. Strip invisible chars
+  // 1. Unicode normalize (NFKC folds full-width / compatibility forms).
+  s = s.normalize("NFKC");
+
+  // 2. Decode percent-encoded chars so `%2E%2E` collapses to `..` instead of
+  //    surviving as a distinct key. Invalid escape sequences leave the
+  //    string untouched — other steps still normalize.
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    /* malformed escape — continue with partial normalization */
+  }
+
+  // 3. Strip invisible / zero-width chars that .trim() doesn't touch.
   s = s.replace(/[\u00A0\u200B-\u200F\u2028\u2029\uFEFF]/g, "");
 
-  // 3. Trim ordinary whitespace
+  // 4. Trim ordinary whitespace.
   s = s.trim();
 
-  // 4. Drop query + hash
+  // 5. Drop query + hash — same logical page.
   const cut = (idx: number) => (idx === -1 ? s.length : idx);
   const end = Math.min(cut(s.indexOf("?")), cut(s.indexOf("#")));
   s = s.slice(0, end);
 
-  // 5. Collapse multiple slashes
+  // 6. Absolutize — "path" and "./path" collapse to "/path". Without this,
+  //    the same logical page submitted by a misbehaving client creates
+  //    distinct DB rows under (email, sourcePath).
+  if (!s.startsWith("/")) s = "/" + s;
+
+  // 7. Collapse multiple slashes.
   s = s.replace(/\/{2,}/g, "/");
 
-  // 6. Resolve . and .. segments
-  if (s.includes("/")) {
-    const leading = s.startsWith("/") ? "/" : "";
-    const segments = s.split("/").filter(Boolean);
-    const out: string[] = [];
-    for (const seg of segments) {
-      if (seg === ".") continue;
-      if (seg === "..") {
-        out.pop();
-        continue;
-      }
-      out.push(seg);
+  // 8. Resolve . and .. segments against the now-rooted path.
+  const segments = s.slice(1).split("/").filter(Boolean);
+  const resolved: string[] = [];
+  for (const seg of segments) {
+    if (seg === ".") continue;
+    if (seg === "..") {
+      resolved.pop();
+      continue;
     }
-    s = leading + out.join("/");
+    resolved.push(seg);
   }
+  s = "/" + resolved.join("/");
 
-  // 7. Strip trailing slash (except keep the single "/" at root)
+  // 9. Strip trailing slash (except keep the single "/" at root).
   if (s.length > 1) {
     s = s.replace(/\/+$/g, "");
   }
   if (s === "") s = "/";
 
-  // 8. Lowercase
+  // 10. Lowercase — case variants almost never meaningful for path routing.
   return s.toLowerCase();
 }
