@@ -1505,6 +1505,35 @@ a.cite{
   color: var(--mute-2);
 }
 
+/* ============ FOCUS RING (R15 a11y) ============ */
+/* WCAG 2.4.7 Focus Visible (AA): every interactive element on /path/* must
+   have a clearly visible keyboard focus indicator. The default browser
+   outline is a thin blue ring that disappears against cream / forest
+   gradients. R15 adds a single `.stage`-scoped rule covering every
+   interactive element type. Uses `:focus-visible` so mouse-click does
+   NOT trigger the ring (avoids the "click halo" anti-pattern). */
+.stage :is(a, button, input, select, textarea, summary, [tabindex="0"], [role="button"]):focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  /* Keep the parent's border-radius so the ring hugs pills, tiles, and
+     icon buttons rather than drawing a square halo around them. */
+  border-radius: inherit;
+}
+
+/* ============ REDUCED MOTION (R15 a11y) ============ */
+/* WCAG 2.3.3 Animation from Interactions (AAA, but ship-quality default).
+   Users who set `prefers-reduced-motion: reduce` (iOS Settings →
+   Accessibility → Motion → Reduce Motion) get near-zero-duration
+   substitutes for every transition / animation / smooth scroll. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ============ SKIP LINK (R14 a11y) ============ */
 /* Off-viewport baseline + focus-pulled-into-view pattern. Two anchors in
    src/app/path/layout.tsx (#path-main and #detail-body) so keyboard users

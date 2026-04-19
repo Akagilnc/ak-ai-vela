@@ -18,6 +18,7 @@ export default function PathError({
     <div className="stage">
       <div className="stage-inner">
         <main
+          id="path-main"
           style={{
             flex: 1,
             display: "flex",

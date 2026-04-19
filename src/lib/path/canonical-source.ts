@@ -100,35 +100,32 @@ export function canonicalSourcePath(raw: string): string {
     s = decoded;
   }
 
-  // 3. Strip ASCII control bytes (incl. NUL `\u0000` from decoded `%00`)
-  //    + zero-width / BOM-style / Default_Ignorable_Code_Point / bidi-isolate
-  //    / Hangul-Filler / TAG (steganography) characters that .trim() doesn't
-  //    touch. A surviving invisible char in the DB uniqueness key would
-  //    silently create byte-distinct rows for the same apparent sourcePath.
+  // 3. Strip ALL invisible / zero-width / format / control characters via
+  //    Unicode property escapes — covers the entire Default_Ignorable_Code_
+  //    Point class (~4174 codepoints in Unicode 15.1) in one shot. R3-R14
+  //    used hand-enumerated ranges and shipped 4 incomplete passes:
+  //      R5  added U+200B-U+200F + BOM + line/para
+  //      R7  added \u00A0 NBSP + extended bidi marks
+  //      R13 added U+034F + U+115F-1160 + U+180E + U+202A-202E + U+2060-206F
+  //          + U+3164 + U+FFA0 + U+FFF0-FFFB + U+E0000-E007F TAG
+  //      R14 added U+FE00-U+FE0F (BMP variation selectors) + U+E0100-U+E01EF
+  //          (supplementary VS) + U+1D173-U+1D17A (musical invisibles)
+  //    Each round, reviewers found the next missing subclass (Discord
+  //    "invisible char" U+3164, Trojan-Source U+202A-U+202E, emoji VS-16,
+  //    etc.). R15 ends the whack-a-mole by switching to the property escape:
+  //    `\p{Default_Ignorable_Code_Point}` matches every codepoint with that
+  //    Unicode property, AUTOMATICALLY including any future codepoints the
+  //    Unicode Consortium adds (Node's bundled ICU updates).
   //
-  //    R13 expanded coverage. Verified bypasses against the previous regex:
-  //    - U+034F COMBINING GRAPHEME JOINER (Default_Ignorable, zero-width)
-  //    - U+115F / U+1160 HANGUL CHOSEONG/JUNGSEONG FILLER (renders blank)
-  //    - U+180E MONGOLIAN VOWEL SEPARATOR (was-whitespace, still ignorable)
-  //    - U+202A-U+202E LRE / RLE / PDF / LRO / RLO (bidi formatting)
-  //    - U+2060 WORD JOINER + U+2061-U+2064 invisible math ops
-  //    - U+2066-U+2069 LRI / RLI / FSI / PDI (bidi isolates)
-  //    - U+3164 HANGUL FILLER (the "invisible char" exploit class made
-  //      famous by Discord/Fortnite username-spoofing attacks)
-  //    - U+FFA0 HALFWIDTH HANGUL FILLER (same class)
-  //    - U+FFF0-U+FFFB SPECIALS block (Interlinear Annotation, etc.)
-  //    - U+E0000-U+E007F TAG characters (modern Unicode steganography)
-  //    The `u` flag enables `\u{...}` for supplementary-plane TAG chars,
-  //    and makes the engine surrogate-pair-safe so a single TAG char's
-  //    DB40 + DCxx pair is matched as one unit.
-  // R14 added (after R13's pass missed the most common subclass): variation
-  // selectors. Every iOS emoji keyboard emits VS-15/VS-16 (U+FE0E/U+FE0F)
-  // to disambiguate text vs emoji presentation, so this is the most
-  // realistically-encountered Default_Ignorable class in the wild — bigger
-  // surface than the TAG range R13 added. Also musical symbol invisibles
-  // (U+1D173-U+1D17A) for completeness.
+  //    Kept explicit (NOT in Default_Ignorable per UCD):
+  //      \p{Cc}        — C0/C1 controls (NUL, ESC, DEL, etc.)
+  //      \u00A0 NBSP   — Zs Space_Separator class
+  //      \u2028/\u2029 — Zl/Zp line/para separators
+  //
+  //    The `u` flag makes the engine surrogate-pair-safe and enables the
+  //    `\p{...}` property escape (Node 10+, native V8).
   s = s.replace(
-    /[\u0000-\u001F\u007F\u00A0\u034F\u115F\u1160\u180E\u200B-\u200F\u202A-\u202E\u2028\u2029\u2060-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF0-\uFFFB\u{1D173}-\u{1D17A}\u{E0100}-\u{E01EF}\u{E0000}-\u{E007F}]/gu,
+    /[\p{Cc}\p{Default_Ignorable_Code_Point}\u00A0\u2028\u2029]/gu,
     "",
   );
 

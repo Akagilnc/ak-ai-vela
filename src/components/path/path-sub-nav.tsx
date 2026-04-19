@@ -3,6 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
+ * Pick scroll behavior honoring `prefers-reduced-motion`. iOS Safari and
+ * WebKit historically ignore the user-agent's hint for JS-driven smooth
+ * scroll, so we have to gate on `matchMedia` ourselves. R15 a11y fix.
+ */
+function scrollBehavior(): ScrollBehavior {
+  if (typeof window === "undefined") return "auto";
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
+}
+
+/**
  * Sticky sub-nav with scroll-spy. Mirrors demo behavior:
  * - Click a pill → smooth-scroll to the corresponding `.d-sec` section.
  * - Scrolling the detail body updates which pill is active.
@@ -66,10 +78,11 @@ export function PathSubNav({ targets }: { targets: string[] }) {
     const btnR = btnL + btn.offsetWidth;
     const scrollL = nav.scrollLeft;
     const scrollR = scrollL + nav.clientWidth;
+    const behavior = scrollBehavior();
     if (btnL < scrollL + 10) {
-      nav.scrollTo({ left: btnL - 10, behavior: "smooth" });
+      nav.scrollTo({ left: btnL - 10, behavior });
     } else if (btnR > scrollR - 10) {
-      nav.scrollTo({ left: btnR - nav.clientWidth + 10, behavior: "smooth" });
+      nav.scrollTo({ left: btnR - nav.clientWidth + 10, behavior });
     }
   }, [active]);
 
@@ -77,7 +90,7 @@ export function PathSubNav({ targets }: { targets: string[] }) {
     const sec = document.getElementById(`sec-${i}`);
     const body = document.getElementById("detail-body");
     if (sec && body) {
-      body.scrollTo({ top: sec.offsetTop - 8, behavior: "smooth" });
+      body.scrollTo({ top: sec.offsetTop - 8, behavior: scrollBehavior() });
     }
   }
 

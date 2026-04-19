@@ -271,6 +271,41 @@ describe("canonicalSourcePath — Variation Selectors + musical invisibles (R14)
   });
 });
 
+describe("canonicalSourcePath — comprehensive Default_Ignorable coverage (R15)", () => {
+  // R15 switched from manual ranges to \p{Default_Ignorable_Code_Point}.
+  // These pin classes that previous rounds missed but the property escape
+  // now catches automatically. If anyone narrows the regex back to
+  // hand-enumerated ranges, these break.
+  it.each([
+    ["U+00AD SOFT HYPHEN", "/pa\u00ADth"],
+    ["U+061C ARABIC LETTER MARK", "/pa\u061Cth"],
+    ["U+180B MONGOLIAN FREE VARIATION SELECTOR ONE", "/pa\u180Bth"],
+    ["U+180C MONGOLIAN FREE VARIATION SELECTOR TWO", "/pa\u180Cth"],
+    ["U+180D MONGOLIAN FREE VARIATION SELECTOR THREE", "/pa\u180Dth"],
+    ["U+180F MONGOLIAN FREE VARIATION SELECTOR FOUR", "/pa\u180Fth"],
+    ["U+17B4 KHMER VOWEL INHERENT AQ", "/pa\u17B4th"],
+    ["U+17B5 KHMER VOWEL INHERENT AA", "/pa\u17B5th"],
+    ["U+1BCA0 SHORTHAND FORMAT LETTER OVERLAP", "/pa\u{1BCA0}th"],
+    ["U+1BCA3 SHORTHAND FORMAT UP STEP", "/pa\u{1BCA3}th"],
+  ])("%s strips via \\p{Default_Ignorable_Code_Point}", (_name, input) => {
+    expect(canonicalSourcePath(input)).toBe("/path");
+  });
+
+  it("multiple Default_Ignorable classes in one path strip", () => {
+    expect(
+      canonicalSourcePath("/pa\u00AD\u061C\u180D\uFE0F\u3164th"),
+    ).toBe("/path");
+  });
+
+  it("percent-encoded SOFT HYPHEN (UTF-8 C2AD) decodes then strips", () => {
+    expect(canonicalSourcePath("/pa%C2%ADth")).toBe("/path");
+  });
+
+  it("percent-encoded ARABIC LETTER MARK (UTF-8 D89C) decodes then strips", () => {
+    expect(canonicalSourcePath("/pa%D8%9Cth")).toBe("/path");
+  });
+});
+
 describe("canonicalSourcePath — DoS resistance", () => {
   it("caps overlong input at 2000 chars", () => {
     const huge = "/" + "x".repeat(5000);

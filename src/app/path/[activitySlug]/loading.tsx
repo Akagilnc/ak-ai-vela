@@ -50,7 +50,7 @@ export default function Loading() {
           ))}
         </nav>
 
-        <div className="detail-body" id="detail-body" style={{ pointerEvents: "none" }}>
+        <main className="detail-body" id="detail-body" style={{ pointerEvents: "none" }}>
           <div className="card-intro" data-kind="baseline">
             <div className="kicker">
               <span className="pip" />
@@ -72,7 +72,7 @@ export default function Loading() {
               <div style={{ ...barStyle, height: 14, width: "88%", marginTop: 6 }} />
             </section>
           ))}
-        </div>
+        </main>
 
         {/* footer disabled prev/next — keeps height stable */}
         <div className="d-footer">
