@@ -151,7 +151,7 @@ model PathGoal {
   id           String   @id @default(cuid())
   slug         String   @unique  // cross-activity reference key
   stageId      String
-  stage        PathStage @relation(fields: [stageId], references: [id])
+  stage        PathStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
   title        String
   rationale    String              // markdown, why this goal matters
   horizon      String              // "month" | "semester" | "annual" |
@@ -170,7 +170,7 @@ model PathActivity {
   id           String   @id @default(cuid())
   slug         String   @unique  // cross-card link reference (gotoActivitySlug)
   goalId       String
-  goal         PathGoal @relation(fields: [goalId], references: [id])
+  goal         PathGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
   month        Int                // 1-12
   cardType     String             // "baseline" | "event"
 
@@ -200,7 +200,7 @@ model PathActivity {
 model PathDecision {
   id           String   @id @default(cuid())
   stageId      String
-  stage        PathStage @relation(fields: [stageId], references: [id])
+  stage        PathStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
   title        String   // e.g. "美高 vs 国内国际学校"
   question     String   // e.g. "G7 开始，你让孩子走哪条路？"
   displayOrder Int
@@ -216,7 +216,7 @@ model PathDecision {
 model PathDecisionBranch {
   id                   String   @id @default(cuid())
   decisionId           String
-  decision             PathDecision @relation(fields: [decisionId], references: [id])
+  decision             PathDecision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
   label                String   // e.g. "转美高"
   shortDescription     String   // e.g. "G8 考 SSAT, G9 入读"
   displayOrder         Int
@@ -240,5 +240,7 @@ model PathInterest {
   sourcePath  String   // e.g. "/path" or "/path?variant=v01"
   userAgent   String?  // for bot filtering
 
+  @@unique([email, sourcePath])   // idempotency key for CTA form
+  @@index([createdAt])              // admin list + purge queries
   @@map("path_interests")
 }

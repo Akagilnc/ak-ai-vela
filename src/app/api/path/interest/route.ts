@@ -5,9 +5,12 @@ import { prisma } from "@/lib/prisma";
 /**
  * POST /api/path/interest — capture email + optional context for Path Explorer CTA.
  *
- * Validated at the app boundary with Zod. DB schema trusts this layer.
- * Bot-filter heuristics live here too (user-agent blanket rejection only —
- * harder server-side checks live in future API middleware).
+ * Validated at the app boundary with Zod. DB trusts this layer.
+ * Idempotent: upsert keyed by (email, sourcePath) so double-submits, retries,
+ * and WeChat network replays all converge on one row. Defense-in-depth: email
+ * trimmed + lower-cased, Zod `detail` scrubbed in prod, Prisma errors caught.
+ *
+ * Known gaps deferred to v0.5+: rate limiting, honeypot, CSRF, captcha.
  */
 
 const bodySchema = z.object({
@@ -23,28 +26,70 @@ const bodySchema = z.object({
   sourcePath: z.string().max(200).default("/path"),
 });
 
+const isProd = process.env.NODE_ENV === "production";
+
 export async function POST(request: Request) {
-  let payload: z.infer<typeof bodySchema>;
+  let raw: unknown;
   try {
-    payload = bodySchema.parse(await request.json());
-  } catch (error) {
+    raw = await request.json();
+  } catch {
     return NextResponse.json(
-      { ok: false, error: "invalid_payload", detail: String(error) },
+      { ok: false, error: "invalid_json" },
       { status: 400 },
     );
   }
 
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) {
+    // In prod, scrub Zod's internal error shape (schema field names, enum options,
+    // constraints) from client response — useful telemetry for attackers probing
+    // the endpoint. In dev, keep it verbose so developers can iterate.
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "invalid_payload",
+        ...(isProd ? {} : { detail: parsed.error.issues }),
+      },
+      { status: 400 },
+    );
+  }
+  const payload = parsed.data;
+
+  const normalizedEmail = payload.email.trim().toLowerCase();
   const userAgent = request.headers.get("user-agent") ?? null;
 
-  const row = await prisma.pathInterest.create({
-    data: {
-      email: payload.email,
-      budgetRange: payload.budgetRange ?? null,
-      childGrade: payload.childGrade ?? null,
-      sourcePath: payload.sourcePath,
-      userAgent,
-    },
-  });
+  try {
+    const row = await prisma.pathInterest.upsert({
+      where: {
+        email_sourcePath: {
+          email: normalizedEmail,
+          sourcePath: payload.sourcePath,
+        },
+      },
+      update: {
+        budgetRange: payload.budgetRange ?? null,
+        childGrade: payload.childGrade ?? null,
+        userAgent,
+      },
+      create: {
+        email: normalizedEmail,
+        budgetRange: payload.budgetRange ?? null,
+        childGrade: payload.childGrade ?? null,
+        sourcePath: payload.sourcePath,
+        userAgent,
+      },
+    });
 
-  return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
+    return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
+  } catch (error) {
+    // Structured error — client can distinguish "retry" from "permanent failure"
+    // without us leaking Prisma internals.
+    if (!isProd) {
+      console.error("[api/path/interest] write failed:", error);
+    }
+    return NextResponse.json(
+      { ok: false, error: "write_failed", retryable: true },
+      { status: 503 },
+    );
+  }
 }

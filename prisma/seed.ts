@@ -34,51 +34,81 @@ async function seedPathExplorer() {
 
   const { stage, goals, activities } = G1_MAY_SEED;
 
-  // Stage: upsert by slug
-  const stageRow = await prisma.pathStage.upsert({
-    where: { slug: stage.slug },
-    update: {
-      title: stage.title,
-      description: stage.description,
-      gradeFrom: stage.gradeFrom,
-      gradeTo: stage.gradeTo,
-      orderIndex: stage.orderIndex,
-    },
-    create: stage,
+  // Pre-compute valid slug sets so we can purge anything NOT in the source of
+  // truth inside the same transaction — prevents silent orphan rows after the
+  // manifest gets an activity/goal renamed or removed.
+  const validGoalSlugs = goals.map((g) => g.slug);
+  const validActivitySlugs = activities.map((a) => a.slug);
+
+  // Wrap the whole slice in an interactive transaction so a partial crash
+  // doesn't leave the UI with a half-seeded manifest. Ordering inside the
+  // transaction mirrors FK dependency (stage → goals → activities).
+  await prisma.$transaction(async (tx) => {
+    // Stage: upsert by slug
+    const stageRow = await tx.pathStage.upsert({
+      where: { slug: stage.slug },
+      update: {
+        title: stage.title,
+        description: stage.description,
+        gradeFrom: stage.gradeFrom,
+        gradeTo: stage.gradeTo,
+        orderIndex: stage.orderIndex,
+      },
+      create: stage,
+    });
+
+    // Purge stale activities / goals under this stage before upserting the
+    // current set. Activities first (FK-leaf), then goals.
+    await tx.pathActivity.deleteMany({
+      where: {
+        goal: { stageId: stageRow.id },
+        slug: { notIn: validActivitySlugs },
+      },
+    });
+    await tx.pathGoal.deleteMany({
+      where: { stageId: stageRow.id, slug: { notIn: validGoalSlugs } },
+    });
+
+    // Goals: upsert by slug, resolve stageSlug → stageId, build slug→id map
+    // so the activities loop doesn't need per-row findUnique queries.
+    const goalIdBySlug = new Map<string, string>();
+    for (const goal of goals) {
+      const { stageSlug, ...rest } = goal;
+      if (stageSlug !== stageRow.slug) {
+        throw new Error(
+          `PathGoal "${rest.slug}" references unknown stage "${stageSlug}"`,
+        );
+      }
+      const row = await tx.pathGoal.upsert({
+        where: { slug: rest.slug },
+        update: { ...rest, stageId: stageRow.id },
+        create: { ...rest, stageId: stageRow.id },
+      });
+      goalIdBySlug.set(row.slug, row.id);
+    }
+
+    // Activities: upsert by slug, resolve goalSlug → goalId from in-memory map.
+    // Json fields (previews/chips/sections) cast to Prisma.InputJsonValue.
+    for (const activity of activities) {
+      const { goalSlug, previews, chips, sections, ...rest } = activity;
+      const goalId = goalIdBySlug.get(goalSlug);
+      if (!goalId) {
+        throw new Error(
+          `PathActivity "${rest.slug}" references unknown goal "${goalSlug}"`,
+        );
+      }
+      const jsonFields = {
+        previews: previews as unknown as Prisma.InputJsonValue,
+        chips: chips as unknown as Prisma.InputJsonValue,
+        sections: sections as unknown as Prisma.InputJsonValue,
+      };
+      await tx.pathActivity.upsert({
+        where: { slug: rest.slug },
+        update: { ...rest, ...jsonFields, goalId },
+        create: { ...rest, ...jsonFields, goalId },
+      });
+    }
   });
-
-  // Goals: upsert by slug, resolve stageSlug → stageId
-  for (const goal of goals) {
-    const { stageSlug, ...rest } = goal;
-    if (stageSlug !== stageRow.slug) {
-      throw new Error(`PathGoal "${rest.slug}" references unknown stage "${stageSlug}"`);
-    }
-    await prisma.pathGoal.upsert({
-      where: { slug: rest.slug },
-      update: { ...rest, stageId: stageRow.id },
-      create: { ...rest, stageId: stageRow.id },
-    });
-  }
-
-  // Activities: upsert by slug, resolve goalSlug → goalId
-  // Json fields (previews/chips/sections) must be cast to Prisma.InputJsonValue
-  for (const activity of activities) {
-    const { goalSlug, previews, chips, sections, ...rest } = activity;
-    const goal = await prisma.pathGoal.findUnique({ where: { slug: goalSlug } });
-    if (!goal) {
-      throw new Error(`PathActivity "${rest.slug}" references unknown goal "${goalSlug}"`);
-    }
-    const jsonFields = {
-      previews: previews as Prisma.InputJsonValue,
-      chips: chips as Prisma.InputJsonValue,
-      sections: sections as Prisma.InputJsonValue,
-    };
-    await prisma.pathActivity.upsert({
-      where: { slug: rest.slug },
-      update: { ...rest, ...jsonFields, goalId: goal.id },
-      create: { ...rest, ...jsonFields, goalId: goal.id },
-    });
-  }
 
   console.log(
     `Seeded Path Explorer: 1 stage, ${goals.length} goals, ${activities.length} activities`,
