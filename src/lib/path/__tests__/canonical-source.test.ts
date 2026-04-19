@@ -306,6 +306,44 @@ describe("canonicalSourcePath — comprehensive Default_Ignorable coverage (R15)
   });
 });
 
+describe("canonicalSourcePath — invisible-smuggled percent-encoding (R3 PR review)", () => {
+  // R3 PR review (Gemini) caught this: stripping invisibles AFTER the
+  // normalize/decode loop let an attacker hide a `%2E` (the encoded dot)
+  // by splitting it with a zero-width char: `%2\u200BE`. The decoder
+  // couldn't parse the broken `%2` sequence, so it stayed literal; the
+  // post-loop strip then removed the invisible and left the `%2E`
+  // un-decoded in the final dedup key. The fix is to strip INSIDE the
+  // loop so the reassembled `%2E` goes through another decode pass.
+  it("/pa%2\\u200BE/admin decodes correctly after in-loop strip (dot-segment resolves)", () => {
+    // `%2E` = `.` (U+002E). After strip + decode: `/pa./admin`. Dot as a
+    // segment component doesn't trigger `..` traversal — it just becomes
+    // literal `.` in the filename. The key win is that the SAME input
+    // with `\u200B` smuggling now produces the SAME canonical form as
+    // the un-smuggled input `/pa%2E/admin` → `/pa.` + `/admin`.
+    expect(canonicalSourcePath("/pa%2\u200BE/admin")).toBe(
+      canonicalSourcePath("/pa%2E/admin"),
+    );
+  });
+
+  it("/pa%2\\u200BE%2\\u200BE/admin resolves as `..` after decode (traversal collapsed)", () => {
+    // Full smuggling attack: two split `%2E`s → `..` after decode → pops
+    // the preceding segment. Without the in-loop strip, the final key
+    // would be `/pa%2e%2e/admin` (literal). With the fix, we get
+    // `/admin`, the same result as non-smuggled `/pa/../admin`.
+    expect(canonicalSourcePath("/pa/%2\u200BE%2\u200BE/admin")).toBe("/admin");
+  });
+
+  it("DoS cap: adversarial 2000-char with 100 smuggled invisibles converges in <100ms", () => {
+    // Loop bound moved from `pass < s.length` (up to 2000 iters) to
+    // `pass < 10`. Validate that legitimate nested inputs still converge
+    // and the adversarial worst case returns fast.
+    const start = Date.now();
+    const adversarial = "/" + "\u200B%2E".repeat(200) + "/admin";
+    canonicalSourcePath(adversarial);
+    expect(Date.now() - start).toBeLessThan(100);
+  });
+});
+
 describe("canonicalSourcePath — DoS resistance", () => {
   it("caps overlong input at 2000 chars", () => {
     const huge = "/" + "x".repeat(5000);

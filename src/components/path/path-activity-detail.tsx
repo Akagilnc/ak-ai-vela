@@ -45,7 +45,10 @@ export function PathActivityDetail({
         <ShareButton title={activity.title} />
       </div>
 
-      <PathSubNav targets={sections.map((s) => s.target)} />
+      <PathSubNav
+        targets={sections.map((s) => s.target)}
+        activitySlug={activity.slug}
+      />
 
       <main className="detail-body" id="detail-body">
         <div className="card-intro" data-kind={activity.cardType}>

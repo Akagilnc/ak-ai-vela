@@ -23,14 +23,26 @@ function scrollBehavior(): ScrollBehavior {
  * Expects each section in the DOM to have `id="sec-{index}"`. Sections
  * render inside `#detail-body` which is the scroll container.
  */
-export function PathSubNav({ targets }: { targets: string[] }) {
+export function PathSubNav({
+  targets,
+  activitySlug,
+}: {
+  targets: string[];
+  activitySlug: string;
+}) {
   const [active, setActive] = useState(0);
   const navRef = useRef<HTMLElement | null>(null);
   const firstMountRef = useRef(true);
-  // Content-based key so effects re-run when the actual target list changes,
-  // not just when the length happens to differ. Two 5-section cards with
-  // different content previously reused the old `active` state.
-  const targetsKey = targets.join("|");
+  // R3 PR review fix (Gemini HIGH): include activitySlug in the dep key.
+  // Without it, two cards that happen to share section names (e.g. the
+  // baseline card and another card both starting with "本月节奏") don't
+  // trigger the effect re-run on navigation. Active pill stays at the
+  // previous position and the R2 scroll-spy cache holds STALE DOM refs
+  // pointing to the unmounted card's sections. Result: tapping the
+  // first pill on the new card scrolls the old card's section into
+  // view, or no-ops on a disposed node. Including `activitySlug` makes
+  // the key unique per route, so the effect always resets on navigation.
+  const targetsKey = `${activitySlug}|${targets.join("|")}`;
 
   // Reset active pill + detail-body scroll on activity switch. Skipped on
   // the very first mount so future deep-link anchors like `/path/xx#sec-3`

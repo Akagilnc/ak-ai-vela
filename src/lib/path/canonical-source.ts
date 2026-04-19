@@ -60,11 +60,22 @@ export function canonicalSourcePath(raw: string): string {
   // Doing NFKC only once at the top would leave these decoded variants
   // as distinct dedup keys.
   //
-  // Each pass that changes `s` strictly shortens it (`%XX` → ≤1 byte,
-  // NFKC of compatibility forms also shrinks or stays same), so the
-  // `pass < s.length` bound is finite and fast. Combined with the
-  // 2000-char cap in step 0, worst case is ~20ms.
-  for (let pass = 0; pass < s.length; pass++) {
+  // R3 PR review fix (Gemini SECURITY HIGH): strip invisibles INSIDE the
+  // loop, before NFKC + decode, not after. Doing it after let an attacker
+  // smuggle `%2\u200BE` through — the loop's decoder can't make sense of
+  // the split `%2` (no trailing 2-hex), keeps it literal, loop converges.
+  // Only THEN the strip removes `\u200B`, leaving `%2E` which was the
+  // original target — but no decode pass runs after the strip. With strip
+  // in the loop, each pass starts clean, and after the strip fires the
+  // decoder sees the reassembled `%2E` and decodes it to `.` as intended,
+  // which then resolves via dot-segment processing.
+  //
+  // Hard iteration cap `< 10` (was `< s.length`, up to 2000) — also
+  // flagged by Gemini as DoS risk. Nested percent encodings like
+  // `%25252525252E` (5 layers) need ≤6 passes; NFKC convergence is
+  // O(log). 10 gives generous headroom. Iteration budget no longer
+  // scales with input length.
+  for (let pass = 0; pass < 10; pass++) {
     // NFKC first, then fold the confusable-separator / confusable-dot
     // classes NFKC doesn't cover: backslash + full-width backslash +
     // FRACTION/DIVISION SLASH (U+2044 / U+2215) → `/`, and IDEOGRAPHIC
@@ -88,7 +99,18 @@ export function canonicalSourcePath(raw: string): string {
     // Dot-side: U+3002 IDEOGRAPHIC FULL STOP `。` (common in Chinese text).
     // Add to these lists only if a new confusable is found in a real
     // submission — over-folding risks false-positive dedup.
-    const normalized = s
+    //
+    // Invisible / default-ignorable / format / control strip uses the
+    // Unicode property escape `\p{Default_Ignorable_Code_Point}` + `\p{Cc}`
+    // to cover ~4174 codepoints in one shot (VS-1..256, bidi isolates,
+    // TAG, Hangul fillers, SOFT HYPHEN, ARABIC LETTER MARK, musical
+    // invisibles, etc.). Added explicitly because NOT in those properties:
+    //   \u00A0 NBSP (Zs), \u2028/\u2029 (Zl/Zp line/para separators).
+    const stripped = s.replace(
+      /[\p{Cc}\p{Default_Ignorable_Code_Point}\u00A0\u2028\u2029]/gu,
+      "",
+    );
+    const normalized = stripped
       .normalize("NFKC")
       .replace(
         /[\\\uFF3C\u2044\u2215\u2216\u2571\u2572\u27CB\u27CD\u2AFB\u2AFD\u29F5\u29F8\u29F9]/g,
@@ -99,35 +121,6 @@ export function canonicalSourcePath(raw: string): string {
     if (decoded === s) break;
     s = decoded;
   }
-
-  // 3. Strip ALL invisible / zero-width / format / control characters via
-  //    Unicode property escapes — covers the entire Default_Ignorable_Code_
-  //    Point class (~4174 codepoints in Unicode 15.1) in one shot. R3-R14
-  //    used hand-enumerated ranges and shipped 4 incomplete passes:
-  //      R5  added U+200B-U+200F + BOM + line/para
-  //      R7  added \u00A0 NBSP + extended bidi marks
-  //      R13 added U+034F + U+115F-1160 + U+180E + U+202A-202E + U+2060-206F
-  //          + U+3164 + U+FFA0 + U+FFF0-FFFB + U+E0000-E007F TAG
-  //      R14 added U+FE00-U+FE0F (BMP variation selectors) + U+E0100-U+E01EF
-  //          (supplementary VS) + U+1D173-U+1D17A (musical invisibles)
-  //    Each round, reviewers found the next missing subclass (Discord
-  //    "invisible char" U+3164, Trojan-Source U+202A-U+202E, emoji VS-16,
-  //    etc.). R15 ends the whack-a-mole by switching to the property escape:
-  //    `\p{Default_Ignorable_Code_Point}` matches every codepoint with that
-  //    Unicode property, AUTOMATICALLY including any future codepoints the
-  //    Unicode Consortium adds (Node's bundled ICU updates).
-  //
-  //    Kept explicit (NOT in Default_Ignorable per UCD):
-  //      \p{Cc}        — C0/C1 controls (NUL, ESC, DEL, etc.)
-  //      \u00A0 NBSP   — Zs Space_Separator class
-  //      \u2028/\u2029 — Zl/Zp line/para separators
-  //
-  //    The `u` flag makes the engine surrogate-pair-safe and enables the
-  //    `\p{...}` property escape (Node 10+, native V8).
-  s = s.replace(
-    /[\p{Cc}\p{Default_Ignorable_Code_Point}\u00A0\u2028\u2029]/gu,
-    "",
-  );
 
   // 4. Trim ordinary whitespace.
   s = s.trim();
