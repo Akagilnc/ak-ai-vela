@@ -47,18 +47,34 @@ export function PathSubNav({ targets }: { targets: string[] }) {
 
   // Scroll-spy: watch #detail-body scroll, find the section whose offsetTop
   // is closest to but not past the current scrollTop + 20px cushion.
+  //
+  // R2 review fix (Gemini): cache section elements ONCE at effect setup
+  // instead of calling `document.getElementById` in a loop on every scroll
+  // tick. The previous implementation did N DOM lookups per scroll frame
+  // (N = section count, typically 2–5). On mobile Safari + WeChat webview
+  // this caused scroll jank, especially on slower devices. The cached
+  // array stays valid for the lifetime of the effect because the section
+  // DOM is rendered by the parent alongside `targetsKey` — the same
+  // dependency that re-runs this effect. Avoiding IntersectionObserver
+  // here because it reports based on viewport, not the scroll container
+  // `#detail-body`'s own scroll state, which would need extra root config.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- targets ref
   //   is fresh each render; targetsKey is the stable content hash.
   useEffect(() => {
     const body = document.getElementById("detail-body");
     if (!body) return;
 
+    const sections: HTMLElement[] = [];
+    for (let i = 0; i < targets.length; i++) {
+      const sec = document.getElementById(`sec-${i}`);
+      if (sec) sections.push(sec);
+    }
+
     const update = () => {
       const top = body.scrollTop + 20;
       let idx = 0;
-      for (let i = 0; i < targets.length; i++) {
-        const sec = document.getElementById(`sec-${i}`);
-        if (sec && sec.offsetTop <= top) idx = i;
+      for (let i = 0; i < sections.length; i++) {
+        if (sections[i].offsetTop <= top) idx = i;
       }
       setActive(idx);
     };

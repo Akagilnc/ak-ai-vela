@@ -117,15 +117,18 @@ export async function POST(request: Request) {
  * Prisma code — never `.message` — because Prisma can echo the query
  * object (including the user's email, embedded in P2002 `meta`) into stderr,
  * which could land in CI / container log aggregators.
+ *
+ * R2 review fix (Gemini): log in both dev and prod. Only `.name + .code`
+ * reach stderr — no PII — so prod operators can monitor DB failures,
+ * connection drops, and schema mismatches. Silencing prod entirely left
+ * us unable to diagnose live issues.
  */
 function handleWriteFailure(error: unknown) {
-  if (!isProd) {
-    const name = error instanceof Error ? error.name : "unknown";
-    const codeField = (error as { code?: unknown })?.code;
-    const prismaCode =
-      typeof codeField === "string" ? ` ${codeField}` : "";
-    console.error(`[api/path/interest] write failed: ${name}${prismaCode}`);
-  }
+  const name = error instanceof Error ? error.name : "unknown";
+  const codeField = (error as { code?: unknown })?.code;
+  const prismaCode =
+    typeof codeField === "string" ? ` ${codeField}` : "";
+  console.error(`[api/path/interest] write failed: ${name}${prismaCode}`);
   return NextResponse.json(
     { ok: false, error: "write_failed", retryable: true },
     { status: 503 },
