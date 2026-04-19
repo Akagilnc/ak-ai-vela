@@ -48,22 +48,29 @@ export function PathDetailNav({
     // native button / link. EXCEPT the footer prev/next links — those ARE
     // the nav action, so the arrow-key shortcut and the link click have the
     // same semantics, no conflict.
+    //
+    // Uses `.closest(...)` throughout so that descendants of interactive
+    // elements are also treated as interactive — otherwise a touch that
+    // lands on an `<img>` or `<span>` inside a link/button escapes the
+    // guard and the swipe handler hijacks the gesture.
     function isInInteractiveTarget(target: EventTarget | null): boolean {
       if (!(target instanceof Element)) return false;
-      const tag = target.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+      if (target.closest<HTMLElement>("input, textarea, select")) return true;
       const el = target as HTMLElement;
       if (el.isContentEditable) return true;
-      if (el.getAttribute("role") === "button") return true;
+      if (el.closest<HTMLElement>('[role="button"]')) return true;
       // tabindex=0 means the element was deliberately made focusable; treat
       // arrow keys as local there, not as app-wide navigation.
       if (el.closest<HTMLElement>('[tabindex="0"]')) return true;
-      // Native <button> / <a> — sub-nav pills, back button, share, form
-      // submit. Focused user pressing arrow keys should interact with THAT
-      // control, not teleport between activities. Footer prev/next links
-      // are the one exception (arrow = click for those).
-      if (tag === "BUTTON" || tag === "A") {
-        if (!el.closest(".d-footer")) return true;
+      // Native <button> / <a> ancestor — sub-nav pills, back button, share,
+      // form submit, in-content cite links, loc-card internal links.
+      // Footer prev/next links are the one exception (arrow = click for
+      // those). Disabled buttons fall through to the global nav path since
+      // they don't respond to click or keyboard anyway.
+      const interactiveAncestor = el.closest<HTMLElement>("a, button");
+      if (interactiveAncestor) {
+        if ((interactiveAncestor as HTMLButtonElement).disabled) return false;
+        if (!interactiveAncestor.closest(".d-footer")) return true;
       }
       return false;
     }
