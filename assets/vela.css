@@ -154,7 +154,10 @@ body{
 }
 
 .icon-btn{
-  width:34px; height:34px; border-radius: 11px;
+  /* WCAG 2.5.5 AAA tap target: 44×44 minimum. The visible chip stays at
+     ~34px-feel via the inner svg; the button itself uses 44px so finger
+     targets meet Apple HIG and AAA. R12 fix. */
+  width:44px; height:44px; border-radius: 12px;
   display:inline-flex; align-items:center; justify-content:center;
   background: var(--cream-2);
   border: 1px solid var(--hair);
@@ -175,7 +178,10 @@ body{
   background: transparent;
   border: 0;
   cursor: pointer;
-  padding: 6px 10px 6px 6px;
+  /* WCAG 2.5.5 AAA: 44px min tap height. Padding 11+10+11 gives 44 with
+     22px svg/text content. R12 fix. */
+  padding: 11px 12px 11px 8px;
+  min-height: 44px;
   border-radius: 10px;
   font-family: var(--zh-sans);
   font-size: 13px;
@@ -1497,13 +1503,17 @@ a.cite{
 
 /* ============ TOAST ============ */
 .toast{
-  /* `bottom` clears `.d-footer` (~64px content + safe-area-inset-bottom on
-     iPhone X+) so the toast never sits behind the prev/next nav bar. Without
-     env() compensation, on devices with a non-zero bottom inset the safe-area
-     padding pushes footer height up to ~98–100px and the toast sits behind it.
-     The 80px constant keeps a visible gap between toast and footer top edge. */
+  /* `bottom` clears `.d-footer` from the toast's containing block
+     (`.stage-inner`, position: relative). Math (R12 fix):
+       footer-top = stage-inner-bottom - 60px (button content) - 2*env
+                    (one env from .stage-inner padding-bottom at line 93,
+                     another from .d-footer's own padding at line 1397).
+       toast-bottom needs >= footer-top => >= 60 + 2*env.
+     With safety buffer 20px we use `2*env + 80`. R11 used `1*env + 80`
+     which under-counted and still let the pill sit ~20px inside the
+     footer on iPhone X-class devices (env=34 → overlap 14–22px). */
   position: absolute; left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) * 2 + 80px);
   transform: translateX(-50%);
   background: var(--ink); color: var(--cream);
   padding: 10px 16px;
@@ -1817,9 +1827,13 @@ body.no-scroll{ overflow: hidden; }
 }
 .lightbox .lb-close{
   position: absolute;
-  top: 12px;
+  /* Respect notched-device safe area (env(safe-area-inset-top)) — in WeChat
+     webview which runs full-screen, the notch / Dynamic Island can sit on
+     top of the close button at top:12px. R12 fix. */
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
   right: 12px;
-  width: 40px; height: 40px;
+  /* WCAG 2.5.5 AAA tap target: 44×44 minimum. R12 fix. */
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: 0;
   background: rgba(255,255,255,0.14);

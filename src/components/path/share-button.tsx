@@ -148,12 +148,16 @@ export function ShareButton({ title }: { title: string }) {
       {/* Visible toast that doubles as the aria-live region — sighted users
           see the outcome, SR users hear it once. `show` toggles the CSS
           fade; `message` stays in DOM after fade-out so we don't churn the
-          aria-live region back to "" (which some SRs read as "blank"). */}
+          aria-live region back to "" (which some SRs read as "blank"). The
+          `aria-hidden={!show}` (R12 fix) removes the stale message from the
+          a11y tree once the toast fades, so SR users in browse / arrow-nav
+          mode can't land on the chip and read it minutes after the fact. */}
       <div
         className={show ? "toast show" : "toast"}
         role="status"
         aria-live="polite"
         aria-atomic="true"
+        aria-hidden={!show}
       >
         {message}
       </div>

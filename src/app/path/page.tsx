@@ -64,7 +64,7 @@ export default async function PathOverviewPage() {
                 disabled
                 aria-disabled="true"
                 type="button"
-                aria-label="G4–G6 四~六年级 · 即将推出"
+                aria-label="G4–G6 四~六年级 · 整理中"
               >
                 <span className="t">G4–G6 · 四~六年级</span>
                 <span className="s">目的性探索</span>
@@ -73,7 +73,7 @@ export default async function PathOverviewPage() {
                 disabled
                 aria-disabled="true"
                 type="button"
-                aria-label="G7–G9 初中 · 即将推出"
+                aria-label="G7–G9 初中 · 整理中"
               >
                 <span className="t">G7–G9 · 初中</span>
                 <span className="s">理解转换</span>
@@ -90,7 +90,7 @@ export default async function PathOverviewPage() {
                   data-status="ghost"
                   type="button"
                   disabled
-                  aria-label="3 月 · 即将推出"
+                  aria-label="3 月 · 整理中"
                 >
                   3 月
                 </button>
@@ -99,7 +99,7 @@ export default async function PathOverviewPage() {
                   data-status="ghost"
                   type="button"
                   disabled
-                  aria-label="4 月 · 即将推出"
+                  aria-label="4 月 · 整理中"
                 >
                   4 月
                 </button>
@@ -111,7 +111,7 @@ export default async function PathOverviewPage() {
                   data-status="ghost"
                   type="button"
                   disabled
-                  aria-label="6 月 · 即将推出"
+                  aria-label="6 月 · 整理中"
                 >
                   6 月
                 </button>
@@ -120,7 +120,7 @@ export default async function PathOverviewPage() {
                   data-status="ghost"
                   type="button"
                   disabled
-                  aria-label="7 月 · 即将推出"
+                  aria-label="7 月 · 整理中"
                 >
                   7 月
                 </button>
@@ -129,7 +129,7 @@ export default async function PathOverviewPage() {
                   data-status="ghost"
                   type="button"
                   disabled
-                  aria-label="8 月 · 即将推出"
+                  aria-label="8 月 · 整理中"
                 >
                   8 月
                 </button>

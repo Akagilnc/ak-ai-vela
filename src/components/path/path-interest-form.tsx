@@ -50,6 +50,23 @@ export function PathInterestForm({
       return;
     }
 
+    // R12 fix: validate format client-side BEFORE the network round-trip.
+    // The `<input type="email">` is rendered with `noValidate` on the form
+    // so HTML5's built-in popover doesn't fire — that lets us own the error
+    // copy in Chinese, but means we have to re-implement the format check.
+    // The regex is the same loose shape the server's Zod schema accepts:
+    // one or more non-space-at chars, `@`, one or more non-space-at,
+    // `.`, one or more. Catches typos like "abc@gmail" or trailing comma
+    // before the user pays a 1–3s 4G round-trip in Shanghai for the same
+    // verdict.
+    const emailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailFormat.test(normalizedEmail)) {
+      setStatus("error");
+      setMessage("邮箱格式不对");
+      emailRef.current?.focus();
+      return;
+    }
+
     setStatus("submitting");
     setMessage("");
 
@@ -67,14 +84,20 @@ export function PathInterestForm({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setStatus("error");
-        const errMsg =
-          data.error === "invalid_payload" || data.error === "invalid_json"
-            ? "邮箱格式不对"
-            : data.error === "write_failed" && data.retryable
-              ? "服务器忙，请稍后再试"
-              : "提交失败，稍后再试";
+        const isFormatError =
+          data.error === "invalid_payload" || data.error === "invalid_json";
+        const errMsg = isFormatError
+          ? "邮箱格式不对"
+          : data.error === "write_failed" && data.retryable
+            ? "服务器忙，请稍后再试"
+            : "提交失败，稍后再试";
         setMessage(errMsg);
-        emailRef.current?.focus();
+        // R12 fix: only refocus the email input when the error is about
+        // the email itself. For server / network errors the user just
+        // needs to re-tap the (now-relabeled "重试") submit button —
+        // jerking focus back to email mis-signals "your email is wrong"
+        // when the actual issue is server-side.
+        if (isFormatError) emailRef.current?.focus();
         return;
       }
 
