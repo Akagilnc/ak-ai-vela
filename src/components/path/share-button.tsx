@@ -5,10 +5,23 @@ import { ShareIcon } from "./path-icons";
 
 type Status = "idle" | "shared" | "copied" | "error";
 
+function messageFor(s: Status): string {
+  switch (s) {
+    case "copied":
+      return "已复制链接，粘贴到微信发送";
+    case "shared":
+      return "已分享";
+    case "error":
+      return "复制失败，长按地址栏复制链接";
+    default:
+      return "";
+  }
+}
+
 /**
  * Share button for the detail-page chrome.
  *
- * Strategy (R9 hardening):
+ * Strategy:
  * - Inside WeChat webview, `navigator.share` is known to silently resolve
  *   on older iOS versions or bypass WeChat's forward sheet on Android.
  *   Detect via User-Agent and go straight to clipboard + "已复制" hint
@@ -19,23 +32,43 @@ type Status = "idle" | "shared" | "copied" | "error";
  *   (HTTP cloudflare quick-tunnel) where `navigator.clipboard` is
  *   undefined — falls back to the legacy `execCommand("copy")` path so
  *   seed users testing over HTTP tunnels still get a working copy.
- * - Status text lives in a visually-hidden <span role="status" aria-live>
- *   rather than swapping the button's own aria-label, so VoiceOver /
- *   TalkBack don't fire a second announcement when the label flips back
- *   to idle 1.7s later.
+ *
+ * Toast a11y (R11):
+ * - Two-piece state: `message` (string) + `show` (bool). Reset timer flips
+ *   `show` to false (CSS opacity fade out) but LEAVES `message` intact.
+ *   That way the aria-live region content doesn't churn back to "" and
+ *   re-announce a "blank"/space to VoiceOver / TalkBack. On the next share
+ *   action, message either stays the same (no aria-live diff, no
+ *   re-announce — acceptable for back-to-back identical actions) or
+ *   updates to a new outcome (announced once).
+ * - Reset delay raised from 1.7s → 3s. The longest message is
+ *   "已复制链接，粘贴到微信发送" (17 chars). 1.7s is faster than most
+ *   users finish reading; 3s lands close to natural reading pace without
+ *   feeling sticky.
  */
 export function ShareButton({ title }: { title: string }) {
-  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState("");
+  const [show, setShow] = useState(false);
   const resetTimerRef = useRef<number | null>(null);
+
+  function announce(next: Status) {
+    const text = messageFor(next);
+    if (text) setMessage(text);
+    setShow(Boolean(text));
+    scheduleReset();
+  }
 
   function scheduleReset() {
     if (resetTimerRef.current !== null) {
       window.clearTimeout(resetTimerRef.current);
     }
     resetTimerRef.current = window.setTimeout(() => {
-      setStatus("idle");
+      // Hide the toast (CSS opacity fade) but keep `message` so the aria-live
+      // region doesn't see a "<text>" → "" churn that some screen readers
+      // announce as "blank" / a second empty pass.
+      setShow(false);
       resetTimerRef.current = null;
-    }, 1700);
+    }, 3000);
   }
 
   function isWeChatWebview(): boolean {
@@ -83,8 +116,7 @@ export function ShareButton({ title }: { title: string }) {
 
     // WeChat webview: skip native share (unreliable), go straight to copy.
     if (isWeChatWebview()) {
-      setStatus((await copyViaClipboard(url)) ? "copied" : "error");
-      scheduleReset();
+      announce((await copyViaClipboard(url)) ? "copied" : "error");
       return;
     }
 
@@ -92,8 +124,7 @@ export function ShareButton({ title }: { title: string }) {
     if (navigator.share) {
       try {
         await navigator.share({ title, url });
-        setStatus("shared");
-        scheduleReset();
+        announce("shared");
         return;
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return;
@@ -101,18 +132,8 @@ export function ShareButton({ title }: { title: string }) {
       }
     }
 
-    setStatus((await copyViaClipboard(url)) ? "copied" : "error");
-    scheduleReset();
+    announce((await copyViaClipboard(url)) ? "copied" : "error");
   }
-
-  const statusMessage =
-    status === "copied"
-      ? "已复制链接，粘贴到微信发送"
-      : status === "shared"
-        ? "已分享"
-        : status === "error"
-          ? "复制失败，长按地址栏复制链接"
-          : "";
 
   return (
     <>
@@ -124,17 +145,17 @@ export function ShareButton({ title }: { title: string }) {
       >
         <ShareIcon />
       </button>
-      {/* Visible toast that doubles as the aria-live region — sighted
-          users see the outcome, SR users hear it announced once. The
-          `.toast` + `.show` classes come from vela.css (demo reused).
-          Content clears on reset so the live region doesn't re-announce. */}
+      {/* Visible toast that doubles as the aria-live region — sighted users
+          see the outcome, SR users hear it once. `show` toggles the CSS
+          fade; `message` stays in DOM after fade-out so we don't churn the
+          aria-live region back to "" (which some SRs read as "blank"). */}
       <div
-        className={statusMessage ? "toast show" : "toast"}
+        className={show ? "toast show" : "toast"}
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        {statusMessage}
+        {message}
       </div>
     </>
   );

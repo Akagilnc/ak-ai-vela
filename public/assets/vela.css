@@ -1497,7 +1497,14 @@ a.cite{
 
 /* ============ TOAST ============ */
 .toast{
-  position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%);
+  /* `bottom` clears `.d-footer` (~64px content + safe-area-inset-bottom on
+     iPhone X+) so the toast never sits behind the prev/next nav bar. Without
+     env() compensation, on devices with a non-zero bottom inset the safe-area
+     padding pushes footer height up to ~98–100px and the toast sits behind it.
+     The 80px constant keeps a visible gap between toast and footer top edge. */
+  position: absolute; left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  transform: translateX(-50%);
   background: var(--ink); color: var(--cream);
   padding: 10px 16px;
   border-radius: 999px;
@@ -1506,8 +1513,13 @@ a.cite{
   box-shadow: 0 10px 30px -10px rgba(0,0,0,0.4);
   z-index: 50;
   opacity: 0;
-  transition: opacity .2s;
+  /* Long-enough fade-out so SR users finish reading before .show is removed —
+     pairs with 3s reset timer in share-button.tsx. */
+  transition: opacity .25s ease-out;
   pointer-events: none;
+  /* The longest message "已复制链接，粘贴到微信发送" is 17 chars × 12.5px
+     ≈ 245px including padding — fits comfortably even on iPhone SE (320px),
+     so `nowrap` is safe and keeps the clean pill shape. */
   white-space: nowrap;
 }
 .toast.show{opacity:1;}
