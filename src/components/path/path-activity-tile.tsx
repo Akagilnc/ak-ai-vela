@@ -1,8 +1,7 @@
 import Link from "next/link";
 import type { PathActivity } from "@prisma/client";
+import { parseChips, parsePreviews } from "@/lib/path/parse";
 import { ArrowIcon } from "./path-icons";
-
-type TileChip = { cls: string; t: string };
 
 type Props = {
   activity: PathActivity;
@@ -15,8 +14,8 @@ function stripBold(html: string): string {
 }
 
 export function PathActivityTile({ activity, index, total }: Props) {
-  const chips = (activity.chips as unknown as TileChip[]) ?? [];
-  const previews = (activity.previews as unknown as string[]) ?? [];
+  const chips = parseChips(activity.chips);
+  const previews = parsePreviews(activity.previews);
   const firstChip = chips[0]?.t ?? "";
   const lastChip = chips.at(-1)?.t ?? "";
   const hasPreviews = previews.length > 0;

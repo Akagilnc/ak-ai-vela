@@ -1,13 +1,12 @@
 import Link from "next/link";
 import type { PathActivity } from "@prisma/client";
 import type { ActivitySection } from "@/lib/path/types";
+import { parseChips, parseSections } from "@/lib/path/parse";
 import { BackIcon, ShareIcon, ClockIcon } from "./path-icons";
 import { BlockRenderer } from "./block-renderer";
 import { PathSubNav } from "./path-sub-nav";
 import { PathLightbox } from "./path-lightbox";
 import { PathDetailNav } from "./path-detail-nav";
-
-type TileChip = { cls: string; t: string };
 
 type Props = {
   activity: PathActivity;
@@ -24,8 +23,8 @@ export function PathActivityDetail({
   prev,
   next,
 }: Props) {
-  const chips = (activity.chips as unknown as TileChip[]) ?? [];
-  const sections = (activity.sections as unknown as ActivitySection[]) ?? [];
+  const chips = parseChips(activity.chips);
+  const sections = parseSections<ActivitySection>(activity.sections);
   const pos = String(index + 1).padStart(2, "0");
   const tot = String(total).padStart(2, "0");
 
