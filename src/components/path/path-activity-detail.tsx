@@ -5,6 +5,7 @@ import { BackIcon, ShareIcon, ClockIcon } from "./path-icons";
 import { BlockRenderer } from "./block-renderer";
 import { PathSubNav } from "./path-sub-nav";
 import { PathLightbox } from "./path-lightbox";
+import { PathDetailNav } from "./path-detail-nav";
 
 type TileChip = { cls: string; t: string };
 
@@ -143,6 +144,7 @@ export function PathActivityDetail({
       </div>
 
       <PathLightbox />
+      <PathDetailNav prevSlug={prev?.slug} nextSlug={next?.slug} />
     </>
   );
 }
