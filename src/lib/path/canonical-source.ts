@@ -47,12 +47,16 @@ export function canonicalSourcePath(raw: string): string {
   s = s.normalize("NFKC");
 
   // 2. Multi-pass per-segment decode. Handles both:
-  //    - double-encoded dot segments (`%252E%252E` → `%2E%2E` → `..`)
+  //    - nested-encoded dot segments (`%252525...2E` → ... → `..`)
   //    - mixed-validity paths (`%c0%ae/%2E%2E/admin` must still decode
   //      the valid `%2E%2E` segment even though `%c0%ae` is malformed)
-  //    Loop is capped at 5 passes to prevent pathological inputs from
-  //    looping; in practice 2-3 passes is plenty for realistic attacks.
-  for (let pass = 0; pass < 5; pass++) {
+  //    Loop until stable, bounded by `s.length`: each pass that changes
+  //    `s` strictly shortens it (`%XX` → 1 byte is -2 chars), so the
+  //    worst-case iteration count is at most `s.length / 2`. Combined
+  //    with the 2000-char cap at step 0 this is always finite and fast.
+  //    Hard 5-pass cap was bypassable within Zod's 200-char limit
+  //    (stacking `%25` 5+ times in 33 bytes).
+  for (let pass = 0; pass < s.length; pass++) {
     const decoded = s.split("/").map(safeDecodeSegment).join("/");
     if (decoded === s) break;
     s = decoded;
