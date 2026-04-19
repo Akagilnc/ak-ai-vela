@@ -4,6 +4,22 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## P1 — Must do before or during the relevant milestone
 
+### [PathExplorer v0.5+] CSP header + HTML sanitization for BlockRenderer
+- **What:** Add a Content Security Policy header (start with `default-src 'self'; script-src 'self' 'unsafe-inline'`) AND pick a sanitization story for the 12 `dangerouslySetInnerHTML` sinks in `src/components/path/block-renderer.tsx`. Options: (a) DOMPurify at write time with an allowlist (b/em/i/a) rejecting everything else; (b) DOMPurify at render time as defense in depth; (c) migrate schema fields from raw HTML to a restricted markdown flavor.
+- **Why:** v0.1 trusts the seed file as the only writer — zero untrusted paths to the Json fields. v0.5+ reintroduces 升学决策卡 which likely involves admin-editable content, importers, and possibly LLM-generated cards. Every `<b>` slot becomes a stored-XSS sink the moment any of that lands. Flagged by all 3 Claude subagents + Codex during the cross-review on 2026-04-19.
+- **When:** BEFORE any non-seed write path is added to `PathActivity.sections` / `summary` / `triggerText` / `chips`. That likely lands with v0.5+ admin UI or import tooling.
+- **Signal to start:** a PR adds the first non-seed writer to any field consumed by BlockRenderer.
+
+### [PathExplorer v0.5+] PathInterest UA retention + privacy posture
+- **What:** Decide + implement retention policy for `PathInterest.userAgent` (full UA strings). Options: (a) hash UA with a server-side secret, keep only digest for bot detection; (b) keep raw UA with a 30/90-day cron purge; (c) drop UA field entirely if bot filtering moves to middleware. Also add a one-line privacy disclosure under the CTA form once a privacy page exists.
+- **Why:** Current form copy says "不 spam，不转售" but raw UA paired with email is PII under GDPR/PIPL. Pre-monetization so low exposure, but needs decision before any marketing push or privacy page. Flagged by Security subagent 2026-04-19.
+- **When:** Before public launch of Path Explorer / any marketing campaign driving form signups.
+
+### [PathExplorer v0.5+] PathDecisionBranch.downstreamStageSlugs FK integrity
+- **What:** Replace `PathDecisionBranch.downstreamStageSlugs: Json` with a join table `PathDecisionBranchDownstream(branchId, stageId)` with proper FK to `PathStage`, OR add a seed-time validator asserting every slug in the JSON array matches a `PathStage.slug`.
+- **Why:** Current schema stores an array of slug strings with no referential integrity — renames drift silently. v0.1 doesn't seed this table (0 rows) so impact is zero, but the 升学决策卡 回归 in v0.5+ will exercise it. Flagged by Correctness subagent 2026-04-19.
+- **When:** Before first seed of `PathDecisionBranch` rows (v0.5+ 升学卡 回归).
+
 ### [M4-POST] html2canvas spike
 - **What:** Test html2canvas screenshot with Google Fonts (Fraunces, Plus Jakarta Sans) + Recharts SVG charts on the actual report page.
 - **Why:** WeChat sharing is the MVP's core distribution channel. html2canvas + CDN fonts + SVG is the combo most likely to produce rendering artifacts. CEO review flagged html2canvas silent failure as a gap. Codex independently flagged the same risk.

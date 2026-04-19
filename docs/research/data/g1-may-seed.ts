@@ -695,9 +695,9 @@ export const ACTIVITY_C4_CHONGMING: PathActivityData = {
         {
           type: 'steps',
           items: [
-            '<b>周一查</b> · <a class="cite" href="http://www.shwbs.org" target="_blank" rel="noopener">上海观鸟会 shwbs.org</a> 公众号，看 5/1–15 有没有家庭公开带队活动。',
+            '<b>周一查</b> · <a class="cite" href="https://www.shwbs.org" target="_blank" rel="noopener noreferrer">上海观鸟会 shwbs.org</a> 公众号，看 5/1–15 有没有家庭公开带队活动。',
             '<b>有带队跟团</b> · 带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。带队会讲解。',
-            '<b>无带队自行去</b> · 崇明东滩南六公路入口，<a class="cite" href="https://www.dongtan.cn" target="_blank" rel="noopener">dongtan.cn</a> 查当日开放时间。',
+            '<b>无带队自行去</b> · 崇明东滩南六公路入口，<a class="cite" href="https://www.dongtan.cn" target="_blank" rel="noopener noreferrer">dongtan.cn</a> 查当日开放时间。',
             '<b>现场</b> · 能认出 1–2 种 + 看到一次 "一群飞起" 或 "一次进食"，就已经值了。<em>G1 注意力有限，30–60 分钟安静看就够。</em>',
             '<b>拍摄</b> · 现场拍 5–10 张照片 + 2–3 段 15 秒视频。回家 5 分钟挑出 1–2 张有鸟 + 1 段最好的，放命名文件夹（如 "2026-05-10 东滩"）。长期攒下来就是她的素材库。',
             '<b>回家本子</b> · 记 1–2 种观察到的鸟 + 日期 + 天气 + 简单印象句。',
