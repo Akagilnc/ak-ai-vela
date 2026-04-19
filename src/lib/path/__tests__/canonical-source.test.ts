@@ -171,6 +171,10 @@ describe("canonicalSourcePath — confusable separators (R8)", () => {
   it.each([
     ["\u2216", "SET MINUS `∖`"],
     ["\u2571", "BOX DRAWINGS DIAGONAL `╱`"],
+    ["\u2572", "BOX DRAWINGS ANTI-DIAGONAL `╲`"],
+    ["\u27CB", "MATHEMATICAL RISING DIAGONAL `⟋`"],
+    ["\u27CD", "MATHEMATICAL FALLING DIAGONAL `⟍`"],
+    ["\u2AFB", "TRIPLE SOLIDUS BINARY RELATION `⫻`"],
     ["\u2AFD", "DOUBLE SOLIDUS OPERATOR `⫽`"],
     ["\u29F5", "REVERSE SOLIDUS OPERATOR `⧵`"],
     ["\u29F8", "BIG SOLIDUS `⧸`"],

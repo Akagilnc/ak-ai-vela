@@ -90,7 +90,10 @@ export function canonicalSourcePath(raw: string): string {
     // submission — over-folding risks false-positive dedup.
     const normalized = s
       .normalize("NFKC")
-      .replace(/[\\\uFF3C\u2044\u2215\u2216\u2571\u2AFD\u29F5\u29F8\u29F9]/g, "/")
+      .replace(
+        /[\\\uFF3C\u2044\u2215\u2216\u2571\u2572\u27CB\u27CD\u2AFB\u2AFD\u29F5\u29F8\u29F9]/g,
+        "/",
+      )
       .replace(/[\u3002]/g, ".");
     const decoded = normalized.split("/").map(safeDecodeSegment).join("/");
     if (decoded === s) break;

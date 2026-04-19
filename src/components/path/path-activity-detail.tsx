@@ -114,7 +114,12 @@ export function PathActivityDetail({
             </div>
           </Link>
         ) : (
-          <button className="prev" disabled type="button">
+          <button
+            className="prev"
+            disabled
+            type="button"
+            aria-label="已在第一张"
+          >
             <span className="ic">←</span>
             <div className="stack">
               <span className="dir">上一张</span>
@@ -131,7 +136,12 @@ export function PathActivityDetail({
             <span className="ic">→</span>
           </Link>
         ) : (
-          <button className="next" disabled type="button">
+          <button
+            className="next"
+            disabled
+            type="button"
+            aria-label="已在最后一张"
+          >
             <div className="stack">
               <span className="dir">下一张</span>
               <span className="ti">—</span>

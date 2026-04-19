@@ -56,15 +56,25 @@ export default async function PathOverviewPage() {
                 relationship). Future-stage buttons keep `disabled` so they're
                 visible-but-focus-skipped. */}
             <div className="stage-tabs" aria-label="学段">
-              <span className="is-active" aria-current="page">
+              <span className="is-active" aria-current="true">
                 <span className="t">G1–G3 · 一~三年级</span>
                 <span className="s">好奇心扎根</span>
               </span>
-              <button disabled aria-disabled="true" type="button">
+              <button
+                disabled
+                aria-disabled="true"
+                type="button"
+                aria-label="G4–G6 四~六年级 · 内容整理中"
+              >
                 <span className="t">G4–G6 · 四~六年级</span>
                 <span className="s">目的性探索</span>
               </button>
-              <button disabled aria-disabled="true" type="button">
+              <button
+                disabled
+                aria-disabled="true"
+                type="button"
+                aria-label="G7–G9 初中 · 内容整理中"
+              >
                 <span className="t">G7–G9 · 初中</span>
                 <span className="s">理解转换</span>
               </button>
@@ -75,22 +85,52 @@ export default async function PathOverviewPage() {
                   buttons so keyboard users skip them (visible hint without
                   a dead focusable control). */}
               <div className="months" aria-label="月份（左右滑动）">
-                <button className="m-pill" data-status="ghost" type="button" disabled>
+                <button
+                  className="m-pill"
+                  data-status="ghost"
+                  type="button"
+                  disabled
+                  aria-label="3 月 · 内容整理中"
+                >
                   3 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button" disabled>
+                <button
+                  className="m-pill"
+                  data-status="ghost"
+                  type="button"
+                  disabled
+                  aria-label="4 月 · 内容整理中"
+                >
                   4 月
                 </button>
-                <span className="m-pill" aria-current="page">
+                <span className="m-pill" aria-current="true">
                   5 月 · G1
                 </span>
-                <button className="m-pill" data-status="ghost" type="button" disabled>
+                <button
+                  className="m-pill"
+                  data-status="ghost"
+                  type="button"
+                  disabled
+                  aria-label="6 月 · 内容整理中"
+                >
                   6 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button" disabled>
+                <button
+                  className="m-pill"
+                  data-status="ghost"
+                  type="button"
+                  disabled
+                  aria-label="7 月 · 内容整理中"
+                >
                   7 月
                 </button>
-                <button className="m-pill" data-status="ghost" type="button" disabled>
+                <button
+                  className="m-pill"
+                  data-status="ghost"
+                  type="button"
+                  disabled
+                  aria-label="8 月 · 内容整理中"
+                >
                   8 月
                 </button>
               </div>

@@ -53,15 +53,23 @@ export function ShareButton({ title }: { title: string }) {
         /* fall through to legacy */
       }
     }
-    // Legacy path (works on HTTP / Safari <13.4 / some webviews)
+    // Legacy path (HTTP / Safari <13.4 / some webviews). iOS Safari
+    // drops the selection if the textarea is off-viewport, so the
+    // textarea is positioned onscreen but visually invisible. focus +
+    // setSelectionRange work around the iOS "select() with off-screen
+    // element" bug that silently fails.
     try {
       const ta = document.createElement("textarea");
       ta.value = url;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
       ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.left = "0";
+      ta.style.opacity = "0";
+      ta.style.pointerEvents = "none";
       document.body.appendChild(ta);
-      ta.select();
+      ta.focus();
+      ta.setSelectionRange(0, ta.value.length);
       const ok = document.execCommand("copy");
       document.body.removeChild(ta);
       return ok;
@@ -116,25 +124,18 @@ export function ShareButton({ title }: { title: string }) {
       >
         <ShareIcon />
       </button>
-      {/* Off-screen live region; announces outcome exactly once per action,
-          no re-announce when label resets to idle. */}
-      <span
+      {/* Visible toast that doubles as the aria-live region — sighted
+          users see the outcome, SR users hear it announced once. The
+          `.toast` + `.show` classes come from vela.css (demo reused).
+          Content clears on reset so the live region doesn't re-announce. */}
+      <div
+        className={statusMessage ? "toast show" : "toast"}
         role="status"
         aria-live="polite"
-        style={{
-          position: "absolute",
-          width: 1,
-          height: 1,
-          padding: 0,
-          margin: -1,
-          overflow: "hidden",
-          clip: "rect(0,0,0,0)",
-          whiteSpace: "nowrap",
-          border: 0,
-        }}
+        aria-atomic="true"
       >
         {statusMessage}
-      </span>
+      </div>
     </>
   );
 }
