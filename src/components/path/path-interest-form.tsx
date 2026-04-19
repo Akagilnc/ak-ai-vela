@@ -26,6 +26,22 @@ const srOnlyStyle: React.CSSProperties = {
 
 type Status = "idle" | "submitting" | "ok" | "error";
 
+/**
+ * Canonicalize sourcePath to prevent "/path", "/path ", "/path?x=1" all
+ * creating separate PathInterest rows for the same email. Strip trailing
+ * whitespace + query/hash + collapse multiple slashes.
+ */
+function canonicalSourcePath(raw: string): string {
+  const trimmed = raw.trim();
+  const qIdx = trimmed.indexOf("?");
+  const hIdx = trimmed.indexOf("#");
+  const cut =
+    qIdx === -1 && hIdx === -1
+      ? trimmed
+      : trimmed.slice(0, Math.min(...[qIdx, hIdx].filter((i) => i !== -1)));
+  return cut.replace(/\/+$/g, "") || "/";
+}
+
 export function PathInterestForm({
   sourcePath = "/path",
 }: {
@@ -59,7 +75,7 @@ export function PathInterestForm({
         body: JSON.stringify({
           email: normalizedEmail,
           childGrade: grade || null,
-          sourcePath,
+          sourcePath: canonicalSourcePath(sourcePath),
         }),
       });
 
@@ -207,7 +223,9 @@ export function PathInterestForm({
             fontSize: 12,
             margin: 0,
             minHeight: "1em",
-            color: status === "error" ? "#a64" : "var(--mute)",
+            // #7a3412 = darker brick; computes ~6.3:1 contrast on cream-2
+            // bg (meets WCAG AA 4.5:1 for small text). #a64 failed at 3.88:1.
+            color: status === "error" ? "#7a3412" : "var(--mute)",
           }}
         >
           {message}

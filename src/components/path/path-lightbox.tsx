@@ -23,21 +23,54 @@ export function PathLightbox() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    function onClick(e: MouseEvent) {
-      const target = e.target as HTMLElement;
-      const img = target.closest<HTMLImageElement>(
-        ".id-row .img.has-photo img",
-      );
+    // Both the img and its focusable wrapper (.img.has-photo with tabindex=0)
+    // are valid triggers. Store the WRAPPER as triggerRef so focus-return
+    // on close lands on a focusable element — img alone is not focusable.
+    function openFrom(target: EventTarget | null) {
+      if (!(target instanceof Element)) return;
+      const wrapper = target.closest<HTMLElement>(".id-row .img.has-photo");
+      if (!wrapper) return;
+      // Allowlist the src shape to defend against future untrusted writers
+      // injecting hostile URLs via a block whose img escapes schema.
+      const img = wrapper.querySelector<HTMLImageElement>("img");
       if (!img) return;
-      e.preventDefault();
-      e.stopPropagation();
-      triggerRef.current = img;
+      const srcAttr = img.getAttribute("src") ?? "";
+      const isSafe = /^\/assets\/img\/[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp)$/i.test(
+        srcAttr,
+      );
+      if (!isSafe) return;
+      triggerRef.current = wrapper;
       setSrc(img.src);
       setAlt(img.alt || "");
       setOpen(true);
     }
+
+    function onClick(e: MouseEvent) {
+      const wrapper =
+        e.target instanceof Element
+          ? e.target.closest(".id-row .img.has-photo")
+          : null;
+      if (!wrapper) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openFrom(e.target);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const wrapper =
+        e.target instanceof Element
+          ? e.target.closest(".id-row .img.has-photo")
+          : null;
+      if (!wrapper) return;
+      e.preventDefault();
+      openFrom(e.target);
+    }
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -59,17 +92,15 @@ export function PathLightbox() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // Toggle body scroll lock + focus management while open.
+  // Toggle body scroll lock while open. Focus into the dialog is handled by
+  // the button's `autoFocus` prop (more reliable than rAF-scheduled .focus()
+  // against conditional renders).
   useEffect(() => {
     if (open) {
       document.body.classList.add("no-scroll");
-      // Next tick: let the conditional render land before focusing.
-      const id = requestAnimationFrame(() => {
-        closeBtnRef.current?.focus();
-      });
       return () => {
-        cancelAnimationFrame(id);
         document.body.classList.remove("no-scroll");
+        // Return focus to the triggering wrapper after the overlay unmounts.
         triggerRef.current?.focus();
       };
     }
@@ -98,6 +129,7 @@ export function PathLightbox() {
         className="lb-close"
         aria-label="关闭"
         type="button"
+        autoFocus
         onClick={() => setOpen(false)}
       >
         ×

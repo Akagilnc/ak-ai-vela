@@ -55,15 +55,27 @@ export function PathDetailNav({
       return false;
     }
 
+    // Nav lock: once a router.push fires, ignore further arrow/swipe until
+    // the route actually changes. Otherwise holding Left/Right on a hardware
+    // keyboard enqueues multiple navigations that skip cards on slow links.
+    let navigating = false;
+    function navTo(href: string) {
+      if (navigating) return;
+      navigating = true;
+      router.push(href);
+    }
+
     function onKey(e: KeyboardEvent) {
       if (isModalOpen()) return;
       if (isInInteractiveTarget(e.target)) return;
+      // e.repeat is true for auto-repeated keydowns on held keys.
+      if (e.repeat) return;
       if (e.key === "ArrowLeft" && prevSlug) {
-        router.push(`/path/${prevSlug}`);
+        navTo(`/path/${prevSlug}`);
       } else if (e.key === "ArrowRight" && nextSlug) {
-        router.push(`/path/${nextSlug}`);
+        navTo(`/path/${nextSlug}`);
       } else if (e.key === "Escape") {
-        router.push("/path");
+        navTo("/path");
       }
     }
 
@@ -83,8 +95,8 @@ export function PathDetailNav({
       const dy = e.changedTouches[0].clientY - touchStartY;
       // horizontal dominance + min distance
       if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
-        if (dx < 0 && nextSlug) router.push(`/path/${nextSlug}`);
-        else if (dx > 0 && prevSlug) router.push(`/path/${prevSlug}`);
+        if (dx < 0 && nextSlug) navTo(`/path/${nextSlug}`);
+        else if (dx > 0 && prevSlug) navTo(`/path/${prevSlug}`);
       }
     }
 

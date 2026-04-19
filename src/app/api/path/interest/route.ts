@@ -28,6 +28,22 @@ const bodySchema = z.object({
 
 const isProd = process.env.NODE_ENV === "production";
 
+/**
+ * Canonicalize sourcePath so `/path`, `/path `, `/path?x=1`, `/path#anchor`
+ * all collapse to the same key — otherwise the @@unique(email, sourcePath)
+ * dedup is trivially bypassed by URL drift.
+ */
+function canonicalSourcePath(raw: string): string {
+  const trimmed = raw.trim();
+  const qIdx = trimmed.indexOf("?");
+  const hIdx = trimmed.indexOf("#");
+  const cut =
+    qIdx === -1 && hIdx === -1
+      ? trimmed
+      : trimmed.slice(0, Math.min(...[qIdx, hIdx].filter((i) => i !== -1)));
+  return cut.replace(/\/+$/g, "") || "/";
+}
+
 export async function POST(request: Request) {
   let raw: unknown;
   try {
@@ -56,6 +72,7 @@ export async function POST(request: Request) {
   const payload = parsed.data;
 
   const normalizedEmail = payload.email.trim().toLowerCase();
+  const normalizedSourcePath = canonicalSourcePath(payload.sourcePath);
   const userAgent = request.headers.get("user-agent") ?? null;
 
   try {
@@ -63,7 +80,7 @@ export async function POST(request: Request) {
       where: {
         email_sourcePath: {
           email: normalizedEmail,
-          sourcePath: payload.sourcePath,
+          sourcePath: normalizedSourcePath,
         },
       },
       update: {
@@ -75,7 +92,7 @@ export async function POST(request: Request) {
         email: normalizedEmail,
         budgetRange: payload.budgetRange ?? null,
         childGrade: payload.childGrade ?? null,
-        sourcePath: payload.sourcePath,
+        sourcePath: normalizedSourcePath,
         userAgent,
       },
     });
@@ -83,9 +100,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
   } catch (error) {
     // Structured error — client can distinguish "retry" from "permanent failure"
-    // without us leaking Prisma internals.
+    // without us leaking Prisma internals. Log only the error code + message so
+    // we don't stream the user's email (embedded in Prisma P2002 `meta`) to
+    // stderr, which could land in CI / container log aggregators.
     if (!isProd) {
-      console.error("[api/path/interest] write failed:", error);
+      const code = error instanceof Error ? error.name : "unknown";
+      const msg = error instanceof Error ? error.message.split("\n")[0] : "unknown";
+      console.error(`[api/path/interest] write failed: ${code} — ${msg}`);
     }
     return NextResponse.json(
       { ok: false, error: "write_failed", retryable: true },

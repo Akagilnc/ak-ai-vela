@@ -110,7 +110,10 @@ export interface PathOptsBlock {
 
 export interface SubBlock {
   type: 'sub-block';
-  blocks: Block[];       // nested 1 level deep (demo never goes deeper)
+  // Type-level enforcement of the 1-level-deep nesting invariant — SubBlock
+  // can only contain non-SubBlock children. Prevents accidental recursive
+  // nesting in future seed data from blowing React's render stack.
+  blocks: Exclude<Block, SubBlock>[];
 }
 
 export interface ListCheckBlock {

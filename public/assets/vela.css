@@ -640,10 +640,13 @@ body[data-view="detail"] .overview-view{
   appearance: none;
   border: 1px solid var(--hair);
   background: var(--cream-2);
-  border-radius: 20px;
-  /* Bumped from 6px 12px to 10px 14px so the hit target clears the ~44px iOS
-     HIG minimum in combination with the 11.5px font + line-height. */
-  padding: 10px 14px;
+  border-radius: 22px;
+  /* WCAG 2.5.5 AAA / iOS HIG: 44px minimum tap target. min-height floors the
+     box even when padding + line-height alone would give ~37px. */
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--zh-sans);
   font-size: 11.5px;
   font-weight: 600;
@@ -1379,7 +1382,8 @@ a.cite{
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
-.d-footer button{
+.d-footer button,
+.d-footer a{
   appearance: none; border: 1px solid var(--hair);
   background: var(--paper);
   border-radius: 12px;
@@ -1392,12 +1396,17 @@ a.cite{
   cursor: pointer;
   display: flex; align-items: center; gap: 8px;
   line-height: 1.3;
+  text-decoration: none;
 }
 .d-footer button:disabled{opacity: 0.35; cursor: not-allowed}
-.d-footer button:hover:not(:disabled){background: var(--cream-2)}
-.d-footer button.prev{justify-content: flex-start;}
-.d-footer button.next{justify-content: flex-end;}
-.d-footer button .dir{
+.d-footer button:hover:not(:disabled),
+.d-footer a:hover{background: var(--cream-2)}
+.d-footer button.prev,
+.d-footer a.prev{justify-content: flex-start;}
+.d-footer button.next,
+.d-footer a.next{justify-content: flex-end;}
+.d-footer button .dir,
+.d-footer a .dir{
   font-family: var(--en);
   font-size: 10px;
   font-weight: 700;
@@ -1408,7 +1417,8 @@ a.cite{
   line-height: 1;
   margin-bottom: 3px;
 }
-.d-footer button .ti{
+.d-footer button .ti,
+.d-footer a .ti{
   display: block;
   font-family: var(--zh);
   font-weight: 600;
@@ -1419,7 +1429,8 @@ a.cite{
   white-space: nowrap;
   max-width: 140px;
 }
-.d-footer button.next .stack{text-align: right;}
+.d-footer button.next .stack,
+.d-footer a.next .stack{text-align: right;}
 .d-footer .ic{
   font-size: 18px;
   color: var(--forest);

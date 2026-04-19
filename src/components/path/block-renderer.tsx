@@ -250,7 +250,16 @@ export function BlockRenderer({ block }: { block: Block }) {
           <div className="id-table">
             {block.rows.map((row, i) => (
               <div key={i} className="id-row" data-level={row.level}>
-                <div className="img has-photo">
+                {/* tabindex + role makes the image wrapper keyboard-accessible
+                    so the lightbox can open via Enter/Space, not just mouse.
+                    PathLightbox listens for both click and keydown on this
+                    element and stores it as the trigger ref for focus return. */}
+                <div
+                  className="img has-photo"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`放大 ${row.zh} 照片`}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/assets/img/${row.photo}`}

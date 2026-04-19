@@ -5,10 +5,9 @@
  * for both prisma/seed.ts and React components). This file is a thin alias so
  * components can import via @/lib/path/types instead of deep relative paths.
  *
- * Nesting invariant: `SubBlock.blocks` in the source type allows `Block[]`
- * (including other sub-blocks), but the demo + v0.1 renderer only ever use
- * one level of nesting. `NonSubBlock` below encodes that contract so callers
- * that care about recursion bounds can opt into the stricter shape.
+ * Nesting invariant: `SubBlock.blocks` is typed as `Exclude<Block, SubBlock>[]`
+ * directly in the seed file (see SubBlock interface there), so sub-blocks
+ * cannot nest — enforced at the compiler level, no runtime depth guard needed.
  */
 
 import type { Block, SubBlock } from "../../../docs/research/data/g1-may-seed";
@@ -34,5 +33,6 @@ export type {
   AsideNoteBlock,
 } from "../../../docs/research/data/g1-may-seed";
 
-/** All Block variants except `sub-block` — the type that sub-block.blocks should hold. */
+/** All Block variants except `sub-block`. Exposed for callers that consume
+ *  SubBlock.blocks (e.g. BlockRenderer's sub-block case). */
 export type NonSubBlock = Exclude<Block, SubBlock>;

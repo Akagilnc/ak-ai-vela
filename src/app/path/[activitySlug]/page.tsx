@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PathActivityDetail } from "@/components/path/path-activity-detail";
@@ -13,7 +14,24 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
 }
 
-async function loadContext(activitySlug: string) {
+/**
+ * Truncate a Chinese/English string to a max length, adding ellipsis if cut.
+ * Uses Array.from to iterate by code points so emoji / supplementary-plane
+ * chars don't get split into lone surrogates (would render as replacement
+ * glyphs in WeChat OG previews).
+ */
+function truncate(str: string, maxChars: number): string {
+  const chars = Array.from(str);
+  if (chars.length <= maxChars) return str;
+  return chars.slice(0, maxChars).join("") + "…";
+}
+
+/**
+ * Wrapped in `react/cache` so both `generateMetadata` and the default
+ * page export share a single DB roundtrip per request — otherwise Next.js
+ * would issue the same findUnique + findMany twice for every detail page.
+ */
+const loadContext = cache(async (activitySlug: string) => {
   if (!SLUG_PATTERN.test(activitySlug)) return null;
 
   // v0.1: activities are all within the G1-G3 stage + month 5. Prev/next query
@@ -36,7 +54,7 @@ async function loadContext(activitySlug: string) {
   const next = idx < neighbors.length - 1 ? neighbors[idx + 1] : null;
 
   return { activity, idx, total: neighbors.length, prev, next };
-}
+});
 
 export async function generateMetadata({
   params,
@@ -49,8 +67,15 @@ export async function generateMetadata({
 
   const { activity } = ctx;
   const previews = (activity.previews as unknown as string[]) ?? [];
-  const description = stripHtml(activity.summary).slice(0, 160);
-  const ogImage = previews[0] ? `/assets/img/${previews[0]}` : undefined;
+  const description = truncate(stripHtml(activity.summary), 80);
+  // Allowlist preview filename shape before interpolating into an og:image URL
+  // — prevents a future malformed seed from leaking "..\/..\/etc\/passwd" or
+  // absolute attacker URLs into social preview metadata.
+  const firstPreview = previews[0];
+  const previewIsSafe =
+    typeof firstPreview === "string" &&
+    /^[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp)$/i.test(firstPreview);
+  const ogImage = previewIsSafe ? `/assets/img/${firstPreview}` : undefined;
 
   return {
     title: `${activity.title} · Vela Path Explorer`,
