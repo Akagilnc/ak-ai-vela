@@ -65,7 +65,17 @@ export function canonicalSourcePath(raw: string): string {
   // `pass < s.length` bound is finite and fast. Combined with the
   // 2000-char cap in step 0, worst case is ~20ms.
   for (let pass = 0; pass < s.length; pass++) {
-    const normalized = s.normalize("NFKC");
+    // NFKC first, then fold the confusable-separator / confusable-dot
+    // classes NFKC doesn't cover: backslash + full-width backslash +
+    // FRACTION/DIVISION SLASH (U+2044 / U+2215) → `/`, and IDEOGRAPHIC
+    // FULL STOP (U+3002) → `.`. Without this, paths like `/foo\\bar`,
+    // `/foo⁄bar`, or `/foo/。。/admin` stay as distinct dedup keys even
+    // though they represent the same logical page under a Chinese-parent
+    // target audience where these characters are commonplace.
+    const normalized = s
+      .normalize("NFKC")
+      .replace(/[\\\uFF3C\u2044\u2215]/g, "/")
+      .replace(/[\u3002]/g, ".");
     const decoded = normalized.split("/").map(safeDecodeSegment).join("/");
     if (decoded === s) break;
     s = decoded;

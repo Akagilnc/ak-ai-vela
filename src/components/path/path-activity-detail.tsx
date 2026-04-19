@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { PathActivity } from "@prisma/client";
 import type { ActivitySection } from "@/lib/path/types";
 import { parseChips, parseSections } from "@/lib/path/parse";
-import { BackIcon, ShareIcon, ClockIcon } from "./path-icons";
+import { BackIcon, ClockIcon } from "./path-icons";
+import { ShareButton } from "./share-button";
 import { BlockRenderer } from "./block-renderer";
 import { PathSubNav } from "./path-sub-nav";
 import { PathLightbox } from "./path-lightbox";
@@ -41,9 +42,7 @@ export function PathActivityDetail({
           </span>
           {activity.title}
         </div>
-        <button className="icon-btn" aria-label="分享" type="button">
-          <ShareIcon />
-        </button>
+        <ShareButton title={activity.title} />
       </div>
 
       <PathSubNav targets={sections.map((s) => s.target)} />
