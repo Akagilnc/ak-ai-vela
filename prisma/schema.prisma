@@ -118,3 +118,127 @@ model QuestionnaireResult {
 
   @@map("questionnaire_results")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Path Explorer v0.1 — G1-G3 monthly activity cards
+//
+// Schema history:
+//   - 4/15 design doc: PathCardContent (升学决策卡 17 张) — never migrated
+//   - 4/19 pivot:      PathGoal + PathActivity (月度活动卡 5 张)
+//
+// Seed data lives at docs/research/data/g1-may-seed.ts — types + content
+// Cross-record references use `slug` (stable string key), DB IDs are cuid.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PathStage {
+  id          String   @id @default(cuid())
+  slug        String   @unique  // e.g. "g1-to-g3-foundation"
+  title       String
+  description String
+  gradeFrom   Int
+  gradeTo     Int
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goals     PathGoal[]
+  decisions PathDecision[]
+
+  @@map("path_stages")
+}
+
+model PathGoal {
+  id           String   @id @default(cuid())
+  slug         String   @unique  // cross-activity reference key
+  stageId      String
+  stage        PathStage @relation(fields: [stageId], references: [id])
+  title        String
+  rationale    String              // markdown, why this goal matters
+  horizon      String              // "month" | "semester" | "annual" |
+                                   // "2-year" | "3-year" | "5-year" | "K-12"
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  activities PathActivity[]
+
+  @@index([stageId])
+  @@map("path_goals")
+}
+
+model PathActivity {
+  id           String   @id @default(cuid())
+  slug         String   @unique  // cross-card link reference (gotoActivitySlug)
+  goalId       String
+  goal         PathGoal @relation(fields: [goalId], references: [id])
+  month        Int                // 1-12
+  cardType     String             // "baseline" | "event"
+
+  // Header / list display metadata
+  kicker       String             // e.g. "月度基本盘" / "事件卡 · 节气"
+  previews     Json               // string[] of filenames in public/assets/img/
+  title        String
+  summary      String             // HTML (may contain <b>)
+  triggerLabel String              // "周期" | "Trigger"
+  triggerText  String             // HTML
+  chips        Json               // [{cls, t}] tag chips
+  timeText     String             // HTML
+  timePct      String             // "≤ 40%" | "一次" | "常驻"
+
+  // Card content (rendered as expanded detail page)
+  sections     Json               // ActivitySection[] nested block structure
+                                  // Full type def: docs/research/data/g1-may-seed.ts
+
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([goalId, month])
+  @@map("path_activities")
+}
+
+model PathDecision {
+  id           String   @id @default(cuid())
+  stageId      String
+  stage        PathStage @relation(fields: [stageId], references: [id])
+  title        String   // e.g. "美高 vs 国内国际学校"
+  question     String   // e.g. "G7 开始，你让孩子走哪条路？"
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  branches PathDecisionBranch[]
+
+  @@index([stageId])
+  @@map("path_decisions")
+}
+
+model PathDecisionBranch {
+  id                   String   @id @default(cuid())
+  decisionId           String
+  decision             PathDecision @relation(fields: [decisionId], references: [id])
+  label                String   // e.g. "转美高"
+  shortDescription     String   // e.g. "G8 考 SSAT, G9 入读"
+  displayOrder         Int
+  // Lookup hint, not decision semantics. v0.5+ upgrades this row with
+  // PersonalizedRationale FK for per-user path personalization.
+  downstreamStageSlugs Json     // string[] of PathStage.slug
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([decisionId])
+  @@map("path_decision_branches")
+}
+
+model PathInterest {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  email       String
+  budgetRange String?  // "<50k" | "50-100k" | "100-200k" | "200k+"
+  childGrade  String?  // "G4" | "G5" | "G6" | "G7" | "G8"
+  sourcePath  String   // e.g. "/path" or "/path?variant=v01"
+  userAgent   String?  // for bot filtering
+
+  @@map("path_interests")
+}
