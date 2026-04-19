@@ -3,6 +3,8 @@ import type { PathActivity } from "@prisma/client";
 import type { ActivitySection } from "@/lib/path/types";
 import { BackIcon, ShareIcon, ClockIcon } from "./path-icons";
 import { BlockRenderer } from "./block-renderer";
+import { PathSubNav } from "./path-sub-nav";
+import { PathLightbox } from "./path-lightbox";
 
 type TileChip = { cls: string; t: string };
 
@@ -44,18 +46,7 @@ export function PathActivityDetail({
         </button>
       </div>
 
-      <nav className="sub-nav" id="sub-nav">
-        {sections.map((section, i) => (
-          <a
-            key={section.target}
-            href={`#sec-${i}`}
-            className={i === 0 ? "active" : undefined}
-            data-target={section.target}
-          >
-            {section.target}
-          </a>
-        ))}
-      </nav>
+      <PathSubNav targets={sections.map((s) => s.target)} />
 
       <div className="detail-body" id="detail-body">
         <div className="card-intro" data-kind={activity.cardType}>
@@ -150,6 +141,8 @@ export function PathActivityDetail({
           </button>
         )}
       </div>
+
+      <PathLightbox />
     </>
   );
 }
