@@ -62,7 +62,12 @@ export function PathSubNav({ targets }: { targets: string[] }) {
   }
 
   return (
-    <nav className="sub-nav" id="sub-nav" ref={navRef}>
+    <nav
+      className="sub-nav"
+      id="sub-nav"
+      ref={navRef}
+      aria-label="段落导航"
+    >
       {targets.map((t, i) => (
         <button
           key={t}

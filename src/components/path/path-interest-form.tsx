@@ -1,6 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+/**
+ * Visually-hidden class equivalent — pushed off-screen but still announced
+ * by screen readers. Inline so we don't need to touch the shared CSS.
+ */
+const srOnlyStyle: React.CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: "hidden",
+  clip: "rect(0,0,0,0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
 
 /**
  * CTA form below the tile list. Captures email + optional grade/budget into
@@ -19,10 +35,19 @@ export function PathInterestForm({
   const [grade, setGrade] = useState<string>("");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string>("");
+  const emailRef = useRef<HTMLInputElement | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "submitting") return;
+    if (status === "submitting" || status === "ok") return;
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setStatus("error");
+      setMessage("请输入邮箱");
+      emailRef.current?.focus();
+      return;
+    }
 
     setStatus("submitting");
     setMessage("");
@@ -32,7 +57,7 @@ export function PathInterestForm({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: normalizedEmail,
           childGrade: grade || null,
           sourcePath,
         }),
@@ -41,7 +66,14 @@ export function PathInterestForm({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setStatus("error");
-        setMessage(data.error === "invalid_payload" ? "邮箱格式不对" : "提交失败，稍后再试");
+        const errMsg =
+          data.error === "invalid_payload" || data.error === "invalid_json"
+            ? "邮箱格式不对"
+            : data.error === "write_failed" && data.retryable
+              ? "服务器忙，请稍后再试"
+              : "提交失败，稍后再试";
+        setMessage(errMsg);
+        emailRef.current?.focus();
         return;
       }
 
@@ -91,14 +123,22 @@ export function PathInterestForm({
       <form
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 10 }}
+        noValidate
       >
+        <label htmlFor="cta-email" style={srOnlyStyle}>
+          邮箱
+        </label>
         <input
+          id="cta-email"
+          ref={emailRef}
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           autoComplete="email"
+          aria-invalid={status === "error" ? "true" : "false"}
+          aria-describedby={message ? "cta-status" : undefined}
           style={{
             appearance: "none",
             border: "1px solid var(--hair)",
@@ -110,7 +150,11 @@ export function PathInterestForm({
             color: "var(--ink)",
           }}
         />
+        <label htmlFor="cta-grade" style={srOnlyStyle}>
+          孩子年级
+        </label>
         <select
+          id="cta-grade"
           value={grade}
           onChange={(e) => setGrade(e.target.value)}
           style={{
@@ -151,19 +195,23 @@ export function PathInterestForm({
             ? "提交中..."
             : status === "ok"
               ? "已提交 ✓"
-              : "留个邮箱"}
+              : status === "error"
+                ? "重试"
+                : "留个邮箱"}
         </button>
-        {message ? (
-          <p
-            style={{
-              fontSize: 12,
-              margin: 0,
-              color: status === "error" ? "#a64" : "var(--mute)",
-            }}
-          >
-            {message}
-          </p>
-        ) : null}
+        <p
+          id="cta-status"
+          role="status"
+          aria-live="polite"
+          style={{
+            fontSize: 12,
+            margin: 0,
+            minHeight: "1em",
+            color: status === "error" ? "#a64" : "var(--mute)",
+          }}
+        >
+          {message}
+        </p>
       </form>
     </section>
   );
