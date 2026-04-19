@@ -1505,6 +1505,33 @@ a.cite{
   color: var(--mute-2);
 }
 
+/* ============ SKIP LINK (R14 a11y) ============ */
+/* Off-viewport baseline + focus-pulled-into-view pattern. Two anchors in
+   src/app/path/layout.tsx (#path-main and #detail-body) so keyboard users
+   on either overview or detail can bypass the chrome and sub-nav. */
+.skip-link{
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 8px;
+  font-family: var(--zh-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform .15s ease-out;
+}
+.skip-link:focus,
+.skip-link:focus-visible{
+  transform: translateY(0);
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* ============ TOAST ============ */
 .toast{
   /* `bottom` clears `.d-footer` from the toast's containing block

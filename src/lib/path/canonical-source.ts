@@ -121,8 +121,14 @@ export function canonicalSourcePath(raw: string): string {
   //    The `u` flag enables `\u{...}` for supplementary-plane TAG chars,
   //    and makes the engine surrogate-pair-safe so a single TAG char's
   //    DB40 + DCxx pair is matched as one unit.
+  // R14 added (after R13's pass missed the most common subclass): variation
+  // selectors. Every iOS emoji keyboard emits VS-15/VS-16 (U+FE0E/U+FE0F)
+  // to disambiguate text vs emoji presentation, so this is the most
+  // realistically-encountered Default_Ignorable class in the wild — bigger
+  // surface than the TAG range R13 added. Also musical symbol invisibles
+  // (U+1D173-U+1D17A) for completeness.
   s = s.replace(
-    /[\u0000-\u001F\u007F\u00A0\u034F\u115F\u1160\u180E\u200B-\u200F\u202A-\u202E\u2028\u2029\u2060-\u206F\u3164\uFEFF\uFFA0\uFFF0-\uFFFB\u{E0000}-\u{E007F}]/gu,
+    /[\u0000-\u001F\u007F\u00A0\u034F\u115F\u1160\u180E\u200B-\u200F\u202A-\u202E\u2028\u2029\u2060-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF0-\uFFFB\u{1D173}-\u{1D17A}\u{E0100}-\u{E01EF}\u{E0000}-\u{E007F}]/gu,
     "",
   );
 

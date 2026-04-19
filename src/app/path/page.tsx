@@ -44,7 +44,7 @@ export default async function PathOverviewPage() {
                 Re-add when a menu exists. */}
           </header>
 
-          <div className="app-body">
+          <main className="app-body" id="path-main">
             <section className="path-head">
               <h1>
                 小小<span className="accent">动物科学家</span>
@@ -184,7 +184,7 @@ export default async function PathOverviewPage() {
                 ⚠ PathStage 未 seed，跑 <code>bun run db:seed</code>
               </p>
             ) : null}
-          </div>
+          </main>
         </div>
       </div>
     </div>

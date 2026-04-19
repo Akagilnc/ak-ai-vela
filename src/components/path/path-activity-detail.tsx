@@ -47,7 +47,7 @@ export function PathActivityDetail({
 
       <PathSubNav targets={sections.map((s) => s.target)} />
 
-      <div className="detail-body" id="detail-body">
+      <main className="detail-body" id="detail-body">
         <div className="card-intro" data-kind={activity.cardType}>
           <div className="kicker">
             <span className="pip"></span>
@@ -102,7 +102,7 @@ export function PathActivityDetail({
             ))}
           </section>
         ))}
-      </div>
+      </main>
 
       <div className="d-footer">
         {prev ? (

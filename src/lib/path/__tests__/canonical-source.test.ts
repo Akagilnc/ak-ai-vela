@@ -235,6 +235,42 @@ describe("canonicalSourcePath — Default_Ignorable / bidi / TAG smuggling (R13)
   });
 });
 
+describe("canonicalSourcePath — Variation Selectors + musical invisibles (R14)", () => {
+  it.each([
+    ["U+FE00 VS1", "/pa\uFE00th"],
+    ["U+FE0E VS15 (text presentation)", "/pa\uFE0Eth"],
+    ["U+FE0F VS16 (emoji presentation)", "/pa\uFE0Fth"],
+  ])("BMP variation selector %s strips", (_name, input) => {
+    expect(canonicalSourcePath(input)).toBe("/path");
+  });
+
+  it("U+E0100 supplementary VS17 strips", () => {
+    expect(canonicalSourcePath("/pa\u{E0100}th")).toBe("/path");
+  });
+
+  it("U+E01EF supplementary VS256 (high end) strips", () => {
+    expect(canonicalSourcePath("/pa\u{E01EF}th")).toBe("/path");
+  });
+
+  it("U+1D173 MUSICAL SYMBOL BEGIN BEAM strips", () => {
+    expect(canonicalSourcePath("/pa\u{1D173}th")).toBe("/path");
+  });
+
+  it("U+1D17A MUSICAL SYMBOL END PHRASE strips", () => {
+    expect(canonicalSourcePath("/pa\u{1D17A}th")).toBe("/path");
+  });
+
+  it("percent-encoded VS-16 (UTF-8 EFB88F) decodes then strips", () => {
+    // %EF%B8%8F = U+FE0F in UTF-8
+    expect(canonicalSourcePath("/pa%EF%B8%8Fth")).toBe("/path");
+  });
+
+  it("percent-encoded supplementary VS17 (UTF-8 F3A08480) decodes then strips", () => {
+    // %F3%A0%84%80 = U+E0100 in UTF-8
+    expect(canonicalSourcePath("/pa%F3%A0%84%80th")).toBe("/path");
+  });
+});
+
 describe("canonicalSourcePath — DoS resistance", () => {
   it("caps overlong input at 2000 chars", () => {
     const huge = "/" + "x".repeat(5000);

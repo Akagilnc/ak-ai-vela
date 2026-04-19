@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@fontsource/geist-mono/400.css";
 import "@fontsource/geist-mono/500.css";
 import "@fontsource/geist-mono/700.css";
@@ -7,6 +7,20 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Vela — 美国大学申请规划",
   description: "AI 驱动的美国大学申请规划工具，帮助中国家庭看清差距、找到方向",
+};
+
+/**
+ * `viewportFit: "cover"` is REQUIRED for `env(safe-area-inset-*)` to return
+ * non-zero values on iOS Safari + WeChat WebView (notched iPhones, Dynamic
+ * Island). Without this, every `env(...)` resolves to 0 and the
+ * Path Explorer's R10–R13 safe-area work (toast bottom, lightbox close top,
+ * stage-inner padding, d-footer padding) silently no-ops on real devices.
+ * R14 fix.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
