@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0.0] - 2026-04-19
+
+### Added
+- **Path Explorer v0.1** at `/path` — Chinese parents can now browse a month of hands-on activity cards for G1–G3 children under the 小小动物科学家 (little animal scientist) theme. 5 May cards: 1 baseline (月度基本盘) + 4 event cards (上海自博物馆线路 / 海洋馆线路 / 小故事 / 产出). Each card shows an intro with chips + trigger + time pacing, then 2–5 themed sections rendered from 17 block types (paragraph, triad, route, trivia, callout, callout-trio, path-opts, sub-block, list-check, list-bullets, photo-row, id-table, steps, philosophy, sources, aside-note). Deep-linkable: `/path/{slug}`.
+- **Data model**: 6 new Prisma models — `PathStage`, `PathGoal`, `PathActivity`, `PathDecision`, `PathDecisionBranch`, `PathInterest`. Schema supports both monthly activity cards (current) and future college-decision cards for the same longitudinal user journey. Cuid IDs, `onDelete: Cascade`, composite uniqueness on email+sourcePath for interest dedup.
+- **CTA form** — parents leave email + optional grade to get future months. POST `/api/path/interest` validates via Zod, upserts idempotently, scrubs error details in prod. Client-side email regex prevents round-trip typos.
+- **Interaction polish** — sub-nav with scroll-spy across 2–5 section pills, species-photo lightbox with focus trap + safe-area-top respect, keyboard (←/→/Esc) + touch-swipe navigation between cards, Web Share API + clipboard fallback (WeChat-webview detection + iOS Safari `execCommand` legacy path), `<main>` landmarks + skip-to-content links + `:focus-visible` keyboard rings + `prefers-reduced-motion` honored throughout.
+- **97 regression tests** for `canonicalSourcePath` — the security boundary that canonicalizes user-supplied `sourcePath` before it hits the `(email, sourcePath)` unique key. Covers 15 rounds of hardening: NFKC normalization, multi-pass percent decoding with per-segment fallback, dot-segment resolution, confusable-separator folding (backslash, full-width, FRACTION/DIVISION SLASH, math/box-drawing slashes), `\p{Default_Ignorable_Code_Point}` strip (SOFT HYPHEN, ARABIC LETTER MARK, bidi isolates, TAG characters, variation selectors, Hangul fillers, musical invisibles), DoS length cap.
+- **Brand-styled 404 + error pages** at `/path/not-found` and `/path/error` — Chinese copy ("这张卡找不到了" / "加载出了点问题") with return + retry actions, replaces Next.js's English defaults for stale share links.
+- **iOS safe-area support** via `viewport-fit=cover` on the root viewport meta so `env(safe-area-inset-*)` returns non-zero on notched iPhones; detail-page toast, footer, and lightbox close all compensate for home indicator + notch/Dynamic Island.
+
+### Changed
+- **WCAG 2.5.5 AAA tap targets** across every interactive element on `/path/*` — icon buttons (34→44px), back button (+padding), lightbox close (40→44px + safe-area-top), interest form input/select/submit (+min-height 44px), trivia summary disclosure (40→44px). All meet Apple HIG + AAA.
+
+### Notes
+- Path Explorer v0.1 went through 15 rounds of adversarial cross-model review (3 Claude subagents + Codex in parallel). Every convergent P0/P1 finding was fixed before ship. Deferred P2 items (ShareButton useEffect cleanup on unmount, pinch-zoom swipe-nav guard, `--mute-2` color contrast brand decision, `/schools` landscape safe-area edge, error.tsx dev-mode error display) tracked in `TODOS.md`.
+
 ## [0.5.0.1] - 2026-04-18
 
 ### Added
