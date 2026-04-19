@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShareIcon } from "./path-icons";
 
 type Status = "idle" | "shared" | "copied" | "error";
@@ -50,6 +50,22 @@ export function ShareButton({ title }: { title: string }) {
   const [message, setMessage] = useState("");
   const [show, setShow] = useState(false);
   const resetTimerRef = useRef<number | null>(null);
+
+  // R1 review fix (Gemini): clear pending 3s reset timer on unmount so the
+  // component doesn't call `setShow(false)` on an unmounted fiber if the
+  // user navigates away mid-toast (prev/next footer, Escape-to-overview,
+  // external back). React 18+ silently no-ops the stale setState, but the
+  // timer still runs to completion and holds a closure reference — minor
+  // leak + dev-mode warning. Empty dep array: we only want cleanup on
+  // unmount, not re-bind on every render.
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+    };
+  }, []);
 
   function announce(next: Status) {
     const text = messageFor(next);

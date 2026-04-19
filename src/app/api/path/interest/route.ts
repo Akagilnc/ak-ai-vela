@@ -7,9 +7,10 @@ import { canonicalSourcePath } from "@/lib/path/canonical-source";
  * POST /api/path/interest — capture email + optional context for Path Explorer CTA.
  *
  * Validated at the app boundary with Zod. DB trusts this layer.
- * Idempotent: upsert keyed by (email, sourcePath) so double-submits, retries,
- * and WeChat network replays all converge on one row. Defense-in-depth: email
- * trimmed + lower-cased, Zod `detail` scrubbed in prod, Prisma errors caught.
+ * Idempotent: create-then-update-on-conflict keyed by (email, sourcePath)
+ * so double-submits, retries, and WeChat network replays all converge on
+ * one row. Defense-in-depth: email trimmed + lower-cased, Zod `detail`
+ * scrubbed in prod, Prisma errors caught.
  *
  * Known gaps deferred to v0.5+: rate limiting, honeypot, CSRF, captcha.
  */
@@ -60,48 +61,73 @@ export async function POST(request: Request) {
   const normalizedSourcePath = canonicalSourcePath(payload.sourcePath);
   const userAgent = request.headers.get("user-agent") ?? null;
 
+  const updateData = {
+    budgetRange: payload.budgetRange ?? null,
+    childGrade: payload.childGrade ?? null,
+    userAgent,
+  };
+  const whereCompositeKey = {
+    email_sourcePath: {
+      email: normalizedEmail,
+      sourcePath: normalizedSourcePath,
+    },
+  };
+
+  // R1 review fix (Gemini): Prisma 7 + better-sqlite3 adapter has a known
+  // bug where `upsert` with a composite unique key (@@unique([email,
+  // sourcePath])) compiles to SQL that the adapter can't execute. We sidestep
+  // by trying create first and catching the P2002 unique-constraint error
+  // to fall through to update. This keeps the semantic atomicity (DB
+  // enforces the unique key) and gets us correct 201/200 status codes for
+  // create vs update, without the broken `upsert` codepath.
   try {
-    const row = await prisma.pathInterest.upsert({
-      where: {
-        email_sourcePath: {
-          email: normalizedEmail,
-          sourcePath: normalizedSourcePath,
-        },
-      },
-      update: {
-        budgetRange: payload.budgetRange ?? null,
-        childGrade: payload.childGrade ?? null,
-        userAgent,
-      },
-      create: {
+    const row = await prisma.pathInterest.create({
+      data: {
         email: normalizedEmail,
-        budgetRange: payload.budgetRange ?? null,
-        childGrade: payload.childGrade ?? null,
         sourcePath: normalizedSourcePath,
-        userAgent,
+        ...updateData,
       },
     });
-
     return NextResponse.json({ ok: true, id: row.id }, { status: 201 });
   } catch (error) {
-    // Structured error — client can distinguish "retry" from "permanent failure"
-    // without us leaking Prisma internals. Log only the error code + message so
-    // we don't stream the user's email (embedded in Prisma P2002 `meta`) to
-    // stderr, which could land in CI / container log aggregators.
-    if (!isProd) {
-      // Log error class + Prisma `.code` (P2002 / P2003 / P2025 etc) so
-      // schema-level debugging still works. Never touch `.message` — Prisma
-      // can echo the query object (including the user email) even when
-      // `meta` is scrubbed.
-      const name = error instanceof Error ? error.name : "unknown";
-      const codeField = (error as { code?: unknown })?.code;
-      const prismaCode =
-        typeof codeField === "string" ? ` ${codeField}` : "";
-      console.error(`[api/path/interest] write failed: ${name}${prismaCode}`);
+    const codeField = (error as { code?: unknown })?.code;
+    const isUniqueConflict =
+      codeField === "P2002" ||
+      (error instanceof Error &&
+        /UNIQUE\s+constraint\s+failed/i.test(error.message));
+    if (isUniqueConflict) {
+      try {
+        const row = await prisma.pathInterest.update({
+          where: whereCompositeKey,
+          data: updateData,
+        });
+        return NextResponse.json({ ok: true, id: row.id }, { status: 200 });
+      } catch (updateError) {
+        return handleWriteFailure(updateError);
+      }
     }
-    return NextResponse.json(
-      { ok: false, error: "write_failed", retryable: true },
-      { status: 503 },
-    );
+    return handleWriteFailure(error);
   }
+}
+
+/**
+ * Shared failure handler for both the create path and the update fallback.
+ * Structured response lets the client distinguish "retry" from "permanent
+ * failure" without leaking Prisma internals. Log only the error class +
+ * Prisma code — never `.message` — because Prisma can echo the query
+ * object (including the user's email, embedded in P2002 `meta`) into stderr,
+ * which could land in CI / container log aggregators.
+ */
+function handleWriteFailure(error: unknown) {
+  if (!isProd) {
+    const name = error instanceof Error ? error.name : "unknown";
+    const codeField = (error as { code?: unknown })?.code;
+    const prismaCode =
+      typeof codeField === "string" ? ` ${codeField}` : "";
+    console.error(`[api/path/interest] write failed: ${name}${prismaCode}`);
+  }
+  return NextResponse.json(
+    { ok: false, error: "write_failed", retryable: true },
+    { status: 503 },
+  );
 }

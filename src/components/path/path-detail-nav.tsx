@@ -127,6 +127,18 @@ export function PathDetailNav({
     let touchStartY = 0;
     let touchStartedInInteractive = false;
     function onTouchStart(e: TouchEvent) {
+      // R1 review fix (Gemini): bail out of swipe-nav on multi-touch
+      // gestures (pinch-zoom on species photos / id-table images). Before
+      // this guard, a 2-finger pinch could produce a horizontal delta
+      // between the first finger's touchstart coord and the last finger's
+      // touchend coord that exceeded the 80px / 2:1 dominance threshold,
+      // triggering an unintended prev/next navigation mid-zoom. Setting
+      // `touchStartedInInteractive = true` makes the onTouchEnd bail
+      // without the dx computation.
+      if (e.touches.length > 1) {
+        touchStartedInInteractive = true;
+        return;
+      }
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       touchStartedInInteractive =

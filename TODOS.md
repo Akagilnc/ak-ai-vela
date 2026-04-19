@@ -49,15 +49,13 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## Deferred from Path Explorer v0.1 ship review (2026-04-19)
 
-### [P2] ShareButton `useEffect` cleanup on unmount
-- **What:** Add `useEffect(() => () => { if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current); }, [])` to `src/components/path/share-button.tsx`. Clears the 3s reset timer if the user navigates away mid-toast.
-- **Why:** Flagged by Correctness + Codex in R14/R15 review rounds. React 18+ silently no-ops the `setShow` on unmounted component, so no crash today. But the timer still runs to completion, holding a closure reference. Trivial to fix.
-- **When:** Next time share-button.tsx is touched, OR when introducing route transitions that unmount the detail page mid-share.
+### ~~[P2] ShareButton `useEffect` cleanup on unmount~~ DONE (R1)
+- **Status:** Completed in PR #27 round 1 (Gemini review flagged as MEDIUM). `useEffect` cleanup added at `src/components/path/share-button.tsx`.
+- **Completed:** v0.6.0.0 R1 fix
 
-### [P2] Pinch-zoom multi-touch guard in path-detail-nav
-- **What:** In `src/components/path/path-detail-nav.tsx` `onTouchStart`/`onTouchEnd`, check `e.touches.length > 1` (or track a `pinching` ref) and bail out of the swipe handler. Currently a 2-finger pinch can produce a horizontal delta > 80px and trigger unintended prev/next navigation mid-zoom.
-- **Why:** Flagged by Correctness subagent R14. Rare in practice (users rarely pinch-zoom activity cards with species photos) but a real correctness gap.
-- **When:** Next time detail-nav swipe logic is touched, OR if user reports spurious navigation.
+### ~~[P2] Pinch-zoom multi-touch guard in path-detail-nav~~ DONE (R1)
+- **Status:** Completed in PR #27 round 1 (Gemini review flagged as MEDIUM). `e.touches.length > 1` early-bail added to `onTouchStart` at `src/components/path/path-detail-nav.tsx`.
+- **Completed:** v0.6.0.0 R1 fix
 
 ### [P2] `--mute-2` color contrast (brand decision)
 - **What:** `--mute-2: #8F8B72` computes to ~3.1:1 on `--cream: #FBF7E4` — fails WCAG AA 4.5:1 for small text. Affected sites include ghost month pills, `.aside-note`, `.overview-foot .stamp`, and `.m-pill .zh`. Brand-compliant fix is `#6B6560` (DESIGN.md secondary text tier, ~6.0:1). Other option: keep `--mute-2` and ensure affected text is ≥18.66px or ≥14px bold to qualify for AA large-text (3:1).
