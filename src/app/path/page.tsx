@@ -4,15 +4,19 @@ import { PathInterestForm } from "@/components/path/path-interest-form";
 import { MoreIcon } from "@/components/path/path-icons";
 
 export default async function PathOverviewPage() {
-  // v0.1: single stage (G1-G3), single month (5), all activities ordered by displayOrder.
-  // Future: stage/month selectors drive these query params.
+  // v0.1: single stage (G1-G3), single month (5). Query is scoped to that
+  // stage + month so multi-month / multi-stage seeds in the future don't
+  // silently mix content into this view.
   const stage = await prisma.pathStage.findFirst({
     where: { slug: "g1-to-g3-foundation" },
   });
 
-  const activities = await prisma.pathActivity.findMany({
-    orderBy: { displayOrder: "asc" },
-  });
+  const activities = stage
+    ? await prisma.pathActivity.findMany({
+        where: { goal: { stageId: stage.id }, month: 5 },
+        orderBy: [{ month: "asc" }, { displayOrder: "asc" }, { slug: "asc" }],
+      })
+    : [];
 
   const baselineCount = activities.filter((a) => a.cardType === "baseline").length;
   const eventCount = activities.filter((a) => a.cardType === "event").length;
@@ -114,13 +118,26 @@ export default async function PathOverviewPage() {
               ))}
             </div>
 
+            {activities.length === 0 ? (
+              <p
+                style={{
+                  padding: "0 22px 16px",
+                  color: "var(--mute)",
+                  fontSize: 13,
+                  textAlign: "center",
+                }}
+              >
+                本月卡片整理中，先留个邮箱。6 月 kt 出来我们发你。
+              </p>
+            ) : null}
+
             <PathInterestForm sourcePath="/path" />
 
-            {stage ? null : (
+            {!stage && process.env.NODE_ENV !== "production" ? (
               <p style={{ padding: 16, color: "#a00" }}>
                 ⚠ PathStage 未 seed，跑 <code>bun run db:seed</code>
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
