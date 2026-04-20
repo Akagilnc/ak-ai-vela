@@ -10,13 +10,13 @@ import { useEffect, useRef } from "react";
  *
  * Restore fires only when the user is actually coming back from a card
  * they opened FROM this overview:
- *   (a) browser back/forward — `performance.navigation.type === "back_forward"`
- *   (b) BFCache restore — `pageshow` with `persisted === true`
- *   (c) in-app back from a detail page the user reached BY TAPPING A TILE —
- *       the tile click writes a timestamped `departed-at` flag here; we
- *       consume it on the next /path mount. This catches Next.js
- *       `<Link>`-based client-side push, which does NOT trigger a
- *       `back_forward` navigation type.
+ *   (a) in-app back (or browser back in an SPA) from a detail page the
+ *       user reached BY TAPPING A TILE — the tile click writes a
+ *       timestamped `departed-at` flag here; we consume it on the next
+ *       /path mount. This covers both Next.js `<Link>`-based client-side
+ *       push AND browser history back within the SPA (which also
+ *       preserves sessionStorage and keeps the flag live).
+ *   (b) BFCache restore — `pageshow` with `persisted === true`.
  *
  * Why the flag is written on tile click (not on detail mount):
  * A detail-mount beacon would fire even when the user opens a detail via
@@ -82,17 +82,6 @@ function departedFromOverview(): boolean {
   return Date.now() - ts <= DEPARTED_TTL_MS;
 }
 
-function isBackForwardNav(): boolean {
-  try {
-    const entries = performance.getEntriesByType(
-      "navigation",
-    ) as PerformanceNavigationTiming[];
-    return entries[0]?.type === "back_forward";
-  } catch {
-    return false;
-  }
-}
-
 export function PathOverviewScrollRestore() {
   // Guards the one-shot mount decision against React Strict Mode's dev
   // effect double-fire. Without this, run 1 consumes the departed flag
@@ -136,7 +125,17 @@ export function PathOverviewScrollRestore() {
     // under Strict Mode's dev double-fire.
     if (!handledMountRef.current) {
       handledMountRef.current = true;
-      if (isBackForwardNav() || departedFromOverview()) {
+      // We previously also consulted `performance.navigation.type ===
+      // "back_forward"` here, but Gemini R3 on PR #28 pointed out (and
+      // verified) that the Navigation Timing API only reflects the
+      // INITIAL document-load nav type and stays stale for the entire
+      // document lifetime. In an SPA, every /path re-mount would read
+      // the same value, so a user whose initial /path load happened via
+      // cross-document back-forward would get a bogus restore on every
+      // unrelated future /path re-mount. Beacon alone (set on tile
+      // click) is the reliable signal; the `pageshow` listener below
+      // separately handles the BFCache case.
+      if (departedFromOverview()) {
         doRestore();
       } else {
         // Fresh arrival from an unrelated entry — clear the stale
