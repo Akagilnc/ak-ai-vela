@@ -25,32 +25,51 @@ const TITLE_MAP: Record<string, string> = {
   "exploring:quiet": "安静创造者",
 };
 
-// Description fragments by dimension
+// INTEREST_DESC: the child's behavior pattern tied to (interest, interestDetail).
+// Shown on the result page, concatenated with DRIVE_DESC below to form a single
+// paragraph-length description. Rewritten with the same discipline as insights.ts:
+// no templated opener, varied openings (scene / object / subject), concrete
+// behavioral anchors, no LLM cliché ("充满了好奇心" / "如鱼得水" / "沉迷其中"),
+// no deficit framing ("还在找自己的角落" was flagged in Slice 1 and must not
+// recur), no cross-trait anchor overlap (experiment ≠ science on 植物).
 const INTEREST_DESC: Record<string, string> = {
-  "animal-science:caring": "孩子对动物有天然的温柔和耐心，喜欢观察、照顾小生命。",
-  "animal-science:science": "孩子对自然界充满好奇，喜欢追问动物背后的科学原理。",
-  "animal-science:career": "孩子已经有了清晰的职业画面，对兽医或动物保护工作充满向往。",
-  "stem:builder": "孩子喜欢拆开东西研究结构，动手能力强，享受从零搭建的过程。",
-  "stem:digital": "孩子在电脑和数字世界里如鱼得水，对编程或创作有浓厚兴趣。",
-  "stem:experiment": "孩子喜欢做实验看反应，对化学变化、植物生长这类现象着迷。",
-  "humanities:visual": "孩子在视觉创作上有天赋，画画、手工、设计都让他沉浸其中。",
-  "humanities:narrative": "孩子喜欢用文字表达，读书、写故事、编剧情是他的快乐源泉。",
-  "humanities:performing": "孩子热爱表演和音乐，在舞台上或音乐中能找到自信和快乐。",
-  "exploring:physical": "孩子精力充沛，热爱户外活动，跑跳骑行是他释放能量的方式。",
-  "exploring:screen": "孩子在屏幕世界里有自己的兴趣圈，但还没找到线下的深度投入。",
-  "exploring:quiet": "孩子喜欢安静地做手工、拼图，在专注中找到乐趣。",
+  "animal-science:caring": "对小动物他有耐心也有分寸，愿意蹲下来陪它们一会儿。",
+  "animal-science:science": "虫子、鸟、植物，他对身边的生命都想追问到底是怎么回事。",
+  "animal-science:career": "动物相关的活动他都想参与，兽医、饲养员、救助站是他常问的几种。",
+  "stem:builder": "把东西拆开看里面是他的爱好，做进去就会越做越入迷。",
+  "stem:digital": "同一个游戏或小程序他不爱照着玩，总想改一改、做出自己的版本。",
+  "stem:experiment": "他爱动手试\u201C如果怎样会怎样\u201D，冰化成水、气球鼓起来都要亲眼看。",
+  "humanities:visual": "颜色、形状、摆放他都在意，画画和手工是他静下来的方式。",
+  "humanities:narrative": "他的故事比说出口的多，读书、编情节、讲给自己听他都来。",
+  "humanities:performing": "一上台他就放得开，音乐、动作、表演里能看到另一个他。",
+  "exploring:physical": "户外他整个人伸得开，跑、跳、骑车都让他高兴。",
+  "exploring:screen": "屏幕里的游戏和视频他上手快，线下的桌游、卡牌他也会翻出来玩。",
+  "exploring:quiet": "一个人待着的时候他最专注——手工、拼图、翻书都能投入很久。",
 };
 
+// DRIVE_DESC: appended to INTEREST_DESC to form the full portrait paragraph.
+// The opener shifts context to learning style (no longer describing the child's
+// interest content), so transitions are handled naturally without glue words.
+// Rewritten to avoid "进入状态" (flagged mild slop) and vocabulary that would
+// collide with high-signal words in INTEREST_DESC (e.g. "状态" appearing in
+// performing's earlier draft).
 const DRIVE_DESC: Record<string, string> = {
-  "self-driven": "学习上比较自主，能自己琢磨出方法。",
-  "guided-start": "入门时需要引导，但上手后能独立探索。",
-  "companion": "更喜欢有人陪伴的学习方式，互动中进步更快。",
+  "self-driven": "学东西他不太等人推，方法常常自己试出来。",
+  "guided-start": "起步有人带一下更顺，上手后他能一个人往下推。",
+  "companion": "身边有人一起学他更有劲，来回互动里他推进得快。",
 };
 
 export function generatePortrait(answers: TraitAnswers): Portrait {
   const key = `${answers.interest}:${answers.interestDetail}`;
   const title = TITLE_MAP[key] ?? "成长探索者";
-  const interestDesc = INTEREST_DESC[key] ?? "";
+  // Fallback IS reachable. Each Trait field is validated as a Zod enum, but
+  // the (interest, interestDetail) combination is not enforced at the schema
+  // level — the 10-question flow in questions.ts constrains combos at
+  // runtime, but an out-of-flow caller (stale URL, malformed state restore)
+  // could land here with an unmapped combo. Fallback copy is kept factual
+  // and non-metaphoric so a user who genuinely sees it gets a plain
+  // "not enough signal yet" message rather than an AI-slop placeholder.
+  const interestDesc = INTEREST_DESC[key] ?? "这组答案还没拼出完整画像，多观察他的日常会看得更清楚。";
   const driveDesc = DRIVE_DESC[answers.learningDrive] ?? "";
   const description = `${interestDesc}${driveDesc}`;
 
