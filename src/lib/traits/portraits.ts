@@ -69,7 +69,7 @@ export function generatePortrait(answers: TraitAnswers): Portrait {
   // could land here with an unmapped combo. Fallback copy is kept factual
   // and non-metaphoric so a user who genuinely sees it gets a plain
   // "not enough signal yet" message rather than an AI-slop placeholder.
-  const interestDesc = INTEREST_DESC[key] ?? "这几题还没拼出完整画像，再答几题会更清楚。";
+  const interestDesc = INTEREST_DESC[key] ?? "这组答案还没拼出完整画像，多观察他的日常会看得更清楚。";
   const driveDesc = DRIVE_DESC[answers.learningDrive] ?? "";
   const description = `${interestDesc}${driveDesc}`;
 
