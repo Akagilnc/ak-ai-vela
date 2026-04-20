@@ -55,6 +55,12 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** Alongside v0.2+ Path Explorer iteration OR whenever we pivot to real seed-user distribution. Probably after Kailing signal + before any wider launch.
 - **Note:** Prisma `PathInterest` schema will need a new column (`wechatId` / `phone`) + the Zod body schema will need to accept at least one of email / wechatId / phone. Legal: phone numbers are PII — revisit UA retention policy together (already tracked as a separate v0.5+ item).
 
+### [P2] Switch public/assets/vela.css symlink → prebuild cp when we leave local-only
+- **What:** Replace the `public/assets/vela.css` → `../../assets/vela.css` symlink with a `prebuild` npm script that does `cp assets/vela.css public/assets/vela.css`. OR delete `assets/vela.css` entirely and update the root demo HTML files to reference `public/assets/vela.css` directly.
+- **Why:** Symlinks in `public/` are fine for local dev and for platforms that follow symlinks at build time (Vercel, Netlify). They break on: `npm pack` / `npm publish` (npm strips symlinks per spec), `git archive` (stored as symlink entry, not real content), Windows git clones without `core.symlinks=true`, and some static-deploy CI pipelines that only stat rather than read files. Today the project is local-only so none of these paths exist; this TODO catches the future migration.
+- **When:** Same PR that adds cloud deployment (Vercel / Cloudflare Workers / anything non-local). Flagged by Codex adversarial review on 2026-04-20.
+- **Signal to start:** first PR adding `vercel.json`, `wrangler.toml`, `netlify.toml`, or a `deploy` CI workflow.
+
 ## Deferred from Path Explorer v0.1 ship review (2026-04-19)
 
 ### ~~[P2] ShareButton `useEffect` cleanup on unmount~~ DONE (R1)
