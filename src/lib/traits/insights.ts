@@ -1,23 +1,32 @@
 import type { Interest, InterestDetail } from "./types";
 
-// Mid-quiz insight text: shown after Q3 (interest + interestDetail answered)
-// Pure string lookup, no AI. Each of the 12 combinations gets a unique line.
+// Mid-quiz insight text: shown after Q3 (interest + interestDetail answered).
+// Pure string lookup, no AI. Each of the 12 combinations gets a unique line
+// written in the voice of a real observer — no templated opener, varied
+// openings (scene / subject / object / temporal / attributive), concrete
+// over generic, no contrast-tic, no autonomy-beat repetition, no over-
+// repeated key verbs, em-dash ≤ 2 of 13, each line under 30 CJK chars
+// (test-enforced).
 const INSIGHT_MAP: Record<string, string> = {
-  "animal-science:caring": "看起来孩子是一个对动物很有爱的小观察者",
-  "animal-science:science": "看起来孩子对自然界充满了好奇心",
-  "animal-science:career": "看起来孩子已经有了清晰的职业梦想",
-  "stem:builder": "看起来孩子是一个喜欢动手的小工程师",
-  "stem:digital": "看起来孩子在数字世界里很有天赋",
-  "stem:experiment": "看起来孩子是一个好奇的小实验家",
-  "humanities:visual": "看起来孩子有很强的视觉创造力",
-  "humanities:narrative": "看起来孩子特别善于用文字表达自己",
-  "humanities:performing": "看起来孩子在表演和音乐上很有热情",
-  "exploring:physical": "看起来孩子精力充沛，热爱运动和探索",
-  "exploring:screen": "看起来孩子对数字世界很感兴趣",
-  "exploring:quiet": "看起来孩子喜欢在安静中专注创造",
+  "animal-science:caring": "对小动物他手会放轻，愿意慢慢陪着。",
+  "animal-science:science": "一只虫子就能让他蹲下去看半天——问题一个接一个，答案倒不急着要。",
+  "animal-science:career": "路过宠物医院他会停一下，兽医、饲养员、救助都提过。",
+  "stem:builder": "他拿到零件就开始拆了装、装了拆，过程比成品更吸引他。",
+  "stem:digital": "屏幕前他不爱用默认，想调一调设置，做出自己的版本。",
+  "stem:experiment": "他爱问\u201C如果……会怎样\u201D——冰块放进热水，他会蹲在旁边看到化完。",
+  "humanities:visual": "颜色、形状、怎么摆的，他看一次，回头就能在纸上重画一遍。",
+  "humanities:narrative": "同一本书他能讲三四遍，每次结尾都不一样。",
+  "humanities:performing": "轮到他上场，嘴一张声音就出来，动作也大。",
+  "exploring:physical": "他在户外待不住，喜欢找远的、找高的地方去。",
+  "exploring:screen": "规则清楚、反馈快的东西能让他坐下来，一关一关打过去。",
+  "exploring:quiet": "热闹他不硬凑，一个人坐很久，翻翻书、捏捏泥、画几笔都行。",
 };
 
 export function generateInsight(interest: Interest, interestDetail: InterestDetail): string {
   const key = `${interest}:${interestDetail}`;
-  return INSIGHT_MAP[key] ?? "看起来孩子有独特的兴趣和天赋";
+  // The Zod-validated enum space for (interest × interestDetail) is exactly
+  // the 12 keys above, so this `??` branch is unreachable today. Kept as a
+  // friendly degradation path in case a future enum expansion lands before
+  // the map is updated — better than a blank insight card on the user side.
+  return INSIGHT_MAP[key] ?? "先看到这些。再答几题，会看得更清楚。";
 }
