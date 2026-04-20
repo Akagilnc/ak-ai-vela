@@ -65,7 +65,7 @@ src/
       path/interest/      # POST endpoint for CTA form (create-then-update on conflict)
     page.tsx              # Homepage (dual entry: trait quiz + questionnaire)
   components/
-    path/                 # Path Explorer UI components (9 files)
+    path/                 # Path Explorer UI components (10 files)
       path-activity-tile.tsx    # Overview tile (preview images + chips)
       path-activity-detail.tsx  # Detail page chrome + <main id="detail-body">
       block-renderer.tsx        # 17 block types (paragraph, triad, route, trivia, etc.)
@@ -74,6 +74,7 @@ src/
       path-sub-nav.tsx          # Sticky scroll-spy with cached section refs
       path-lightbox.tsx         # Species-photo lightbox with focus trap + safe-area-top
       path-interest-form.tsx    # CTA form with client-side email regex
+      path-overview-scroll-restore.tsx  # Restores #path-main scrollTop on back-nav from a tile-opened card
       path-icons.tsx            # Inline SVG icons
     trait-quiz/           # Trait assessment UI components
       trait-quiz-provider.tsx  # Context + Reducer + localStorage draft
