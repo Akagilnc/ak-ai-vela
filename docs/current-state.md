@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-19 · `feat/path-explorer-v01-impl` @ `0e0c939` (v0.6.0.0)
+**Last updated:** 2026-04-20 · `fix/path-explorer-horizontal-overflow` @ `a3dd303` (v0.6.1.0)
 
 ## Product Direction
 
@@ -91,18 +91,21 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/path-explorer-v01-impl`
-- **HEAD:** `0e0c939 fix(path-explorer): R3 PR review — Gemini (1 SECURITY HIGH + 2 HIGH/MEDIUM)`
-- **Version:** `0.6.0.0`
-- **Open PR:** #27 (Path Explorer v0.1 implementation). 3-round bot review
-  complete on 2026-04-19:
-  - **Gemini** 3 rounds, all COMMENTED, 8 findings total (1 SEC HIGH + 2 HIGH + 5 MEDIUM), all fixed + replied.
-  - **Codex** R1 only (1 P1 missing assets — fixed). R2-R3 not processed (this repo is not configured for Codex environment; bot posted "create an environment for this repo").
-  - **Copilot** not participating in this repo.
-  - Mergeable. No approvals requested; reviews are informational.
+- **Current branch:** `fix/path-explorer-horizontal-overflow`
+- **HEAD:** `a3dd303 chore: bump version and changelog (v0.6.1.0)`
+- **Version:** `0.6.1.0`
+- **Open PR:** pending — parent `/ship` will create the PR for v0.6.1.0
+  (Path Explorer post-ship UX from Kailing seed-user feedback + scroll-restore
+  hardening + narrow-phone overflow fix). 4 fix commits on branch:
+  - `bf6dac8` horizontal overflow on narrow phone viewports
+  - `30b2a9d` post-ship UX from Kailing seed-user feedback
+  - `c2bc3ff` scroll-restore pre-landing adversarial review (round 1)
+  - `2cfd4a1` scroll-restore round-2+3 adversarial findings
+  - `a3dd303` VERSION + CHANGELOG bump
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
+  - PR #27 (Path Explorer v0.1 implementation, v0.6.0.0, merged 2026-04-19)
   - PR #26 (Path Explorer v0.1 source manifest, v0.5.0.1, merged 2026-04-18)
   - PR #23 (trait assessment quiz, v0.5.0.0, merged 2026-04-13)
   - PR #22 (Prisma $transaction wrapping, v0.4.0.2)
@@ -110,21 +113,28 @@ The system speaks Chinese by default.
 
 ## Most recent real verification
 
-**2026-04-19** — Path Explorer v0.1 end-to-end through 15 rounds of adversarial
-cross-model review (R1–R15) + 3 rounds of PR bot review (R1–R3 via Gemini),
-verified in Claude Preview MCP:
-- Overview render: 5 activity tiles with preview images, ghost month pills
-  for 3/4/6/7/8 月, stage tabs G1-G3 active + G4-G6 / G7-G9 disabled.
-- Detail render for `g1-may-routine`: sub-nav scroll-spy correctly activates
-  "海洋馆路线" pill at scrollTop 1200 (sec-2 at offsetTop 1117).
-- Navigation reset verified: `/path/g1-may-routine` → scroll to sec-2 →
-  next → `/path/g1-may-labor-day-holiday` loads with scrollTop=0, active
-  idx=0, fresh targets ["3 种路径", "避坑", "产出 · 心法"].
-- API idempotency: POST `/api/path/interest` returns 201 + new id on first
-  submit, 200 + same id on repeat (create-then-update-on-P2002 pattern).
-- `bun run test`: 432 / 432 green (23 test files, 2.8s).
-- `canonicalSourcePath` regression suite: 100 / 100 green. Includes new
-  R3 tests pinning `%2\u200BE` smuggling and 2000-char DoS convergence.
+**2026-04-20** — Path Explorer v0.6.1.0 hardening pass verified in preview:
+- Scroll-restore: tap tile on `/path` scrolled to y=800 → detail loads → tap
+  "5 月" back → `#path-main.scrollTop === 800` on return (browser back + in-app
+  back + BFCache all covered). Deep-link `/path/{slug}` → back does not
+  teleport (beacon gated on tile-click timestamp).
+- Narrow-viewport CSS: DevTools 320px iPhone SE profile — overview tiles
+  no longer push horizontal scrollbar; long words break within tiles.
+- Stage tabs: "一~三年级 / 四~六年级 / 初中" render in Chinese sans.
+- Symlink: `public/assets/vela.css → ../../assets/vela.css` verified; demo
+  HTML files and `/path` layout both serve identical bytes.
+- `bun run test`: 432 / 432 green (23 test files, 2.8s). No new tests
+  added in v0.6.1.0 — scroll-restore is verified by adversarial cross-review
+  + preview E2E rather than unit tests (React useEffect + sessionStorage
+  + pageshow lifecycle not cleanly unit-testable in jsdom).
+- 3 rounds of adversarial cross-model review (Claude subagents + Codex,
+  parallel) converged on:
+  - R1: sessionStorage-throw deadlocks, smooth-scroll bypass leaks,
+    flush-on-unmount misses → fixed.
+  - R2: too-permissive beacon (deep-link then back teleported to stale
+    scroll), detached-element flush writing 0 to storage → fixed.
+  - R3: cmd/shift/ctrl-click leaking the departure flag (new-tab opens
+    with modifier keys should NOT set the beacon) → fixed.
 
 ## Blockers and Risks
 
@@ -165,11 +175,10 @@ verified in Claude Preview MCP:
 ## Next-step recommendations
 
 **Immediate:**
-1. Merge PR #27 (Path Explorer v0.1 implementation, v0.6.0.0). 3-round
-   Gemini review cleared. Ready.
-2. Post-merge: delete `feat/path-explorer-v01-impl`, pull `main`, delete
-   the local branch.
-3. Sync Kailing 4/16 call outcome into this file.
+1. Ship v0.6.1.0 via `/gstack-ship` — PR creation, bot review rounds, merge.
+2. Post-merge: delete `fix/path-explorer-horizontal-overflow`, pull `main`.
+3. Act on the Kailing-flagged P1 CTA channel TODO (email → WeChat ID / phone)
+   before any wider distribution push.
 4. Decide on Path Explorer v0.2 scope (June cards? Different stage?) based
    on Kailing signal.
 

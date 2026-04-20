@@ -47,6 +47,32 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.4.0.1 (PR #21). Added `error.tsx`, `loading.tsx`, `not-found.tsx` for `/schools` and `error.tsx`, `not-found.tsx` for `/schools/[id]`. Chinese copy, brand styling, retry button on error boundaries.
 - **Completed:** v0.4.0.1 (2026-04-13)
 
+## Deferred from Path Explorer v0.1 post-ship user feedback (Kailing, 2026-04-19)
+
+### [P1] CTA contact channel — email → WeChat ID / phone
+- **What:** Replace the CTA form's `<input type="email">` primary channel with a more China-native contact option. Options: WeChat ID (`微信号`), phone, or a QR-code-first flow where parent scans a WeChat QR to add founder account. Email can remain as optional fallback.
+- **Why:** Kailing flagged that Chinese parents rarely check email — leaving an email address feels weird and probably gets low conversion. WeChat and phone are the default "how do I hear back" channels in mainland. Current form works (verified via 201/200 responses in preview) but UX-hostile for target audience.
+- **When:** Alongside v0.2+ Path Explorer iteration OR whenever we pivot to real seed-user distribution. Probably after Kailing signal + before any wider launch.
+- **Note:** Prisma `PathInterest` schema will need a new column (`wechatId` / `phone`) + the Zod body schema will need to accept at least one of email / wechatId / phone. Legal: phone numbers are PII — revisit UA retention policy together (already tracked as a separate v0.5+ item).
+
+### [P2] Upgrade scroll-restore rAF re-assert to ResizeObserver + timeout
+- **What:** `doRestore()` in `src/components/path/path-overview-scroll-restore.tsx` currently does a single `requestAnimationFrame` to re-assert `scrollTop` after the sync write, in case layout grew between the sync write and the next paint. If lazy-loaded images below the fold take MULTIPLE frames to stabilize (slow network), the re-assert doesn't catch late growth. Upgrade path: attach a `ResizeObserver` to `#path-main`, re-assert `scrollTop` whenever `scrollHeight` changes within a 500ms window from mount, then disconnect.
+- **Why:** Today's seed user (Kailing, Shanghai 4G/WiFi) isn't on a slow enough network for this to matter. But when a real user reports "I came back and was close to where I was, but a card or two off," this is what needs to change. Flagged by Gemini R3 on PR #28.
+- **When:** Only if a real user reports "returned to wrong position" drift. Speculative shipping would add complexity with no current caller.
+- **Signal to start:** a seed-user feedback message mentioning "came back to wrong spot" / "not quite where I left off".
+
+### [P2] Namespace scroll-restore keys by overview pathname
+- **What:** `SCROLL_KEY` (`vela:path-overview:scroll`) and `DEPARTED_KEY` (`vela:path-overview:departed-at`) in `src/components/path/path-overview-scroll-restore.tsx` are static constants. Parameterize them by `window.location.pathname` (or a stage slug) so future parallel overview pages don't collide on scroll positions.
+- **Why:** Today there is exactly one overview at `/path` (G1–G3 · May). v0.2+ or v0.5+ likely adds month navigation and eventually G4–G6 / G7–G9 stages. Each will need its own overview URL. A shared key would teleport the G1 overview to the G4 overview's last scrollTop. Flagged by Gemini R2 on PR #28.
+- **When:** Same PR that adds the second overview route. One-line change: `const SCROLL_KEY = \`vela:path-overview:scroll:${pathnameKey}\``.
+- **Signal to start:** first PR adding a second `page.tsx` under `src/app/path/` that renders an overview-style tile list.
+
+### [P2] Switch public/assets/vela.css symlink → prebuild cp when we leave local-only
+- **What:** Replace the `public/assets/vela.css` → `../../assets/vela.css` symlink with a `prebuild` npm script that does `cp assets/vela.css public/assets/vela.css`. OR delete `assets/vela.css` entirely and update the root demo HTML files to reference `public/assets/vela.css` directly.
+- **Why:** Symlinks in `public/` are fine for local dev and for platforms that follow symlinks at build time (Vercel, Netlify). They break on: `npm pack` / `npm publish` (npm strips symlinks per spec), `git archive` (stored as symlink entry, not real content), Windows git clones without `core.symlinks=true`, and some static-deploy CI pipelines that only stat rather than read files. Today the project is local-only so none of these paths exist; this TODO catches the future migration.
+- **When:** Same PR that adds cloud deployment (Vercel / Cloudflare Workers / anything non-local). Flagged by Codex adversarial review on 2026-04-20.
+- **Signal to start:** first PR adding `vercel.json`, `wrangler.toml`, `netlify.toml`, or a `deploy` CI workflow.
+
 ## Deferred from Path Explorer v0.1 ship review (2026-04-19)
 
 ### ~~[P2] ShareButton `useEffect` cleanup on unmount~~ DONE (R1)

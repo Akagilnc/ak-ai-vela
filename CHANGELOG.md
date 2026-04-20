@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1.0] - 2026-04-20
+
+### Fixed
+- **Horizontal overflow on narrow phones** — the Path Explorer overview no longer scrolls sideways on viewports where a long word or image would have pushed content past the viewport edge. Affects 320–360px widths (iPhone SE, some Androids) in particular.
+- **Back-navigation scroll position** — tapping a card, reading it, and going back (browser back or the in-page "5 月" button) now returns parents to the exact scroll position they left from, not the top of the list. Important for parents scanning 5+ cards.
+- **Chinese grade labels on stage tabs** — the stage tab row now reads "一~三年级 / 四~六年级 / 初中" in Chinese sans font instead of "G1–G3 / G4–G6 / G7–G9". Kailing flagged the English-prefixed version as noisy for Chinese parents.
+
+### Changed
+- **Single source of truth for the vela stylesheet** — `public/assets/vela.css` is now a symlink to the repo-root `assets/vela.css` so demo HTML files and the live Next.js app always ship the same bytes. Future CSS edits go to the repo-root copy and propagate automatically.
+
+### Notes
+- Scroll-restore (`PathOverviewScrollRestore`) went through three rounds of cross-model adversarial review (Claude subagent + Codex, parallel). Round 1 caught sessionStorage-throw deadlocks, smooth-scroll bypass leaks, and flush-on-unmount misses. Round 2 caught a too-permissive beacon (deep-link to detail then back would teleport to stale scroll) and a detached-element flush that wrote 0 to storage. Round 3 caught cmd/shift/ctrl-click leaking the departure flag when the user opens a card in a new tab and stays on /path. All converged findings fixed and verified in preview.
+- A deferred P1 is recorded in `TODOS.md`: the CTA form's primary contact channel will switch from email to WeChat ID / phone for mainland parents (Kailing post-ship feedback — email opens poorly in China).
+
 ## [0.6.0.0] - 2026-04-19
 
 ### Added
