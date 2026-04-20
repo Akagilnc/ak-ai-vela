@@ -5,8 +5,8 @@ import type { Interest, InterestDetail } from "./types";
 // written in the voice of a real observer — no templated opener, varied
 // openings (scene / subject / object / temporal / attributive), concrete
 // over generic, no contrast-tic, no autonomy-beat repetition, no over-
-// repeated key verbs, em-dash ≤ 2 of 13, each line under 30 CJK chars
-// (test-enforced).
+// repeated key verbs, em-dash ≤ 2 of 13, each line under 35 CJK chars
+// (test-enforced across all 12 keys) to fit the mid-quiz insight card.
 const INSIGHT_MAP: Record<string, string> = {
   "animal-science:caring": "对小动物他手会放轻，愿意慢慢陪着。",
   "animal-science:science": "一只虫子就能让他蹲下去看半天——问题一个接一个，答案倒不急着要。",
