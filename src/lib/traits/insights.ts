@@ -10,14 +10,14 @@ import type { Interest, InterestDetail } from "./types";
 const INSIGHT_MAP: Record<string, string> = {
   "animal-science:caring": "对小动物他手会放轻，愿意慢慢陪着。",
   "animal-science:science": "一只虫子就能让他蹲下去看半天——问题一个接一个，答案倒不急着要。",
-  "animal-science:career": "路过宠物医院他会停一下，兽医、饲养员、救助都提过。",
+  "animal-science:career": "路过宠物医院他会停一下，兽医、饲养员、救助站都提过。",
   "stem:builder": "他拿到零件就开始拆了装、装了拆，过程比成品更吸引他。",
   "stem:digital": "屏幕前他不爱用默认，想调一调设置，做出自己的版本。",
   "stem:experiment": "他爱问\u201C如果……会怎样\u201D——冰块放进热水，他会蹲在旁边看到化完。",
   "humanities:visual": "颜色、形状、怎么摆的，他看一次，回头就能在纸上重画一遍。",
   "humanities:narrative": "同一本书他能讲三四遍，每次结尾都不一样。",
   "humanities:performing": "轮到他上场，嘴一张声音就出来，动作也大。",
-  "exploring:physical": "他在户外待不住，喜欢找远的、找高的地方去。",
+  "exploring:physical": "他在家待不住，一到户外就找远的、找高的地方去。",
   "exploring:screen": "规则清楚、反馈快的东西能让他坐下来，一关一关打过去。",
   "exploring:quiet": "热闹他不硬凑，一个人坐很久，翻翻书、捏捏泥、画几笔都行。",
 };
