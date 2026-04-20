@@ -8,28 +8,39 @@ import { useEffect, useRef } from "react";
  * `.overview-view` uses `overflow: hidden` + flex layout), so the browser's
  * built-in window-level scroll restoration does not apply.
  *
- * Restore fires only when the user is actually coming back from a card:
+ * Restore fires only when the user is actually coming back from a card
+ * they opened FROM this overview:
  *   (a) browser back/forward — `performance.navigation.type === "back_forward"`
  *   (b) BFCache restore — `pageshow` with `persisted === true`
- *   (c) in-app back from a detail page — the detail page sets a beacon
- *       (`vela:path-detail:visited-at`) on mount; we consume it here. This
- *       catches Next.js `<Link>`-based navigation (client-side push), which
- *       does NOT trigger a `back_forward` navigation type.
+ *   (c) in-app back from a detail page the user reached BY TAPPING A TILE —
+ *       the tile click writes a timestamped `departed-at` flag here; we
+ *       consume it on the next /path mount. This catches Next.js
+ *       `<Link>`-based client-side push, which does NOT trigger a
+ *       `back_forward` navigation type.
+ *
+ * Why the flag is written on tile click (not on detail mount):
+ * A detail-mount beacon would fire even when the user opens a detail via
+ * a shared URL or deep link without ever having been on the overview. If
+ * they then tap "5 月" back, the beacon would cause a bogus restore to a
+ * stale SCROLL_KEY from some earlier /path visit. Writing the flag only
+ * when a tile on THIS overview instance is clicked narrows the signal to
+ * "the user departed from this overview toward a card, and scrollTop at
+ * that moment is what we want to come back to".
  *
  * We intentionally do NOT restore on fresh arrivals to `/path` (homepage
  * link, direct URL, navigation from `/schools`, reload). A stale scrollTop
  * from an earlier in-tab visit would teleport the user to the middle of
- * the page — the regression our pre-ship adversarial review flagged.
+ * the page.
  *
  * All `sessionStorage` access is try/catch guarded because Safari private
  * mode, iOS Lockdown Mode, and several in-app webviews (WeChat, Weibo)
- * throw on any storage access. A single throw would otherwise dead-lock
- * the throttled save path. When storage is unavailable the feature silently
- * no-ops for that session.
+ * throw on any storage API access. A single throw would otherwise
+ * dead-lock the throttled save path. When storage is unavailable the
+ * feature silently no-ops for that session.
  */
 const SCROLL_KEY = "vela:path-overview:scroll";
-const BEACON_KEY = "vela:path-detail:visited-at";
-const BEACON_TTL_MS = 60 * 60 * 1000; // 1 hour — belt-and-braces against a stale beacon that somehow survived.
+const DEPARTED_KEY = "vela:path-overview:departed-at";
+const DEPARTED_TTL_MS = 60 * 60 * 1000; // 1 hour — belt-and-braces against a stale flag that somehow survived.
 
 function safeGet(key: string): string | null {
   try {
@@ -55,12 +66,12 @@ function safeRemove(key: string): void {
   }
 }
 
-function cameFromDetail(): boolean {
-  const raw = safeGet(BEACON_KEY);
+function departedFromOverview(): boolean {
+  const raw = safeGet(DEPARTED_KEY);
   if (!raw) return false;
   const ts = parseInt(raw, 10);
   if (!Number.isFinite(ts)) return false;
-  return Date.now() - ts <= BEACON_TTL_MS;
+  return Date.now() - ts <= DEPARTED_TTL_MS;
 }
 
 function isBackForwardNav(): boolean {
@@ -76,9 +87,9 @@ function isBackForwardNav(): boolean {
 
 export function PathOverviewScrollRestore() {
   // Guards the one-shot mount decision against React Strict Mode's dev
-  // effect double-fire. Without this, run 1 consumes the beacon and
-  // restores, run 2 sees a now-empty beacon and takes the "fresh arrival"
-  // branch, incorrectly clearing SCROLL_KEY.
+  // effect double-fire. Without this, run 1 consumes the departed flag
+  // and restores, run 2 sees a now-empty flag and takes the "fresh
+  // arrival" branch, incorrectly clearing SCROLL_KEY.
   const handledMountRef = useRef(false);
 
   useEffect(() => {
@@ -102,6 +113,13 @@ export function PathOverviewScrollRestore() {
       main.style.scrollBehavior = "auto";
       main.scrollTop = top;
       requestAnimationFrame(() => {
+        // Re-assert once, in case lazy-loaded above-the-fold images
+        // expanded layout between our sync write and this frame —
+        // without this, the browser clamps scrollTop to the smaller
+        // `scrollHeight - clientHeight` at mount time.
+        if (main.scrollTop !== top && top <= main.scrollHeight - main.clientHeight) {
+          main.scrollTop = top;
+        }
         main.style.scrollBehavior = prevBehavior;
       });
     };
@@ -110,7 +128,7 @@ export function PathOverviewScrollRestore() {
     // under Strict Mode's dev double-fire.
     if (!handledMountRef.current) {
       handledMountRef.current = true;
-      if (isBackForwardNav() || cameFromDetail()) {
+      if (isBackForwardNav() || departedFromOverview()) {
         doRestore();
       } else {
         // Fresh arrival from an unrelated entry — clear the stale
@@ -118,7 +136,7 @@ export function PathOverviewScrollRestore() {
         // position that pre-dates the user's current /path visit.
         safeRemove(SCROLL_KEY);
       }
-      safeRemove(BEACON_KEY);
+      safeRemove(DEPARTED_KEY);
     }
 
     // BFCache restore — the browser swaps the DOM back in without
@@ -142,9 +160,47 @@ export function PathOverviewScrollRestore() {
     };
     main.addEventListener("scroll", scheduleSave, { passive: true });
 
-    // Flush any pending save before the page hides, so a user who flicks
-    // the list and immediately taps a tile captures their final position
-    // instead of a 100ms-old one.
+    // Tile click → user is departing this overview instance to open a
+    // card. Capture phase so we run before Next.js's `<Link>` onClick
+    // starts client-side navigation. Two things happen here:
+    //   1. Set the departed flag, which triggers restore on the eventual
+    //      back navigation.
+    //   2. SYNCHRONOUSLY flush the current scrollTop — cannot be deferred
+    //      to the effect cleanup, because by cleanup time Next.js has
+    //      already swapped the /path DOM out and `main.scrollTop` reads
+    //      as 0 on the detached element. This is the concrete failure the
+    //      round-2 adversarial review flagged.
+    //
+    // We only respond to unmodified primary-button clicks. Cmd/Ctrl/Shift
+    // -click opens a new tab or window while leaving the current tab on
+    // /path — writing the departed flag in that case would leak a
+    // one-hour-valid restore trigger that fires on any later /path
+    // remount. Enter-key activation on a focused `.tile` fires a
+    // synthetic click with `button: 0` and no modifier keys, which is
+    // correctly allowed through.
+    const onTileClick = (e: Event) => {
+      const me = e as MouseEvent;
+      if (me.defaultPrevented) return;
+      if (me.button !== 0) return;
+      if (me.metaKey || me.ctrlKey || me.shiftKey || me.altKey) return;
+      const target = e.target as Element | null;
+      if (target?.closest?.("a.tile")) {
+        safeSet(DEPARTED_KEY, String(Date.now()));
+        if (saveTimer !== null) {
+          clearTimeout(saveTimer);
+          saveTimer = null;
+        }
+        safeSet(SCROLL_KEY, String(main.scrollTop));
+      }
+    };
+    main.addEventListener("click", onTileClick, { capture: true });
+
+    // Flush any pending save on page hide, so a user who flicks the list
+    // and immediately taps a tile captures their final position instead
+    // of a 100ms-old one. NOTE: pagehide / visibilitychange do NOT fire
+    // on Next.js SPA `<Link>` navigation (same-document push). That case
+    // is covered by the `flushSave()` call in the cleanup below — which
+    // runs when React unmounts this component during a route change.
     const flushSave = () => {
       if (saveTimer !== null) {
         clearTimeout(saveTimer);
@@ -161,10 +217,24 @@ export function PathOverviewScrollRestore() {
 
     return () => {
       main.removeEventListener("scroll", scheduleSave);
+      main.removeEventListener("click", onTileClick, { capture: true } as EventListenerOptions);
       window.removeEventListener("pageshow", onPageShow);
       window.removeEventListener("pagehide", onPageHide);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      if (saveTimer !== null) clearTimeout(saveTimer);
+      // Cleanup-time flush — only safe if `main` is still in the DOM.
+      // On Next.js client-side nav, by the time this cleanup runs,
+      // `main` has been detached and `main.scrollTop` reads as 0 on
+      // Chromium; writing that to SCROLL_KEY would clobber the correct
+      // value flushed synchronously from the tile-click handler above.
+      // So we skip the flush when `main` is detached. For other unmount
+      // paths (HMR, strict-mode dev double-fire before any scroll has
+      // happened), `isConnected` is true and the flush proceeds normally.
+      if (saveTimer !== null) {
+        clearTimeout(saveTimer);
+        if (main.isConnected) {
+          safeSet(SCROLL_KEY, String(main.scrollTop));
+        }
+      }
     };
   }, []);
 

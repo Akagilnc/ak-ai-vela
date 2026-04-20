@@ -8,7 +8,6 @@ import { BlockRenderer } from "./block-renderer";
 import { PathSubNav } from "./path-sub-nav";
 import { PathLightbox } from "./path-lightbox";
 import { PathDetailNav } from "./path-detail-nav";
-import { PathDetailVisitedBeacon } from "./path-detail-visited-beacon";
 
 type Props = {
   activity: PathActivity;
@@ -157,7 +156,6 @@ export function PathActivityDetail({
 
       <PathLightbox />
       <PathDetailNav prevSlug={prev?.slug} nextSlug={next?.slug} />
-      <PathDetailVisitedBeacon />
     </>
   );
 }
