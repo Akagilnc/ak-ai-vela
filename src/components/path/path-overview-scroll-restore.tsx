@@ -40,7 +40,15 @@ import { useEffect, useRef } from "react";
  */
 const SCROLL_KEY = "vela:path-overview:scroll";
 const DEPARTED_KEY = "vela:path-overview:departed-at";
-const DEPARTED_TTL_MS = 60 * 60 * 1000; // 1 hour — belt-and-braces against a stale flag that somehow survived.
+// 5 minutes — narrow enough that a user who wandered off /path (hard nav
+// away from the detail page, left the tab idle, opened a new window, etc.)
+// won't get a bogus restore when they come back. The typical "open a card,
+// read for a minute or two, hit back" flow stays well inside this window.
+// Gemini R2 on PR #28 flagged the old 1-hour TTL as the core of a teleport
+// UX bug — the detail-page-unmount cleanup (`PathDetailExitCleanup`)
+// handles SPA Link navigation to non-/path routes; this TTL is the
+// belt-and-braces defense for hard-nav exits that React cannot observe.
+const DEPARTED_TTL_MS = 5 * 60 * 1000;
 
 function safeGet(key: string): string | null {
   try {
