@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2.0] - 2026-04-20
+
+### Changed
+- **Trait quiz copy rewritten** — both the mid-quiz insight card (shown after Q3) and the result-page portrait paragraph no longer read like AI-generated placeholders. Chinese parents now see observations that sound like a real person describing their specific child, with concrete behavioral anchors instead of generic praise.
+  - Mid-quiz insights: 12 of the 12 branch-specific lines rewritten. Every line used to open with "看起来..."; now openings vary (scene / subject / object / temporal). Placeholder vocabulary ("充满了好奇心" / "很有天赋" / "独特的") replaced with observable actions ("蹲下去看半天", "拆了装、装了拆", "一关一关打过去", "翻翻书、捏捏泥、画几笔"). Length capped at 35 CJK chars, test-enforced across all 12 keys.
+  - Result-page portrait descriptions: 12 interest descriptions + 3 learning-drive descriptions rewritten with the same discipline. Deficit framing removed (e.g. the earlier "线下还没找到" was premature-diagnostic and parent-alarming; now reads as a balanced "屏幕里熟、线下也在接触"). Anchor overlaps between trait branches eliminated so the 12 portraits actually feel distinct when parents compare notes.
+  - Fallback paragraph (shown if an out-of-flow caller ever hits an unmapped combo): no longer "他的兴趣还在浮现，轮廓会越来越清楚" (AI metaphor slop) — now the factual "这几题还没拼出完整画像，再答几题会更清楚." The code comment around the fallback was also corrected: the previous claim that it was unreachable (implying `??` branches only existed as future-proofing) was wrong — Zod validates each trait field's enum but not the (interest, interestDetail) combination.
+
+### Fixed
+- **Insight length invariant was silently drifting.** The comment in `src/lib/traits/insights.ts` claimed "each line under 30 CJK chars (test-enforced)", but the test only spot-checked one key (`stem:builder`). After the rewrite two lines had grown to 32 chars undetected. The test now checks all 12 keys and the header comment reflects the real 35-char limit.
+
+### Notes
+- Both copy slices went through adversarial review loops before landing: Slice 1 (insights) converged in round 6, Slice 2 (portraits) in round 7. Each round was 3 Claude subagents (specialized in slop-pattern detection / tone calibration / info-density) plus Codex, all running in parallel. Reviewers found real issues every round up to convergence, including one late-round Codex catch of an "积木" overlap with a quiet-branch quiz stem in `questions.ts`.
+
 ## [0.6.1.0] - 2026-04-20
 
 ### Fixed

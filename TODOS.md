@@ -124,11 +124,15 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.6.0.0 (2026-04-19). Scope pivoted 4/18 from "17 升学决策卡" to "G1 五月 · 5 月度活动卡" per seed-user validation (Kailing + 4 peers). Shipped: 6 Prisma models, seed for 5 activity cards, overview + detail pages, CTA form + API, 17-block-type renderer, sub-nav scroll-spy, species photo lightbox, keyboard + touch nav, Web Share + WeChat UA fallback, error / not-found pages, 97 canonical-source regression tests, 15 rounds of adversarial cross-review.
 - **Completed:** v0.6.0.0 (2026-04-19)
 
-### [P1] Insight + portrait 文案去 AI slop，扩展为随机池
-- **What:** 两件事。(1) 消灭 AI slop：insight 12 句话全部以"看起来"开头，portrait description 句式雷同，需要逐句重写，确保每句读起来像一个真人观察者说的话而不是 AI 生成的模板。(2) 扩展随机池：每个格子从 1 句扩展到 12-24 句，随机抽取。同一个孩子两次测评、或两个孩子对比时，看到不同表达。12 格 × 24 句 = 288 句文案。
-- **Why:** "看起来" × 12 是最经典的 AI slop 句式。用户一眼就能感知到是机器生成的模板。这直接损害"我们懂你孩子"的核心体验。随机池的成本几乎为零，但用户感受天壤之别。
-- **When:** Kailing 电话之后，Phase 2 之前。这比接 LLM 优先级高，因为 288 句好文案比一个 API 有用。
-- **Depends on:** v0.5.0.0 (已完成)
+### ~~[P1] Insight + portrait 文案去 AI slop~~ DONE in v0.6.2.0
+- **Status:** Slice 1（insights.ts）和 Slice 2（portraits.ts）都用自治 TDD + 13 轮 cross-model adversarial review 完成。所有 12 条 insight + 12 条 INTEREST_DESC + 3 条 DRIVE_DESC + 两条 fallback 都重写，消掉了"看起来" × 12 模板、去掉了"充满好奇"/"如鱼得水"/"沉迷其中"这类 AI slop 套话，每条都落到可观察行为锚点。具体见 v0.6.2.0 CHANGELOG。
+- **Completed:** v0.6.2.0 (2026-04-20)
+
+### [P2] Insight + portrait 扩展为随机池
+- **What:** 每个 key 从 1 句扩到 3-24 句候选，按 seed（比如 session id）确定性抽取。同一孩子同次测评看到同一句；重测或对比另一孩子能看到不同表达。
+- **Why:** 目前每个 key 只有 1 条手写文案（已经跑 13 轮 review 打磨到干净）。扩池能让同一用户多次访问或多孩子对比不再见到完全相同的一句话，提升"每个孩子独特"的感知。
+- **When:** 等 seed user（Kailing）真实使用反馈后再决定优先级。1 条写得好的文案 > 24 条 mediocre，当前 1 条的状态可能已经够用。
+- **Depends on:** v0.6.2.0（已完成的 de-slop 基础）
 
 ### [P2] A11y: Fix muted text contrast in trait quiz
 - **What:** Replace `#B8B0A0` (muted) with `#6B6560` (secondary text) for functional labels in trait quiz (step counter, feature badges, subtitles). Reserve `#B8B0A0` for purely decorative elements only.
