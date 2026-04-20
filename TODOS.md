@@ -55,6 +55,12 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** Alongside v0.2+ Path Explorer iteration OR whenever we pivot to real seed-user distribution. Probably after Kailing signal + before any wider launch.
 - **Note:** Prisma `PathInterest` schema will need a new column (`wechatId` / `phone`) + the Zod body schema will need to accept at least one of email / wechatId / phone. Legal: phone numbers are PII — revisit UA retention policy together (already tracked as a separate v0.5+ item).
 
+### [P2] Upgrade scroll-restore rAF re-assert to ResizeObserver + timeout
+- **What:** `doRestore()` in `src/components/path/path-overview-scroll-restore.tsx` currently does a single `requestAnimationFrame` to re-assert `scrollTop` after the sync write, in case layout grew between the sync write and the next paint. If lazy-loaded images below the fold take MULTIPLE frames to stabilize (slow network), the re-assert doesn't catch late growth. Upgrade path: attach a `ResizeObserver` to `#path-main`, re-assert `scrollTop` whenever `scrollHeight` changes within a 500ms window from mount, then disconnect.
+- **Why:** Today's seed user (Kailing, Shanghai 4G/WiFi) isn't on a slow enough network for this to matter. But when a real user reports "I came back and was close to where I was, but a card or two off," this is what needs to change. Flagged by Gemini R3 on PR #28.
+- **When:** Only if a real user reports "returned to wrong position" drift. Speculative shipping would add complexity with no current caller.
+- **Signal to start:** a seed-user feedback message mentioning "came back to wrong spot" / "not quite where I left off".
+
 ### [P2] Namespace scroll-restore keys by overview pathname
 - **What:** `SCROLL_KEY` (`vela:path-overview:scroll`) and `DEPARTED_KEY` (`vela:path-overview:departed-at`) in `src/components/path/path-overview-scroll-restore.tsx` are static constants. Parameterize them by `window.location.pathname` (or a stage slug) so future parallel overview pages don't collide on scroll positions.
 - **Why:** Today there is exactly one overview at `/path` (G1–G3 · May). v0.2+ or v0.5+ likely adds month navigation and eventually G4–G6 / G7–G9 stages. Each will need its own overview URL. A shared key would teleport the G1 overview to the G4 overview's last scrollTop. Flagged by Gemini R2 on PR #28.
