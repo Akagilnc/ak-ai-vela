@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-20 · `fix/path-explorer-horizontal-overflow` @ `a3dd303` (v0.6.1.0)
+**Last updated:** 2026-04-20 · `feat/trait-v05-deslop` @ `1bda9e8` (v0.6.2.0)
 
 ## Product Direction
 
@@ -91,20 +91,21 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `fix/path-explorer-horizontal-overflow`
-- **HEAD:** `a3dd303 chore: bump version and changelog (v0.6.1.0)`
-- **Version:** `0.6.1.0`
-- **Open PR:** pending — parent `/ship` will create the PR for v0.6.1.0
-  (Path Explorer post-ship UX from Kailing seed-user feedback + scroll-restore
-  hardening + narrow-phone overflow fix). 4 fix commits on branch:
-  - `bf6dac8` horizontal overflow on narrow phone viewports
-  - `30b2a9d` post-ship UX from Kailing seed-user feedback
-  - `c2bc3ff` scroll-restore pre-landing adversarial review (round 1)
-  - `2cfd4a1` scroll-restore round-2+3 adversarial findings
-  - `a3dd303` VERSION + CHANGELOG bump
+- **Current branch:** `feat/trait-v05-deslop`
+- **HEAD:** `1bda9e8 chore: bump version and changelog (v0.6.2.0)`
+- **Version:** `0.6.2.0`
+- **Open PR:** pending — parent `/ship` will create the PR for v0.6.2.0
+  (trait-quiz copy de-slop: mid-quiz insight card + result-page portrait
+  paragraphs rewritten to remove AI-placeholder voice; content-only, zero
+  architectural / routing / schema changes). 4 commits on branch:
+  - `aff3520` refactor(trait-quiz): de-slop mid-quiz insight copy
+  - `6f1eec8` refactor(trait-quiz): de-slop portraits.ts INTEREST_DESC + DRIVE_DESC + fallback
+  - `47a23c4` fix: pre-landing review — correct insights length-limit coverage
+  - `1bda9e8` chore: bump version and changelog (v0.6.2.0)
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
+  - PR #28 (Path Explorer v0.6.1.0 UX + scroll-restore hardening, merged 2026-04-20)
   - PR #27 (Path Explorer v0.1 implementation, v0.6.0.0, merged 2026-04-19)
   - PR #26 (Path Explorer v0.1 source manifest, v0.5.0.1, merged 2026-04-18)
   - PR #23 (trait assessment quiz, v0.5.0.0, merged 2026-04-13)
@@ -113,28 +114,28 @@ The system speaks Chinese by default.
 
 ## Most recent real verification
 
-**2026-04-20** — Path Explorer v0.6.1.0 hardening pass verified in preview:
-- Scroll-restore: tap tile on `/path` scrolled to y=800 → detail loads → tap
-  "5 月" back → `#path-main.scrollTop === 800` on return (browser back + in-app
-  back + BFCache all covered). Deep-link `/path/{slug}` → back does not
-  teleport (beacon gated on tile-click timestamp).
-- Narrow-viewport CSS: DevTools 320px iPhone SE profile — overview tiles
-  no longer push horizontal scrollbar; long words break within tiles.
-- Stage tabs: "一~三年级 / 四~六年级 / 初中" render in Chinese sans.
-- Symlink: `public/assets/vela.css → ../../assets/vela.css` verified; demo
-  HTML files and `/path` layout both serve identical bytes.
-- `bun run test`: 432 / 432 green (23 test files, 2.8s). No new tests
-  added in v0.6.1.0 — scroll-restore is verified by adversarial cross-review
-  + preview E2E rather than unit tests (React useEffect + sessionStorage
-  + pageshow lifecycle not cleanly unit-testable in jsdom).
-- 3 rounds of adversarial cross-model review (Claude subagents + Codex,
-  parallel) converged on:
-  - R1: sessionStorage-throw deadlocks, smooth-scroll bypass leaks,
-    flush-on-unmount misses → fixed.
-  - R2: too-permissive beacon (deep-link then back teleported to stale
-    scroll), detached-element flush writing 0 to storage → fixed.
-  - R3: cmd/shift/ctrl-click leaking the departure flag (new-tab opens
-    with modifier keys should NOT set the beacon) → fixed.
+**2026-04-20** — Trait-quiz copy de-slop (v0.6.2.0) verified:
+- `npm test`: 432 / 432 green (23 test files, 2.58s). The insights length
+  test was widened from a single-key spot check (`stem:builder`) to all 12
+  keys — caught two lines that had silently drifted to 32 chars post-Slice-1
+  rewrite. Ceiling is 35 CJK chars, test-enforced across every combo.
+- Scope is content-only: `src/lib/traits/insights.ts` (12 branch-specific
+  lines rewritten, openings varied past the 看起来 × 12 template),
+  `src/lib/traits/portraits.ts` (12 INTEREST_DESC + 3 DRIVE_DESC + fallback
+  paragraph rewritten; deficit framing removed; anchor overlaps between
+  trait branches eliminated), and the insights test file. Zero changes to
+  routing, schema, data flow, or any non-copy surface.
+- Two independent adversarial review loops: Slice 1 (insights) converged in
+  round 6, Slice 2 (portraits) in round 7. Each round fanned out to 3 Claude
+  subagents (slop-pattern detection / tone calibration / info-density) +
+  Codex in parallel. Every round up to convergence surfaced real issues,
+  including one late-round Codex catch of a "积木" overlap with a quiet-branch
+  quiz stem in `questions.ts`.
+- Fallback prose correction: previous comment claimed the `??` branches were
+  unreachable "future-proofing." Wrong — Zod validates each trait field's
+  enum independently but not the `(interest, interestDetail)` combination,
+  so an out-of-flow caller hitting an unmapped combo does land on the
+  fallback. Comment now states this plainly.
 
 ## Blockers and Risks
 
@@ -175,8 +176,8 @@ The system speaks Chinese by default.
 ## Next-step recommendations
 
 **Immediate:**
-1. Ship v0.6.1.0 via `/gstack-ship` — PR creation, bot review rounds, merge.
-2. Post-merge: delete `fix/path-explorer-horizontal-overflow`, pull `main`.
+1. Ship v0.6.2.0 via `/gstack-ship` — PR creation, bot review rounds, merge.
+2. Post-merge: delete `feat/trait-v05-deslop`, pull `main`.
 3. Act on the Kailing-flagged P1 CTA channel TODO (email → WeChat ID / phone)
    before any wider distribution push.
 4. Decide on Path Explorer v0.2 scope (June cards? Different stage?) based
@@ -189,7 +190,10 @@ The system speaks Chinese by default.
 3. Address deferred P2 items as they become blocking (see above).
 
 **Trait quiz next (issue #24, independent track):**
-1. v0.5 insight + portrait copy de-slop + random pool expansion (P1 TODO).
+1. ~~v0.5 insight + portrait copy de-slop~~ DONE in v0.6.2.0. Next:
+   random-pool expansion (every key 1 → 3-24 hand-written variants with
+   seeded selection) is tracked as a P2 TODO, waiting for Kailing signal
+   — one good line may already be enough.
 2. v0.6 scientific trait quiz: replace DIY 10-q with Temperament / VIA /
    Big5-C / Gardner MI hybrid. Not blocked by Path Explorer.
 3. Phase 2 persistence (Prisma TraitResult) after content is validated.
