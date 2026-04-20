@@ -24,9 +24,12 @@ const INSIGHT_MAP: Record<string, string> = {
 
 export function generateInsight(interest: Interest, interestDetail: InterestDetail): string {
   const key = `${interest}:${interestDetail}`;
-  // The Zod-validated enum space for (interest × interestDetail) is exactly
-  // the 12 keys above, so this `??` branch is unreachable today. Kept as a
-  // friendly degradation path in case a future enum expansion lands before
-  // the map is updated — better than a blank insight card on the user side.
+  // Fallback IS reachable. Each Trait field is validated as a Zod enum, but
+  // the (interest, interestDetail) combination is not enforced at the schema
+  // level — the 10-question flow in questions.ts constrains combos at
+  // runtime, but an out-of-flow caller (stale URL, malformed state restore)
+  // could land here with an unmapped combo. Kept as a friendly degradation
+  // path — better than a blank insight card on the user side. Matches the
+  // identical-shape reachability note in portraits.ts.
   return INSIGHT_MAP[key] ?? "先看到这些。再答几题，会看得更清楚。";
 }
