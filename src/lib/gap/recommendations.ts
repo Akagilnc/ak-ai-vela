@@ -41,27 +41,27 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // GPA
   // ============================================================
-  "gpa:excellent": () => "GPA 远超目标，这是你的优势项",
-  "gpa:green": () => "GPA 已达目标范围，保持稳定即可",
+  "gpa:excellent": () => "GPA 远超学校平均线，申请文书里可以把成绩作为支撑点主动突出",
+  "gpa:green": () => "GPA 已达目标范围，主科可以收尾，精力转向课外活动和文书",
   "gpa:yellow": (ctx) =>
     `GPA 接近 ${ctx.schoolName} 平均线，下学期重点提升 0.3-0.5 分，优先冲弱势科目`,
   "gpa:red": (ctx) =>
-    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期重点补强主科并考虑升学规划调整`,
+    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期优先提升主科，同时在目标校列表中补充 GPA 匹配度更高的学校`,
   "gpa:no-data": (ctx) => {
     if (ctx.reason === "international") {
-      return "国际课程成绩换算将在 Phase 2 支持，当前请补充等效百分制估算（可用学校 report card 的总评分）";
+      return "国际课程成绩暂不支持换算，可以在备注里填入等效百分制估算（参考学校 report card 的总评分）";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 GPA 平均值，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 GPA 参考数据，这项跳过，其余维度的报告不受影响`;
     }
-    return "补上百分制成绩或年级排名可以让报告更准";
+    return "补上百分制成绩可以让报告更准";
   },
 
   // ============================================================
   // SAT
   // ============================================================
-  "sat:excellent": () => "SAT 分数远超学校 75 分位，这是你的优势项",
-  "sat:green": () => "SAT 分数已进入学校 75 分位以上，建议保持",
+  "sat:excellent": () => "SAT 超过学校 75 分位线，标化成绩不是软肋，精力可以放在活动和文书",
+  "sat:green": () => "SAT 已进学校 75 分位以上，标化可以收尾，精力转向活动和文书",
   "sat:yellow": (ctx) =>
     `SAT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
   "sat:red": (ctx) => {
@@ -73,10 +73,13 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   },
   "sat:no-data": (ctx) => {
     if (ctx.reason === "test-free") {
-      return "该校不要求 SAT 考试成绩，不影响你的申请";
+      // "test-free" reason must only be set for schools with a genuine
+      // test-blind / test-free policy (not test-optional). If you expand
+      // this to cover test-optional schools, the copy below will mislead.
+      return "该校 SAT 成绩非必须，跳过这一维度的对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 SAT 分数段，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 SAT 分数段参考，这项跳过，其余维度的报告不受影响`;
     }
     return "补上 SAT 或 ACT 分数可以让报告更准";
   },
@@ -84,8 +87,8 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // ACT
   // ============================================================
-  "act:excellent": () => "ACT 分数远超学校 75 分位，这是你的优势项",
-  "act:green": () => "ACT 分数已进入学校 75 分位以上，建议保持",
+  "act:excellent": () => "ACT 超过学校 75 分位线，标化成绩不是软肋，精力可以放在活动和文书",
+  "act:green": () => "ACT 已进学校 75 分位以上，标化可以收尾，精力转向活动和文书",
   "act:yellow": (ctx) =>
     `ACT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
   "act:red": (ctx) => {
@@ -97,10 +100,12 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   },
   "act:no-data": (ctx) => {
     if (ctx.reason === "test-free") {
-      return "该校不要求 ACT 考试成绩，不影响你的申请";
+      // Same constraint as SAT test-free: only bind this reason to
+      // genuinely test-blind schools, not test-optional ones.
+      return "该校 ACT 成绩非必须，跳过这一维度的对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 ACT 分数段，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 ACT 分数段参考，这项跳过，其余维度的报告不受影响`;
     }
     return "补上 ACT 或 SAT 分数可以让报告更准";
   },
@@ -109,13 +114,13 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // Pre-vet Experience (animal hours)
   // ============================================================
   "prevet-experience:excellent": () =>
-    "动科经历远超门槛，是申请中的亮眼加分项",
+    "动科经历远超录取门槛，申请文书里值得专门辟一节来写",
   "prevet-experience:green": () =>
-    "动科 / pre-vet 相关经历时长充足（≥100 小时），是申请中的明显加分项",
+    "动科 / pre-vet 相关经历达 100 小时以上，已满足主流 pre-vet 项目的基本要求",
   "prevet-experience:yellow": () =>
-    "动科相关经历已达 40 小时，建议继续累积到 100 小时以强化 pre-vet 申请",
+    "动科相关经历已达 40 小时，主流兽医学院申请建议达到 100 小时以上，继续累积来强化 pre-vet 申请",
   "prevet-experience:red": () =>
-    "动科相关经历不足 40 小时，pre-vet 申请中这是关键信号，建议尽快安排 shadowing 或实习",
+    "动科相关经历不足 40 小时，pre-vet 申请竞争力弱，建议尽快安排 shadowing 或实习",
   "prevet-experience:no-data": () =>
     "补上动科 / pre-vet 相关经历（volunteer / shadowing / 实习）可以让报告更准",
 };

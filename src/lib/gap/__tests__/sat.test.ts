@@ -38,7 +38,7 @@ describe("satDimension.compute — excellent", () => {
       makeSchool({ sat25th: 1400, sat75th: 1500 }),
     );
     expect(result.severity).toBe("excellent");
-    expect(result.action).toContain("远超");
+    expect(result.action).toContain("75 分位");
   });
 
   it("SAT exactly at excellent threshold → excellent (inclusive)", () => {
@@ -65,7 +65,7 @@ describe("satDimension.compute — test-free school", () => {
       makeSchool({ testPolicy: "free", sat25th: null, sat75th: null }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("不要求");
+    expect(result.action).toContain("非必须");
     expect(result.action).not.toContain("补上");
     expect(result.action).not.toContain("数据库");
   });
@@ -76,7 +76,7 @@ describe("satDimension.compute — test-free school", () => {
       makeSchool({ testPolicy: "free", sat25th: 1200, sat75th: 1400 }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("不要求");
+    expect(result.action).toContain("非必须");
   });
 
   it("test-free school + student has no score → no-data test-free (not student-missing)", () => {
@@ -85,7 +85,7 @@ describe("satDimension.compute — test-free school", () => {
       makeSchool({ testPolicy: "free" }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("不要求");
+    expect(result.action).toContain("非必须");
   });
 });
 
@@ -156,7 +156,7 @@ describe("satDimension.compute — no-data", () => {
       makeSchool({ name: "Cornell University", sat25th: null, sat75th: 1500 }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });
@@ -167,7 +167,7 @@ describe("satDimension.compute — no-data", () => {
       makeSchool({ name: "Cornell University", sat25th: 1400, sat75th: null }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });

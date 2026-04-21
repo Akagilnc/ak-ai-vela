@@ -255,8 +255,8 @@ describe("gpaDimension.compute — no-data cases", () => {
     );
     expect(result.severity).toBe("no-data");
     expect(result.target).toBe(null);
-    // School-facing copy: flags DB gap, does NOT ask student to re-fill.
-    expect(result.action).toContain("数据库");
+    // School-facing copy: flags data gap, does NOT ask student to re-fill.
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });
