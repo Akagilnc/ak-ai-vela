@@ -24,7 +24,11 @@ export interface RecommendationContext {
   //   - "international"       — student reports an IB/AP/A-Level system
   //                             we can't yet normalize (GPA conversion deferred)
   //   - "unknown"              — student explicitly picked "not sure"
-  //   - "missing-data"         — student-side field is empty
+  //   - "missing-data"         — student selected percentage GPA but left the
+  //                              field empty
+  //   - "missing-data-rank"    — student selected rank GPA but left classRank
+  //                              empty; recovery copy must reference 年级排名,
+  //                              not 百分制 (different field, different form)
   //   - "school-missing-data"  — database lacks the school-side field the
   //                              dimension needs (e.g. avgGPA, sat25th)
   //
@@ -32,7 +36,7 @@ export interface RecommendationContext {
   // because the action is different: student-missing asks the user to
   // fill the form, school-missing flags a DB gap on our side and must
   // NOT blame the student. M3.5 #9 regression fence.
-  reason?: "international" | "unknown" | "missing-data" | "school-missing-data" | "test-free";
+  reason?: "international" | "unknown" | "missing-data" | "missing-data-rank" | "school-missing-data" | "test-free";
 }
 
 type RecommendationFn = (ctx: RecommendationContext) => string;
@@ -49,7 +53,15 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
     `GPA 与 ${ctx.schoolName} 差距较大，建议下学期优先提升主科，同时在目标校列表中补充 GPA 匹配度更高的学校`,
   "gpa:no-data": (ctx) => {
     if (ctx.reason === "international") {
-      return "国际课程成绩暂不支持换算，可以在备注里填入等效百分制估算（参考学校 report card 的总评分）";
+      // No notes/remarks field exists in the questionnaire — do not direct
+      // users there. The only real exit ramp: switch gpaType to "percentage"
+      // on Step 3 and enter an equivalent estimate manually.
+      return "国际课程制度暂不支持换算；若有百分制等效成绩，可返回第三步选择「百分制」手动填入";
+    }
+    if (ctx.reason === "missing-data-rank") {
+      // Student declared gpaType === "rank" but left classRank empty.
+      // Must NOT say "补上百分制成绩" — that is the wrong field entirely.
+      return "补上年级排名可以让报告更准";
     }
     if (ctx.reason === "school-missing-data") {
       return `暂无 ${ctx.schoolName} 的 GPA 参考数据，这项跳过，其余项目的报告不受影响`;

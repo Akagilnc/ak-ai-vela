@@ -35,7 +35,7 @@ const NORMALIZE_CEILING = 3.95; // normalizeChineseGpa() output cap
 
 function buildNoData(
   school: School,
-  reason: "international" | "unknown" | "missing-data" | "school-missing-data",
+  reason: "international" | "unknown" | "missing-data" | "missing-data-rank" | "school-missing-data",
   current: number | null,
 ): GapResult {
   return {
@@ -89,7 +89,10 @@ export const gpaDimension: Dimension = {
     }
 
     if (normalized == null) {
-      return buildNoData(school, "missing-data", currentNumeric);
+      // Distinguish rank-missing from percentage-missing so the recovery copy
+      // points the user to the correct form field (年级排名 vs 百分制成绩).
+      const missingReason = answers.gpaType === "rank" ? "missing-data-rank" : "missing-data";
+      return buildNoData(school, missingReason, currentNumeric);
     }
 
     // School-side data check. Distinguish from student-missing above so
