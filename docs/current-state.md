@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-21 · `feat/copy-deslop` @ `e4a79b3` (Slice 4, pre-ship)
+**Last updated:** 2026-04-21 · `feat/copy-deslop` @ `57171a4` (v0.6.2.1, pre-merge)
 
 ## Product Direction
 
@@ -73,7 +73,7 @@ The system speaks Chinese by default.
   tier classification, 20 recommendation templates.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
   portrait generator, insight text. 49 tests.
-- **Tests:** 432 passing via Vitest (23 files, 2.8s). Coverage invariant
+- **Tests:** 514 passing via Vitest (27 files, 2.6s). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
@@ -92,9 +92,9 @@ The system speaks Chinese by default.
 ## Active branch / PR / review state
 
 - **Current branch:** `feat/copy-deslop` (branched from `main` @ `af48eb4`)
-- **HEAD:** `e4a79b3` (Slice 4 complete, 4 commits ahead of main)
-- **Version:** `0.6.2.0` (not bumped yet — copy-only change)
-- **Open PR:** none yet. Branch ready for `/gstack-ship`.
+- **HEAD:** `57171a4` (v0.6.2.1 version bump, 9 commits ahead of main)
+- **Version:** `0.6.2.1`
+- **Open PR:** none yet. Branch ready to merge after `/gstack-document-release`.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
@@ -117,7 +117,7 @@ The system speaks Chinese by default.
 ## Most recent real verification
 
 **2026-04-21** — Full-app Chinese copy de-slop across 4 slices, pre-ship:
-- 486 / 486 tests green (27 files, 2.7s). 4 new test files created
+- 514 / 514 tests green (27 files, 2.6s). 4 new test files created
   (`copy-quality-slice1-4.test.ts`), 3 pre-existing dimension unit test
   files updated to sync with new recommendation copy.
 - **Slice 1** (landing, path, interest form, error page): replaced AI 驱动

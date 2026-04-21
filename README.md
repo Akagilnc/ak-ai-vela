@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (432 tests, 23 files) |
+| `npm test` | Run all tests (514 tests, 27 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
