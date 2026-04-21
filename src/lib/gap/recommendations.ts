@@ -68,7 +68,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
     const gap =
       ctx.target && ctx.current != null ? ctx.target.min - ctx.current : null;
     return gap != null && gap > 0
-      ? `SAT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提至 25 分位以上为近期备考目标`
+      ? `SAT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提升至 25 分位以上为近期备考目标`
       : `SAT 需要进一步提升，目前低于 ${ctx.schoolName} 录取常见区间`;
   },
   "sat:no-data": (ctx) => {
@@ -95,7 +95,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
     const gap =
       ctx.target && ctx.current != null ? ctx.target.min - ctx.current : null;
     return gap != null && gap > 0
-      ? `ACT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提至 25 分位以上为近期备考目标`
+      ? `ACT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提升至 25 分位以上为近期备考目标`
       : `ACT 需要进一步提升，目前低于 ${ctx.schoolName} 录取常见区间`;
   },
   "act:no-data": (ctx) => {
