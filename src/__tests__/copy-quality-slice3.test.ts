@@ -76,8 +76,8 @@ describe("Result page (app/trait-quiz/result/[routeId]/page.tsx)", () => {
 // ---------------------------------------------------------------------------
 describe("Trait insight component (components/trait-quiz/trait-insight.tsx)", () => {
   it("transition text should mention what the next questions cover", () => {
-    // "接下来几个问题帮我们更深入了解学习方式" is informative — keep it.
-    // This test ensures the instruction remains present in the component.
+    // "接下来几个问题关于孩子的学习方式" — keep it.
+    // This test ensures the transition instruction remains present in the component.
     expect(insightComponent).toContain("学习");
   });
 });

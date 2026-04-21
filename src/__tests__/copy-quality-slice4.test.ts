@@ -126,4 +126,13 @@ describe("Gaps page: pill text regression fence (Slice 2 sync)", () => {
     expect(recs).toContain("非必须");
     expect(recs).not.toContain("不要求");
   });
+
+  it("recommendations should not contain '未公布' (dead pill-text branch removed — regression fence)", () => {
+    // The '未公布' pill-text branch was removed from gaps/page.tsx in this branch
+    // because no recommendation path ever produced that string. This test ensures
+    // no future recommendation accidentally introduces '未公布', which would now
+    // silently fall through to '暂无' instead of displaying correctly.
+    const recs = src("lib/gap/recommendations.ts");
+    expect(recs).not.toContain("未公布");
+  });
 });

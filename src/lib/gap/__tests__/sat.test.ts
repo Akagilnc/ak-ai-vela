@@ -59,7 +59,7 @@ describe("satDimension.compute — excellent", () => {
 });
 
 describe("satDimension.compute — test-free school", () => {
-  it("test-free school → no-data with 不要求 copy", () => {
+  it("test-free school → no-data with 非必须 copy", () => {
     const result = satDimension.compute(
       makeAnswers({ satScore: 1450 }),
       makeSchool({ testPolicy: "free", sat25th: null, sat75th: null }),

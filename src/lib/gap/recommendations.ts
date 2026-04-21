@@ -22,7 +22,7 @@ export interface RecommendationContext {
   // Optional sub-case identifier. Used by dimensions that have multiple
   // no-data paths with different action prompts:
   //   - "international"       — student reports an IB/AP/A-Level system
-  //                             we can't yet normalize (Phase 2 TBD)
+  //                             we can't yet normalize (GPA conversion deferred)
   //   - "unknown"              — student explicitly picked "not sure"
   //   - "missing-data"         — student-side field is empty
   //   - "school-missing-data"  — database lacks the school-side field the

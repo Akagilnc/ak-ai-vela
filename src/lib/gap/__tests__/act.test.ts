@@ -51,7 +51,7 @@ describe("actDimension.compute — excellent", () => {
 });
 
 describe("actDimension.compute — test-free school", () => {
-  it("test-free school → no-data with 不要求 copy", () => {
+  it("test-free school → no-data with 非必须 copy", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: 32 }),
       makeSchool({ testPolicy: "free", act25th: null, act75th: null }),
