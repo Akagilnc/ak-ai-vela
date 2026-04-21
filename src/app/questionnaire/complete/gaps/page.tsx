@@ -69,8 +69,7 @@ const SEVERITY_CONFIG: Record<
     pillClass: "bg-gap-nodata/4 text-gap-nodata",
     label: "暂无",
     pillText: (r) => {
-      if (r.action?.includes("不要求")) return `${r.label} 免试`;
-      if (r.action?.includes("未公布")) return `${r.label} 未公布`;
+      if (r.action?.includes("非必须")) return `${r.label} 免试`;
       return `${r.label} 暂无`;
     },
   },

@@ -59,7 +59,7 @@ export default function QuestionnairePage() {
           Vela 美国本科规划问卷
         </h1>
         <p className="text-base text-vela-text-secondary">
-          5 分钟完成，我们会据此生成可执行的申请差距分析
+          5 分钟完成，生成各学校的录取差距报告
         </p>
 
         {/* Draft resume card */}

@@ -55,7 +55,7 @@ export function Step3Academics() {
     <StepLayout
       step={3}
       title="学业情况"
-      subtitle="每个孩子都有闪光点"
+      subtitle="这帮我们准确比对目标学校的成绩要求"
       onValidate={validate}
     >
       <FormField
