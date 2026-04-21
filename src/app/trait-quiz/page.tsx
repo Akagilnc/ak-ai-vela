@@ -113,7 +113,7 @@ function QuizContent() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-fade-in">
         <div className="w-12 h-12 border-4 border-vela-border border-t-vela-primary rounded-full animate-spin" />
-        <p className="text-vela-text-secondary text-sm">正在为你生成专属画像...</p>
+        <p className="text-vela-text-secondary text-sm">正在生成画像...</p>
       </div>
     );
   }
@@ -141,7 +141,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         </h1>
       </div>
       <p className="text-[15px] text-vela-text-secondary max-w-[320px] leading-relaxed">
-        回答 10 个简单的问题，了解孩子的特质，获得专属的分阶段规划路线图。
+        回答 10 个问题，了解孩子的兴趣和学习风格，拿到分阶段活动建议。
       </p>
       <button
         type="button"

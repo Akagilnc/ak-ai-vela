@@ -231,7 +231,7 @@ export default function TraitResultPage() {
             重新测评
           </Link>
           <p className="text-xs text-vela-text-secondary mt-4">
-            由 Vela 提供
+            Vela · 特质测评
           </p>
         </div>
       </div>
