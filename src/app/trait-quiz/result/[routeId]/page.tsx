@@ -108,7 +108,7 @@ function GoalConfirmation() {
   return (
     <div className="bg-vela-surface rounded-xl p-5 mt-8">
       <h3 className="text-[15px] font-medium text-vela-heading mb-3">你的目标是？</h3>
-      <p className="text-sm text-vela-text-secondary mb-4">这帮我们在未来提供更精准的建议</p>
+      <p className="text-sm text-vela-text-secondary mb-4">选择后可以让建议更具体</p>
       <div className="flex gap-2 flex-wrap">
         {options.map((opt) => (
           <button
@@ -134,7 +134,7 @@ function NoLocalStorageBanner() {
   return (
     <div className="bg-vela-surface rounded-xl p-4 mb-6 text-center">
       <p className="text-sm text-vela-text-secondary">
-        这是基于路线的规划建议。想获得个性化画像？
+        这是基于路线的规划建议。想看孩子的画像？
       </p>
       <Link
         href="/trait-quiz"

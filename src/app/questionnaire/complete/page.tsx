@@ -16,7 +16,7 @@ function CompleteContent() {
           {childName} 的问卷已完成
         </h1>
         <p className="text-base text-vela-text-secondary">
-          下一步可以查看 {childName} 与各所学校的匹配分析。
+          下一步可以查看 {childName} 与各学校的差距分析。
         </p>
 
         <div className="bg-vela-surface border border-vela-border rounded-lg p-4 text-sm text-vela-text font-mono">

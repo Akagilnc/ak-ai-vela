@@ -86,6 +86,19 @@ describe("Complete page (app/questionnaire/complete/page.tsx)", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Complete page: terminology consistency
+// The intro page (questionnaire/page.tsx) calls the output "录取差距报告".
+// The complete page button says "查看差距分析". The paragraph must not use
+// a third synonym "匹配分析" — three names for the same output in the same
+// user flow creates unnecessary confusion.
+// ---------------------------------------------------------------------------
+describe("Complete page: consistent '差距' terminology (not '匹配分析')", () => {
+  it("should not call the output '匹配分析' on the complete page (button on same page says '差距分析')", () => {
+    expect(completePage).not.toContain("匹配分析");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Gaps page: regression fence for Slice 2 copy change
 // The pill text logic in gaps/page.tsx used to check r.action.includes("不要求")
 // to identify test-free schools. Slice 2 changed the copy to use "非必须"

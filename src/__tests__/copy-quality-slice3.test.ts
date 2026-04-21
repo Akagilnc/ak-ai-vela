@@ -81,3 +81,24 @@ describe("Trait insight component (components/trait-quiz/trait-insight.tsx)", ()
     expect(insightComponent).toContain("学习");
   });
 });
+
+// ---------------------------------------------------------------------------
+// "学习风格" must not appear in the welcome subtitle
+// The project's scientific direction (no-diy-trait-framework) explicitly
+// excludes learning-style models (VARK / Kolb). The quiz doesn't measure
+// VARK-style modality preferences — it measures interest, learning drive,
+// and social preferences. Using "学习风格" sets expectations the system
+// cannot meet and references a discredited pseudoscientific framework.
+// ---------------------------------------------------------------------------
+describe("Quiz welcome subtitle: no '学习风格' pseudoscience term", () => {
+  it("welcome subtitle should not claim '学习风格' (VARK/Kolb excluded by project direction)", () => {
+    expect(quizPage).not.toContain("学习风格");
+  });
+
+  it("welcome subtitle should still describe what the quiz measures", () => {
+    // After removing "学习风格", replacement must still tell the user what
+    // they'll learn about the child. "兴趣" alone or a specific alternative
+    // for the learning dimension is required.
+    expect(quizPage).toMatch(/兴趣.{0,20}(特点|节奏|方式|特质|成长)/);
+  });
+});

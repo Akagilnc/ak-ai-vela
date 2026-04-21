@@ -18,7 +18,7 @@ export function TraitInsight() {
           {insightText}
         </p>
         <p className="text-sm text-vela-text-secondary mb-6">
-          接下来几个问题帮我们更深入了解学习方式
+          接下来几个问题关于孩子的学习方式
         </p>
         <button
           type="button"

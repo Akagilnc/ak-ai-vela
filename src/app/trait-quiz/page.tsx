@@ -141,7 +141,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         </h1>
       </div>
       <p className="text-[15px] text-vela-text-secondary max-w-[320px] leading-relaxed">
-        回答 10 个问题，了解孩子的兴趣和学习风格，拿到分阶段活动建议。
+        回答 10 个问题，了解孩子的兴趣和成长特点，拿到分阶段活动建议。
       </p>
       <button
         type="button"
