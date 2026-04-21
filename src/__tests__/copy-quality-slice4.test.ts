@@ -39,8 +39,9 @@ describe("Step 3 subtitle: no slop placeholder", () => {
   });
 
   it("step-3 subtitle should tell the user what the step is about", () => {
-    // The replacement should be informative, not just a feel-good phrase
-    expect(step3).toMatch(/subtitle=".{2,}"/);
+    // Must reference the actual purpose of step 3: comparing against school requirements.
+    // Weak regex replaced with specific assertion — prevents any 2-char subtitle from passing.
+    expect(step3).toContain("这帮我们准确比对目标学校的成绩要求");
   });
 });
 
