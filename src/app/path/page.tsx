@@ -106,7 +106,7 @@ export default async function PathOverviewPage() {
                   4 月
                 </button>
                 <span className="m-pill" aria-current="true">
-                  5 月 · G1
+                  5 月
                 </span>
                 <button
                   className="m-pill"
@@ -145,13 +145,13 @@ export default async function PathOverviewPage() {
                 </span>
                 <span className="dot"></span>
                 <span className="tally">
-                  <b>{baselineCount}</b> baseline · <b>{eventCount}</b> 事件卡
+                  <b>{baselineCount}</b> 基础卡 · <b>{eventCount}</b> 活动卡
                 </span>
               </div>
             </section>
 
             <div className="section-head">
-              <span className="tag">本月 {activities.length} 张卡 · 点击进入</span>
+              <span className="tag">本月 {activities.length} 张卡</span>
               <span className="bar"></span>
             </div>
 

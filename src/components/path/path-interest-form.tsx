@@ -102,7 +102,7 @@ export function PathInterestForm({
       }
 
       setStatus("ok");
-      setMessage("收到，我们会单独联系你");
+      setMessage("收到了，6 月卡出来第一时间发你");
       setEmail("");
       setGrade("");
     } catch {
