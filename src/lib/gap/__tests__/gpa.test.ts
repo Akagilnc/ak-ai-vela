@@ -208,7 +208,7 @@ describe("gpaDimension.compute — no-data cases", () => {
     expect(result.action).toContain("百分制");
   });
 
-  it("gpaType unknown → no-data with generic prompt", () => {
+  it("gpaType unknown → no-data: mentions both 百分制 and 年级排名 (both inputs accepted)", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "unknown",
@@ -217,7 +217,10 @@ describe("gpaDimension.compute — no-data cases", () => {
       makeSchool(),
     );
     expect(result.severity).toBe("no-data");
+    // Regression fence: unknown students may have classRank, not just percentage.
+    // Recovery copy must not imply only 百分制 is accepted.
     expect(result.action).toContain("百分制");
+    expect(result.action).toContain("年级排名");
   });
 
   it("gpaType percentage but gpaPercentage null → no-data (student-missing text)", () => {

@@ -58,6 +58,12 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       // on Step 3 and enter an equivalent estimate manually.
       return "国际课程制度暂不支持换算；若有百分制等效成绩，可返回第三步选择「百分制」手动填入";
     }
+    if (ctx.reason === "unknown") {
+      // Student explicitly selected "not sure" for gpaType — they may have
+      // either percentage OR rank available, so name both fields. Must NOT
+      // imply only 百分制 is accepted (Step 3 supports classRank too).
+      return "补上百分制成绩或年级排名可以让报告更准";
+    }
     if (ctx.reason === "missing-data-rank") {
       // Student declared gpaType === "rank" but left classRank empty.
       // Must NOT say "补上百分制成绩" — that is the wrong field entirely.
