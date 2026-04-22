@@ -160,7 +160,7 @@ export default async function GapsPage({
             {student.name} 的学校差距分析
           </h1>
           <p className="text-sm text-vela-muted mt-1">
-            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? allResults.values().next().value.length : 0} 个项目
+            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? allResults.values().next().value.length : 0} 个评估项
           </p>
         </div>
 

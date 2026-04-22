@@ -50,7 +50,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   "gpa:yellow": (ctx) =>
     `GPA 接近 ${ctx.schoolName} 平均线，建议下学期优先从弱势主科入手，力争提升到平均线以上`,
   "gpa:red": (ctx) =>
-    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期优先提升主科，同时在目标校列表中补充 GPA 匹配度更高的学校`,
+    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期优先提升主科，同时考虑将 GPA 差距更小的学校纳入选校范围`,
   "gpa:no-data": (ctx) => {
     if (ctx.reason === "international") {
       // No notes/remarks field exists in the questionnaire — do not direct
@@ -78,7 +78,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // SAT
   // ============================================================
-  "sat:excellent": () => "SAT 超过学校 75 分位线，标化成绩不是软肋，精力可以放在课外活动和文书",
+  "sat:excellent": () => "SAT 超过学校 75 分位线，标化成绩已是你的优势，精力可以放在课外活动和文书",
   "sat:green": () => "SAT 已进学校 75 分位以上，标化可以收尾，精力转向课外活动和文书",
   "sat:yellow": (ctx) =>
     `SAT 分数在 ${ctx.schoolName} 25-75 分位区间，提升至 75 分位以上可进一步强化标化竞争力`,
@@ -105,7 +105,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // ACT
   // ============================================================
-  "act:excellent": () => "ACT 超过学校 75 分位线，标化成绩不是软肋，精力可以放在课外活动和文书",
+  "act:excellent": () => "ACT 超过学校 75 分位线，标化成绩已是你的优势，精力可以放在课外活动和文书",
   "act:green": () => "ACT 已进学校 75 分位以上，标化可以收尾，精力转向课外活动和文书",
   "act:yellow": (ctx) =>
     `ACT 分数在 ${ctx.schoolName} 25-75 分位区间，提升至 75 分位以上可进一步强化标化竞争力`,
