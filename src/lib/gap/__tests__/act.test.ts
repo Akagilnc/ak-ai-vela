@@ -38,7 +38,7 @@ describe("actDimension.compute — excellent", () => {
       makeSchool({ act25th: 31, act75th: 34 }),
     );
     expect(result.severity).toBe("excellent");
-    expect(result.action).toContain("远超");
+    expect(result.action).toContain("75 分位");
   });
 
   it("ACT just below excellent threshold → green", () => {
@@ -51,13 +51,13 @@ describe("actDimension.compute — excellent", () => {
 });
 
 describe("actDimension.compute — test-free school", () => {
-  it("test-free school → no-data with 不要求 copy", () => {
+  it("test-free school → no-data with 非必须 copy", () => {
     const result = actDimension.compute(
       makeAnswers({ actScore: 32 }),
       makeSchool({ testPolicy: "free", act25th: null, act75th: null }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("不要求");
+    expect(result.action).toContain("非必须");
     expect(result.action).not.toContain("补上");
   });
 
@@ -67,7 +67,7 @@ describe("actDimension.compute — test-free school", () => {
       makeSchool({ testPolicy: "free", act25th: 28, act75th: 33 }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("不要求");
+    expect(result.action).toContain("非必须");
   });
 });
 
@@ -135,7 +135,7 @@ describe("actDimension.compute — no-data", () => {
       makeSchool({ name: "Cornell University", act25th: null }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });
@@ -146,7 +146,7 @@ describe("actDimension.compute — no-data", () => {
       makeSchool({ name: "Cornell University", act75th: null }),
     );
     expect(result.severity).toBe("no-data");
-    expect(result.action).toContain("数据库");
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });

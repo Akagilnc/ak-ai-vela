@@ -69,8 +69,7 @@ const SEVERITY_CONFIG: Record<
     pillClass: "bg-gap-nodata/4 text-gap-nodata",
     label: "暂无",
     pillText: (r) => {
-      if (r.action?.includes("不要求")) return `${r.label} 免试`;
-      if (r.action?.includes("未公布")) return `${r.label} 未公布`;
+      if (r.action?.includes("非必须")) return `${r.label} 免试`;
       return `${r.label} 暂无`;
     },
   },
@@ -158,10 +157,10 @@ export default async function GapsPage({
 
         <div className="mt-1 mb-5">
           <h1 className="text-2xl font-bold text-vela-heading font-display">
-            {student.name} 的学校匹配分析
+            {student.name} 的学校差距分析
           </h1>
           <p className="text-sm text-vela-muted mt-1">
-            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? allResults.values().next().value.length : 0} 个维度
+            对比 {schools.length} 所美国大学 · {allResults.size > 0 ? allResults.values().next().value.length : 0} 个评估项
           </p>
         </div>
 
@@ -376,7 +375,7 @@ function EmptyState({ reason }: { reason: "no-student" | "no-result" | "parse-er
             问卷数据需要更新
           </h2>
           <p className="text-sm text-vela-text-secondary mb-4">
-            我们更新了问卷结构，需要重新填写一次才能生成最新的分析。
+            问卷结构已更新，重新填写一次可生成最新分析。
           </p>
           <Link
             href="/questionnaire"
@@ -396,7 +395,7 @@ function EmptyState({ reason }: { reason: "no-student" | "no-result" | "parse-er
           还没有分析数据
         </h2>
         <p className="text-sm text-vela-text-secondary mb-4">
-          完成问卷后，我们会帮你分析与美国大学的匹配程度。
+          完成问卷后，可以看到与各学校的差距分析。
         </p>
         <Link
           href="/questionnaire"

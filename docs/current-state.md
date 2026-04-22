@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-20 · `main` @ `af48eb4` (v0.6.2.0, post-merge)
+**Last updated:** 2026-04-21 · `feat/copy-deslop` @ `57171a4` (v0.6.2.1, pre-merge)
 
 ## Product Direction
 
@@ -73,7 +73,7 @@ The system speaks Chinese by default.
   tier classification, 20 recommendation templates.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
   portrait generator, insight text. 49 tests.
-- **Tests:** 432 passing via Vitest (23 files, 2.8s). Coverage invariant
+- **Tests:** 514 passing via Vitest (27 files, 2.6s). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
@@ -91,10 +91,10 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `main`
-- **HEAD:** `af48eb4 refactor(trait-quiz): v0.6.2.0 — de-slop insight + portrait copy (13-round cross-model review) (#29)`
-- **Version:** `0.6.2.0`
-- **Open PR:** none. `feat/trait-v05-deslop` squash-merged as PR #29.
+- **Current branch:** `feat/copy-deslop` (branched from `main` @ `af48eb4`)
+- **HEAD:** `57171a4` (v0.6.2.1 version bump, 9 commits ahead of main)
+- **Version:** `0.6.2.1`
+- **Open PR:** none yet. Branch ready to merge after `/gstack-document-release`.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
@@ -115,6 +115,31 @@ The system speaks Chinese by default.
   - PR #21 (schools state pages, v0.4.0.1)
 
 ## Most recent real verification
+
+**2026-04-21** — Full-app Chinese copy de-slop across 4 slices, pre-ship:
+- 514 / 514 tests green (27 files, 2.6s). 4 new test files created
+  (`copy-quality-slice1-4.test.ts`), 3 pre-existing dimension unit test
+  files updated to sync with new recommendation copy.
+- **Slice 1** (landing, path, interest form, error page): replaced AI 驱动
+  subtitle with specific value prop; fixed baseline ·/活动卡 label in tally;
+  removed 点击进入 no-op CTA; fixed 单独联系你 → concrete success copy;
+  replaced generic 卡片列表 with 5 月卡片.
+- **Slice 2** (gap recommendations): replaced 优势项/加分项 slop tails on
+  all excellent/green templates with actionable dimension-specific copy;
+  removed 数据库/后续版本/Phase 2 backend leaks from school-missing-data
+  and international no-data branches; fixed gpa:red vague 升学规划调整;
+  fixed sat/act test-free "不影响你的申请" claim; removed 年级排名 dead end
+  from gpa:no-data default; anchored prevet 100h with 主流兽医学院申请建议.
+- **Slice 3** (trait quiz UI): removed 专属的/专属 buzzwords; replaced 了解
+  孩子的特质 (over-promises trait theory) with 兴趣和学习风格; replaced
+  规划路线图 (implies deep custom generation) with 活动建议; replaced 由
+  Vela 提供 footer with Vela · 特质测评.
+- **Slice 4** (questionnaire steps + regression fix): replaced 每个孩子都有
+  闪光点 slop subtitle on academic step; replaced filler step 1 and step 5
+  subtitles with functional copy; fixed intro 可执行的 → specific 各学校的
+  录取差距报告; fixed complete page presumptuousness. Regression: gaps/page
+  was checking r.action.includes("不要求") which Slice 2 changed to "非必须"
+  — test fence added, fix deployed.
 
 **2026-04-20** — Trait-quiz copy de-slop (v0.6.2.0) shipped and merged:
 - `npm test`: 432 / 432 green (23 test files, ~2.6s). The insights length
@@ -167,8 +192,8 @@ The system speaks Chinese by default.
 - `Student.name` de-facto lookup key across questionnaire flow. Rename
   would break references. Needs stable `studentId` (cuid/uuid) + Prisma
   migration. Independent PR, not urgent for current single-user.
-- `recommendations.ts` has two copy nits tracked for M4: empty `school.name`
-  fallback, and tone softening away from "数据库" language.
+- `recommendations.ts` copy nits from M4 now resolved in `feat/copy-deslop`
+  (数据库 + tone softening both addressed in Slice 2).
 
 **Path Explorer v0.5+ deferred (architectural, not urgent for v0.1):**
 - CSP header + HTML sanitization for `BlockRenderer` — v0.1 trusts the

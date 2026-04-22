@@ -70,7 +70,7 @@ export function Step5Activities() {
     <StepLayout
       step={5}
       title="课外活动"
-      subtitle="我们来看看孩子的特长和爱好"
+      subtitle="按类型填写，可以填 1 到 10 项，不确定的先跳过"
     >
       <div className="space-y-6">
         {activities.map((activity, index) => (

@@ -189,7 +189,7 @@ describe("gpaDimension.compute — rank path severity", () => {
 // ---------------- Severity: no-data cases ----------------
 
 describe("gpaDimension.compute — no-data cases", () => {
-  it("gpaType international → no-data with phase 2 prompt", () => {
+  it("gpaType international → no-data: references 百分制 switch path, not nonexistent 备注 field", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "international",
@@ -202,9 +202,13 @@ describe("gpaDimension.compute — no-data cases", () => {
     expect(result.normalized).toBe(null);
     expect(result.target).toBe(null);
     expect(result.action).toContain("国际课程");
+    // Regression fence: questionnaire has no notes/备注 field.
+    // Recovery copy must point to the real exit ramp (switch gpaType to 百分制).
+    expect(result.action).not.toContain("备注");
+    expect(result.action).toContain("百分制");
   });
 
-  it("gpaType unknown → no-data with generic prompt", () => {
+  it("gpaType unknown → no-data: mentions both 百分制 and 年级排名 (both inputs accepted)", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "unknown",
@@ -213,7 +217,10 @@ describe("gpaDimension.compute — no-data cases", () => {
       makeSchool(),
     );
     expect(result.severity).toBe("no-data");
+    // Regression fence: unknown students may have classRank, not just percentage.
+    // Recovery copy must not imply only 百分制 is accepted.
     expect(result.action).toContain("百分制");
+    expect(result.action).toContain("年级排名");
   });
 
   it("gpaType percentage but gpaPercentage null → no-data (student-missing text)", () => {
@@ -231,7 +238,7 @@ describe("gpaDimension.compute — no-data cases", () => {
     expect(result.action).not.toContain("数据库");
   });
 
-  it("gpaType rank but classRank null → no-data (student-missing text)", () => {
+  it("gpaType rank but classRank null → no-data: references 年级排名, not 百分制", () => {
     const result = gpaDimension.compute(
       makeAnswers({
         gpaType: "rank",
@@ -243,6 +250,10 @@ describe("gpaDimension.compute — no-data cases", () => {
     expect(result.severity).toBe("no-data");
     expect(result.action).toContain("补上");
     expect(result.action).not.toContain("数据库");
+    // Regression fence: rank students must be directed to fill 年级排名,
+    // not 百分制 — those are different form fields on Step 3.
+    expect(result.action).toContain("年级排名");
+    expect(result.action).not.toContain("百分制");
   });
 
   // M3.5 #9: school-side missing data must NOT ask the student to fill
@@ -255,8 +266,8 @@ describe("gpaDimension.compute — no-data cases", () => {
     );
     expect(result.severity).toBe("no-data");
     expect(result.target).toBe(null);
-    // School-facing copy: flags DB gap, does NOT ask student to re-fill.
-    expect(result.action).toContain("数据库");
+    // School-facing copy: flags data gap, does NOT ask student to re-fill.
+    expect(result.action).toContain("暂无");
     expect(result.action).toContain("Cornell University");
     expect(result.action).not.toContain("补上");
   });

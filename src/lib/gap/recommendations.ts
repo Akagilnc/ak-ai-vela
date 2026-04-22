@@ -22,9 +22,13 @@ export interface RecommendationContext {
   // Optional sub-case identifier. Used by dimensions that have multiple
   // no-data paths with different action prompts:
   //   - "international"       — student reports an IB/AP/A-Level system
-  //                             we can't yet normalize (Phase 2 TBD)
+  //                             we can't yet normalize (GPA conversion deferred)
   //   - "unknown"              — student explicitly picked "not sure"
-  //   - "missing-data"         — student-side field is empty
+  //   - "missing-data"         — student selected percentage GPA but left the
+  //                              field empty
+  //   - "missing-data-rank"    — student selected rank GPA but left classRank
+  //                              empty; recovery copy must reference 年级排名,
+  //                              not 百分制 (different field, different form)
   //   - "school-missing-data"  — database lacks the school-side field the
   //                              dimension needs (e.g. avgGPA, sat25th)
   //
@@ -32,7 +36,7 @@ export interface RecommendationContext {
   // because the action is different: student-missing asks the user to
   // fill the form, school-missing flags a DB gap on our side and must
   // NOT blame the student. M3.5 #9 regression fence.
-  reason?: "international" | "unknown" | "missing-data" | "school-missing-data" | "test-free";
+  reason?: "international" | "unknown" | "missing-data" | "missing-data-rank" | "school-missing-data" | "test-free";
 }
 
 type RecommendationFn = (ctx: RecommendationContext) => string;
@@ -41,42 +45,59 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // GPA
   // ============================================================
-  "gpa:excellent": () => "GPA 远超目标，这是你的优势项",
-  "gpa:green": () => "GPA 已达目标范围，保持稳定即可",
+  "gpa:excellent": () => "GPA 远超学校平均线，申请文书里可以把成绩作为支撑点主动突出",
+  "gpa:green": () => "GPA 已达目标范围，主科可以收尾，精力转向课外活动和文书",
   "gpa:yellow": (ctx) =>
-    `GPA 接近 ${ctx.schoolName} 平均线，下学期重点提升 0.3-0.5 分，优先冲弱势科目`,
+    `GPA 接近 ${ctx.schoolName} 平均线，建议下学期优先从弱势主科入手，力争提升到平均线以上`,
   "gpa:red": (ctx) =>
-    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期重点补强主科并考虑升学规划调整`,
+    `GPA 与 ${ctx.schoolName} 差距较大，建议下学期优先提升主科，同时考虑将 GPA 差距更小的学校纳入选校范围`,
   "gpa:no-data": (ctx) => {
     if (ctx.reason === "international") {
-      return "国际课程成绩换算将在 Phase 2 支持，当前请补充等效百分制估算（可用学校 report card 的总评分）";
+      // No notes/remarks field exists in the questionnaire — do not direct
+      // users there. The only real exit ramp: switch gpaType to "percentage"
+      // on Step 3 and enter an equivalent estimate manually.
+      return "国际课程制度暂不支持换算；若有百分制等效成绩，可返回第三步选择「百分制」手动填入";
+    }
+    if (ctx.reason === "unknown") {
+      // Student explicitly selected "not sure" for gpaType — they may have
+      // either percentage OR rank available, so name both fields. Must NOT
+      // imply only 百分制 is accepted (Step 3 supports classRank too).
+      return "补上百分制成绩或年级排名可以让报告更准";
+    }
+    if (ctx.reason === "missing-data-rank") {
+      // Student declared gpaType === "rank" but left classRank empty.
+      // Must NOT say "补上百分制成绩" — that is the wrong field entirely.
+      return "补上年级排名可以让报告更准";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 GPA 平均值，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 GPA 参考数据，这项跳过，其余项目的报告不受影响`;
     }
-    return "补上百分制成绩或年级排名可以让报告更准";
+    return "补上百分制成绩可以让报告更准";
   },
 
   // ============================================================
   // SAT
   // ============================================================
-  "sat:excellent": () => "SAT 分数远超学校 75 分位，这是你的优势项",
-  "sat:green": () => "SAT 分数已进入学校 75 分位以上，建议保持",
+  "sat:excellent": () => "SAT 超过学校 75 分位线，标化成绩已是你的优势，精力可以放在课外活动和文书",
+  "sat:green": () => "SAT 已进学校 75 分位以上，标化可以收尾，精力转向课外活动和文书",
   "sat:yellow": (ctx) =>
-    `SAT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
+    `SAT 分数在 ${ctx.schoolName} 25-75 分位区间，提升至 75 分位以上可进一步强化标化竞争力`,
   "sat:red": (ctx) => {
     const gap =
       ctx.target && ctx.current != null ? ctx.target.min - ctx.current : null;
     return gap != null && gap > 0
-      ? `SAT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议集中补强数学或阅读薄弱模块`
-      : `SAT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
+      ? `SAT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提升至 25 分位以上为近期备考目标`
+      : `SAT 需要进一步提升，目前低于 ${ctx.schoolName} 录取常见区间`;
   },
   "sat:no-data": (ctx) => {
     if (ctx.reason === "test-free") {
-      return "该校不要求 SAT 考试成绩，不影响你的申请";
+      // "test-free" reason must only be set for schools with a genuine
+      // test-blind / test-free policy (not test-optional). If you expand
+      // this to cover test-optional schools, the copy below will mislead.
+      return "该校 SAT 成绩非必须，跳过这项对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 SAT 分数段，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 SAT 分数段参考，这项跳过，其余项目的报告不受影响`;
     }
     return "补上 SAT 或 ACT 分数可以让报告更准";
   },
@@ -84,23 +105,25 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // ============================================================
   // ACT
   // ============================================================
-  "act:excellent": () => "ACT 分数远超学校 75 分位，这是你的优势项",
-  "act:green": () => "ACT 分数已进入学校 75 分位以上，建议保持",
+  "act:excellent": () => "ACT 超过学校 75 分位线，标化成绩已是你的优势，精力可以放在课外活动和文书",
+  "act:green": () => "ACT 已进学校 75 分位以上，标化可以收尾，精力转向课外活动和文书",
   "act:yellow": (ctx) =>
-    `ACT 分数在 ${ctx.schoolName} 25-75 分位区间，冲击 75 分位以上可大幅提升录取率`,
+    `ACT 分数在 ${ctx.schoolName} 25-75 分位区间，提升至 75 分位以上可进一步强化标化竞争力`,
   "act:red": (ctx) => {
     const gap =
       ctx.target && ctx.current != null ? ctx.target.min - ctx.current : null;
     return gap != null && gap > 0
-      ? `ACT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议集中补强薄弱科目`
-      : `ACT 需要进一步提升以达到 ${ctx.schoolName} 最低录取范围`;
+      ? `ACT 距离 ${ctx.schoolName} 25 分位还差 ${gap} 分，建议以提升至 25 分位以上为近期备考目标`
+      : `ACT 需要进一步提升，目前低于 ${ctx.schoolName} 录取常见区间`;
   },
   "act:no-data": (ctx) => {
     if (ctx.reason === "test-free") {
-      return "该校不要求 ACT 考试成绩，不影响你的申请";
+      // Same constraint as SAT test-free: only bind this reason to
+      // genuinely test-blind schools, not test-optional ones.
+      return "该校 ACT 成绩非必须，跳过这项对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `当前数据库暂缺 ${ctx.schoolName} 的 ACT 分数段，无法精确对比，我们会在后续版本补齐`;
+      return `暂无 ${ctx.schoolName} 的 ACT 分数段参考，这项跳过，其余项目的报告不受影响`;
     }
     return "补上 ACT 或 SAT 分数可以让报告更准";
   },
@@ -109,13 +132,13 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
   // Pre-vet Experience (animal hours)
   // ============================================================
   "prevet-experience:excellent": () =>
-    "动科经历远超门槛，是申请中的亮眼加分项",
+    "动科 / pre-vet 相关经历远超录取门槛，申请文书里值得专门辟一节来写",
   "prevet-experience:green": () =>
-    "动科 / pre-vet 相关经历时长充足（≥100 小时），是申请中的明显加分项",
+    "动科 / pre-vet 相关经历达 100 小时以上，已具备在本科申请文书中重点呈现的积累量",
   "prevet-experience:yellow": () =>
-    "动科相关经历已达 40 小时，建议继续累积到 100 小时以强化 pre-vet 申请",
+    "动科 / pre-vet 相关经历已达 40 小时，建议继续累积至 100 小时以上，可在本科申请文书中作为 pre-vet 兴趣的实证支撑",
   "prevet-experience:red": () =>
-    "动科相关经历不足 40 小时，pre-vet 申请中这是关键信号，建议尽快安排 shadowing 或实习",
+    "动科 / pre-vet 相关经历不足 40 小时，建议尽快安排 shadowing 或实习来积累经历",
   "prevet-experience:no-data": () =>
     "补上动科 / pre-vet 相关经历（volunteer / shadowing / 实习）可以让报告更准",
 };

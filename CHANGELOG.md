@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2.1] - 2026-04-21
+
+### Changed
+- **Copy de-slop pass across 4 slices** — removed AI slop, zero-information filler, and overclaimed causality from user-facing Chinese strings across the trait quiz, questionnaire, gap report, and path explorer flows. Applied three quality standards: data correct, reasoning valid, no zero-information sentences.
+  - **Questionnaire step subtitles** — "让我们先了解一下基本情况" (step 1), "每个孩子都有闪光点" (step 3), "我们来看看孩子的特长和爱好" (step 5) replaced with functional copy that states what the step is for. Step 3 now reads "这帮我们准确比对目标学校的成绩要求."
+  - **Trait quiz UI** — "专属的分阶段规划路线图" and "了解孩子的特质" removed; quiz is a 24-route lookup table, not a bespoke plan. "学习风格" removed (VARK/Kolb excluded by project direction; quiz measures interest + learning drive, not modality preferences). Welcome subtitle now reads "了解孩子的兴趣和成长特点". Insight component transition text pinned to "接下来几个问题关于孩子的学习方式".
+  - **Gap recommendations** — `recommendations.ts` rewritten for all 5 dimensions (GPA, SAT, ACT, pre-vet experience, no-data branches). SAT/ACT red-path action now goal-oriented: "建议以提至 25 分位以上为近期备考目标" (previously assumed method and frequency). Comment on `"international"` reason updated from placeholder "Phase 2 TBD" to "GPA conversion deferred."
+  - **Questionnaire intro/complete/gaps pages** — "可执行的" filler adjective removed; "匹配分析" unified to "差距分析" for terminology consistency. Gaps page pill-text logic and regression fence updated for Slice 2 "非必须" copy (replaces deprecated "不要求").
+  - **Result page + goal screen** — "由 Vela 提供" footer removed (zero information). Goal confirmation copy trimmed to "选择后可以让建议更具体". No-localStorage banner simplified from "想获得个性化画像？" to "想看孩子的画像？".
+
+### Tests
+- Copy-quality test suites (Slices 1–4) extended with 8 new `describe` blocks and tightened existing assertions:
+  - Slice 2: yellow overclaim, section-prescription, fallback precision, threshold-copy checks, terminology consistency.
+  - Slice 3: "学习风格" VARK/Kolb guard, welcome subtitle info-density check.
+  - Slice 4: step-3 subtitle strengthened from weak regex to `toContain` on exact copy; `未公布` dead-branch regression fence added.
+- `sat.test.ts` + `act.test.ts`: test name corrected from "不要求 copy" to "非必须 copy" to match current recommendation text.
+
+### Notes
+- All copy changes went through a 3+1 adversarial cross-review (3 Claude subagents: slop/tone A1, reasoning/causal A2, data-correctness A3; plus Codex structural). N/N PASS achieved in round 3 after 9 total fixes across rounds 1–3.
+- Intentionally deferred: `r.action?.includes("非必须")` coupling in gaps/page.tsx is kept and guarded by Slice 4 tests; pre-vet threshold copy uses practical proxy benchmarks (not claimed as official undergrad standards); "可匹配" tier label is a design system decision.
+
 ## [0.6.2.0] - 2026-04-20
 
 ### Changed

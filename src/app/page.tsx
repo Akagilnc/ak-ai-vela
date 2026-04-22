@@ -8,7 +8,7 @@ export default function Home() {
           Vela
         </h1>
         <p className="text-xl text-vela-text-secondary">
-          AI 驱动的美国大学申请规划工具
+          先了解孩子，再规划美本申请
         </p>
         <div className="flex gap-4 justify-center pt-4 flex-wrap">
           <Link

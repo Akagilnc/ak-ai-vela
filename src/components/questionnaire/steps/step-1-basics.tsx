@@ -39,7 +39,7 @@ export function Step1Basics() {
     <StepLayout
       step={1}
       title="孩子基本信息"
-      subtitle="让我们先了解一下基本情况"
+      subtitle="用于定制申请时间线和学段建议"
       onValidate={validate}
     >
       <FormField

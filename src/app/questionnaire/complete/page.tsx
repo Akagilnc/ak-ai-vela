@@ -13,10 +13,10 @@ function CompleteContent() {
     <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] px-4">
       <div className="max-w-md w-full text-center space-y-6">
         <h1 className="text-2xl font-bold text-vela-heading font-display">
-          我们已经了解了 {childName} 的情况
+          {childName} 的问卷已完成
         </h1>
         <p className="text-base text-vela-text-secondary">
-          下一步可以查看 {childName} 与各所学校的匹配分析。
+          下一步可以查看 {childName} 与各学校的差距分析。
         </p>
 
         <div className="bg-vela-surface border border-vela-border rounded-lg p-4 text-sm text-vela-text font-mono">
