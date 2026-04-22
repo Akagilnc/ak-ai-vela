@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-21 · `feat/copy-deslop` @ `57171a4` (v0.6.2.1, pre-merge)
+**Last updated:** 2026-04-22 · `main` @ `5c74174` (v0.6.2.1, merged)
 
 ## Product Direction
 
@@ -91,13 +91,20 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/copy-deslop` (branched from `main` @ `af48eb4`)
-- **HEAD:** `57171a4` (v0.6.2.1 version bump, 9 commits ahead of main)
+- **Current branch:** `main`
+- **HEAD:** `5c74174` (v0.6.2.1, squash merge of feat/copy-deslop)
 - **Version:** `0.6.2.1`
-- **Open PR:** none yet. Branch ready to merge after `/gstack-document-release`.
+- **Open PR:** none.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
 - **Recently merged:**
+  - PR #30 (copy de-slop Slices 1–4 + GPA recovery bug fixes, v0.6.2.1, merged 2026-04-22).
+    28 files, 1000+ insertions. Questionnaire step subtitles, trait quiz UI, gap
+    recommendations, gaps/complete page terminology. Added 4 copy-quality test suites
+    (514 tests total). Fixed 3 GPA no-data recovery correctness bugs found during bot
+    review rounds: rank students getting wrong field guidance, international students
+    directed to nonexistent 备注 field, unknown-gpaType fallthrough implying only
+    百分制 accepted. 4 bot review rounds (Gemini R1–R4 + Codex R1–R4, N/N PASS R4).
   - PR #29 (trait-quiz copy de-slop, v0.6.2.0, merged 2026-04-20). Content-only:
     insights.ts (12 mid-quiz lines + fallback) + portraits.ts (12 INTEREST_DESC +
     3 DRIVE_DESC + fallback) + insights length test. Zero schema / routing / data
@@ -116,7 +123,7 @@ The system speaks Chinese by default.
 
 ## Most recent real verification
 
-**2026-04-21** — Full-app Chinese copy de-slop across 4 slices, pre-ship:
+**2026-04-22** — Full-app Chinese copy de-slop across 4 slices, merged to main (PR #30):
 - 514 / 514 tests green (27 files, 2.6s). 4 new test files created
   (`copy-quality-slice1-4.test.ts`), 3 pre-existing dimension unit test
   files updated to sync with new recommendation copy.
@@ -192,8 +199,8 @@ The system speaks Chinese by default.
 - `Student.name` de-facto lookup key across questionnaire flow. Rename
   would break references. Needs stable `studentId` (cuid/uuid) + Prisma
   migration. Independent PR, not urgent for current single-user.
-- `recommendations.ts` copy nits from M4 now resolved in `feat/copy-deslop`
-  (数据库 + tone softening both addressed in Slice 2).
+- `recommendations.ts` copy nits from M4 resolved in v0.6.2.1 PR #30
+  (数据库 + tone softening addressed in Slice 2).
 
 **Path Explorer v0.5+ deferred (architectural, not urgent for v0.1):**
 - CSP header + HTML sanitization for `BlockRenderer` — v0.1 trusts the
