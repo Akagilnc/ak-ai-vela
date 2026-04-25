@@ -102,7 +102,7 @@ export function PathInterestForm({
       }
 
       setStatus("ok");
-      setMessage("收到了，6 月卡出来第一时间发你");
+      setMessage("收到了，下次更新第一时间发你");
       setEmail("");
       setGrade("");
     } catch {
@@ -141,7 +141,7 @@ export function PathInterestForm({
           lineHeight: 1.5,
         }}
       >
-        留个邮箱，6 月卡出来我们发给你。不 spam，不转售。
+        留个邮箱，下次更新我们发给你。不 spam，不转售。
       </p>
 
       <form

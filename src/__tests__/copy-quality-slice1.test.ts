@@ -77,9 +77,19 @@ describe("Interest form (components/path/path-interest-form.tsx)", () => {
     expect(content).not.toContain("单独联系你");
   });
 
-  it("should use a success message that echoes the specific promise in the CTA body", () => {
-    // The CTA body promises '6 月卡出来我们发给你' — success should confirm it
-    expect(content).toContain("6 月卡出来第一时间发你");
+  it("should use a success message that echoes the CTA body promise", () => {
+    // v0.2 multi-month: both CTA body and success message must be month-agnostic
+    // (was '6 月卡出来发你' in v0.1, but reading "6 月卡出来发你" while ON
+    // /path?month=6 is nonsense). Both strings genericized to "下次更新".
+    expect(content).toContain("下次更新第一时间发你");
+    expect(content).toContain("下次更新我们发给你");
+  });
+
+  it("should not hardcode any specific month name in user-facing copy", () => {
+    // Same-shape guard: no "5 月卡" / "6 月卡" / "7 月卡" hardcoded promises
+    // in the form. Promises tied to a specific month go stale the moment that
+    // month ships — exactly the v0.1 → v0.2 drift we just fixed.
+    expect(content).not.toMatch(/[0-9]+\s*月卡/);
   });
 });
 

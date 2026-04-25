@@ -98,6 +98,19 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Why:** Flagged by UX subagent R15. Low value (Next.js logs server-side, dev rarely hits this boundary) but quick win for fast iteration.
 - **When:** Next time error.tsx is touched.
 
+## Deferred from Path Explorer v0.2 cross-model review (2026-04-26)
+
+### [P2] Block-shape walker: tighten route / photo-row / locCards per-item field checks
+- **What:** `src/__tests__/path-seed-shape.test.ts` has a `validateBlock` walker that recurses into every block in every section. It enforces full per-field shape for most discriminators, but for `route`, `photo-row`, and `path-opts.opts[].locCards` it only asserts `Array.isArray(block.steps/photos/locCards)` — does NOT validate per-item declared fields (`zone/desc/dur` for route, `src/alt/cap` for photo-row, `photo/name/desc` for locCards). A future seed could ship `step.duration` instead of `step.dur` and the walker would still pass.
+- **Why:** This is the exact class of drift the walker was added for (Slice 2 R1 caught `id-table` field rename + `steps→items` only because tsc complained — the walker would have missed it without those tighter cases). Flagged by R2 Agent 2.
+- **When:** Before Slice 3+ adds significant new `route` / `photo-row` payloads. Today only May seed uses `route` (c1 §3 and §4) and there's no `photo-row` usage; risk is low but real.
+- **Signal to start:** any new month seed authoring a `route` or `photo-row` block, OR before merging any seed restructure.
+
+### [P2] PathInterest schema: add `month` column for sign-up attribution
+- **What:** Add `month: Int?` to `PathInterest` Prisma schema + matching field on the Zod payload + form input from `<PathInterestForm>`. Today the form uses `sourcePath="/path"` to track signup origin, but `canonicalSourcePath` strips queries (intentional, prevents `(email, sourcePath)` dedup-key drift). Result: a user signing up from `/path?month=5` is indistinguishable from one signing up from `/path?month=6`.
+- **Why:** Once 2+ months ship (Slice 2 = May+June), founder needs to know which month surface drives interest signal — it informs which month seed gets prioritized next. Flagged by Codex in Slice 1 R2; deferred with TODO comment in `src/app/path/page.tsx:210`.
+- **When:** Same PR that adds the third month seed, OR if seed-user feedback requests month-attributed analytics earlier. Cross-references the `PathInterest UA retention` privacy posture item above — both touch the same model and should land together.
+
 ## P2 — Do when the prerequisite is met
 
 ### [M2] ~~Seed script safety: split db:seed and db:reset~~ DONE
