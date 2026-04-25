@@ -30,6 +30,12 @@ describe("resolveMonth — no param (default routing)", () => {
     expect(resolveMonth(undefined, [5], 1)).toBe(5);
     expect(resolveMonth(undefined, [5], 12)).toBe(5);
   });
+
+  it("fallback returns highest month even when availableMonths is unsorted", () => {
+    // Caller may pass an unsorted array; fallback must still return the maximum.
+    expect(resolveMonth(undefined, [6, 5], 7)).toBe(6);
+    expect(resolveMonth(undefined, [9, 3, 6], 1)).toBe(9);
+  });
 });
 
 describe("resolveMonth — explicit param", () => {
@@ -64,6 +70,18 @@ describe("resolveMonth — explicit param", () => {
     expect(resolveMonth("1", [1, 12], 6)).toBe(1);
     expect(resolveMonth("12", [1, 12], 6)).toBe(12);
   });
+
+  it("accepts zero-padded month strings (\"01\" → 1, \"09\" → 9)", () => {
+    // parseInt("01", 10) === 1; regex /^\d{1,2}$/ matches → accepted.
+    // Locking this behavior: URL ?month=01 is treated identically to ?month=1.
+    expect(resolveMonth("01", [1], 6)).toBe(1);
+    expect(resolveMonth("09", [9], 6)).toBe(9);
+  });
+
+  it("rejects \"00\" (0 is not a valid month)", () => {
+    // regex passes "00" but parseInt("00") = 0, caught by n < 1 check.
+    expect(resolveMonth("00", [5, 6], 1)).toBeNull();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,25 +89,29 @@ describe("resolveMonth — explicit param", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("monthSeason", () => {
-  it("returns the correct Chinese season label for May", () => {
+  // Snapshot: locks every user-facing season label.
+  // Any accidental edit to SEASON_LABELS will fail here, not silently ship.
+  it("returns correct labels for all 12 months", () => {
+    expect(monthSeason(1)).toBe("寒冬");
+    expect(monthSeason(2)).toBe("早春");
+    expect(monthSeason(3)).toBe("春意渐浓");
+    expect(monthSeason(4)).toBe("仲春");
     expect(monthSeason(5)).toBe("春末夏初");
-  });
-
-  it("returns the correct label for June", () => {
     expect(monthSeason(6)).toBe("初夏");
+    expect(monthSeason(7)).toBe("盛夏");
+    expect(monthSeason(8)).toBe("末夏");
+    expect(monthSeason(9)).toBe("初秋");
+    expect(monthSeason(10)).toBe("金秋");
+    expect(monthSeason(11)).toBe("深秋");
+    expect(monthSeason(12)).toBe("初冬");
   });
 
-  it("covers all 12 months without throwing", () => {
-    for (let m = 1; m <= 12; m++) {
-      expect(typeof monthSeason(m)).toBe("string");
-      expect(monthSeason(m).length).toBeGreaterThan(0);
-    }
-  });
-
-  it("returns a fallback string for out-of-range input", () => {
-    // Should not throw; returns something displayable
+  it("returns a displayable fallback string for out-of-range input", () => {
+    // Should not throw; returns something the UI can render without crashing.
     expect(typeof monthSeason(0)).toBe("string");
+    expect(monthSeason(0).length).toBeGreaterThan(0);
     expect(typeof monthSeason(13)).toBe("string");
+    expect(monthSeason(13).length).toBeGreaterThan(0);
   });
 });
 
@@ -135,12 +157,10 @@ describe("pillRange", () => {
   });
 
   it("extends range to MIN_PILLS when buffer is clipped by calendar boundaries", () => {
-    // month 1: natural buffer gives [1,2,3] = 3 pills → must extend to ≥ 4
-    expect(pillRange([1]).length).toBeGreaterThanOrEqual(4);
-    expect(pillRange([1])).toContain(1);
-    // month 12: natural buffer gives [10,11,12] = 3 pills → must extend to ≥ 4
-    expect(pillRange([12]).length).toBeGreaterThanOrEqual(4);
-    expect(pillRange([12])).toContain(12);
+    // month 1: natural buffer gives [1,2,3] = 3 pills → extend right to [1,2,3,4]
+    expect(pillRange([1])).toEqual([1, 2, 3, 4]);
+    // month 12: natural buffer gives [10,11,12] = 3 pills → extend left to [9,10,11,12]
+    expect(pillRange([12])).toEqual([9, 10, 11, 12]);
   });
 
   it("returns empty array for empty input", () => {

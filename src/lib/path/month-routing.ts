@@ -17,7 +17,7 @@
  * Resolves which calendar month to display.
  *
  * @param rawParam        Raw `month` query-string value, or undefined if absent.
- * @param availableMonths Sorted list of month numbers that have DB data.
+ * @param availableMonths Month numbers that have DB data (order not required).
  * @param currentMonth    The current calendar month (1-12). Defaults to today.
  *                        Injected as a param so tests are deterministic.
  *
@@ -38,7 +38,9 @@ export function resolveMonth(
   if (rawParam === undefined) {
     // Default: current calendar month if it has data, else most recent.
     if (availableMonths.includes(currentMonth)) return currentMonth;
-    return availableMonths[availableMonths.length - 1];
+    // Use Math.max rather than last element: caller may pass an unsorted array
+    // (Prisma orderBy is advisory, not a contract between modules).
+    return Math.max(...availableMonths);
   }
 
   // Only accept pure integer strings: "5", "12", etc.

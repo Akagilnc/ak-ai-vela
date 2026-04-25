@@ -35,7 +35,10 @@ export default async function PathOverviewPage({
   const resolvedMonth = resolveMonth(params.month, availableMonths);
 
   // Explicit bad param (?month=99, ?month=foo) → branded 404.
-  if (resolvedMonth === null && params.month !== undefined) {
+  // Guard: only 404 when the stage exists and the month param is genuinely
+  // invalid. If stage is null (DB not seeded), fall through to empty state
+  // so the dev-only seed warning renders instead of a dead 404.
+  if (resolvedMonth === null && params.month !== undefined && stage !== null) {
     notFound();
   }
 
@@ -43,7 +46,7 @@ export default async function PathOverviewPage({
     stage && resolvedMonth !== null
       ? await prisma.pathActivity.findMany({
           where: { goal: { stageId: stage.id }, month: resolvedMonth },
-          orderBy: [{ month: "asc" }, { displayOrder: "asc" }, { slug: "asc" }],
+          orderBy: [{ displayOrder: "asc" }, { slug: "asc" }],
         })
       : [];
 
@@ -122,7 +125,7 @@ export default async function PathOverviewPage({
 
                   if (isActive) {
                     return (
-                      <span key={m} className="m-pill" aria-current="true">
+                      <span key={m} className="m-pill" aria-current="page">
                         {m} 月
                       </span>
                     );
