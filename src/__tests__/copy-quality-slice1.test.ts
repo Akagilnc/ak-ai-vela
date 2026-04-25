@@ -93,11 +93,14 @@ describe("Path error page (app/path/error.tsx)", () => {
     expect(content).not.toContain("卡片列表");
   });
 
-  it("should use '5 月卡片' to describe the destination (unambiguous list reference)", () => {
-    expect(content).toContain("5 月卡片");
+  it("should use '当月卡片' as the destination (specific, not the dry '卡片列表')", () => {
+    // v0.2 multi-month: error.tsx is route-level so it doesn't know which
+    // month the user came from. /path routes to current/fallback month, so
+    // '当月' is honest and warmer than '卡片列表' (the v0.1 anti-target).
+    expect(content).toContain("当月卡片");
   });
 
-  it("back-button label should be '返回 5 月卡片' — clear destination", () => {
-    expect(content).toContain("返回 5 月卡片");
+  it("back-button label should be '返回当月卡片' — clear destination", () => {
+    expect(content).toContain("返回当月卡片");
   });
 });

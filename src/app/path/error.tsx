@@ -50,7 +50,7 @@ export default function PathError({
               maxWidth: 320,
             }}
           >
-            稍后重试，或者回到 5 月卡片。
+            稍后重试，或者回到当月卡片。
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
             <button
@@ -93,7 +93,7 @@ export default function PathError({
                 textDecoration: "none",
               }}
             >
-              返回 5 月卡片
+              返回当月卡片
             </Link>
           </div>
         </main>

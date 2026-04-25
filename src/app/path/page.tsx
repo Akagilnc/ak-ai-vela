@@ -93,7 +93,7 @@ export default async function PathOverviewPage({
             </section>
 
             <div className="stage-tabs" aria-label="学段">
-              <span className="is-active" aria-current="true">
+              <span className="is-active" aria-current="page">
                 <span className="t">一~三年级</span>
                 <span className="s">好奇心扎根</span>
               </span>
@@ -207,6 +207,11 @@ export default async function PathOverviewPage({
               </p>
             ) : null}
 
+            {/* TODO(v0.2 Slice 2+): preserve month attribution on PathInterest.
+                Cannot use sourcePath="/path?month=N" because canonicalSourcePath
+                strips queries (intentional — prevents dedup-key drift on the
+                (email, sourcePath) @@unique index). Real fix requires a new
+                PathInterest.month column + form field + Zod schema update. */}
             <PathInterestForm sourcePath="/path" />
 
             {!stage && process.env.NODE_ENV !== "production" ? (

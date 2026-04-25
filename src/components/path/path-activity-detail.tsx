@@ -33,9 +33,11 @@ export function PathActivityDetail({
   return (
     <>
       <div className="app-chrome detail-mode">
-        <Link href="/path" className="back-btn">
+        {/* Back link preserves the activity's month so multi-month routing
+            doesn't strand users on a different month after returning. */}
+        <Link href={`/path?month=${activity.month}`} className="back-btn">
           <BackIcon />
-          <span>5 月</span>
+          <span>{activity.month} 月</span>
         </Link>
         <div className="center-title">
           <span className="idx">
@@ -156,7 +158,7 @@ export function PathActivityDetail({
       </div>
 
       <PathLightbox />
-      <PathDetailNav prevSlug={prev?.slug} nextSlug={next?.slug} />
+      <PathDetailNav prevSlug={prev?.slug} nextSlug={next?.slug} month={activity.month} />
       <PathDetailExitCleanup />
     </>
   );
