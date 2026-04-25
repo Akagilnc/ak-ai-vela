@@ -6,6 +6,16 @@ import { PathInterestForm } from "@/components/path/path-interest-form";
 import { PathOverviewScrollRestore } from "@/components/path/path-overview-scroll-restore";
 import { resolveMonth, monthSeason, pillRange } from "@/lib/path/month-routing";
 
+// Per-month theme title shown in the H1. Avoids the v0.1 hardcode of
+// "小小动物科学家" leaking onto June (whose content is broader: 节假日 +
+// 雨季 + 夜观). When a future month adds a goal-derived theme via Prisma,
+// move this map to the seed data.
+const MONTH_THEMES: Record<number, { lead: string; accent: string }> = {
+  5: { lead: "小小", accent: "动物科学家" },
+  6: { lead: "六月", accent: "雨季观察家" },
+};
+const FALLBACK_THEME = { lead: "G1", accent: "月度小路径" };
+
 type SearchParams = Promise<{ month?: string }>;
 
 export default async function PathOverviewPage({
@@ -59,6 +69,7 @@ export default async function PathOverviewPage({
   // Zero-pad month number for the display label (e.g. 5 → "05", 12 → "12").
   const monthNumLabel = activeMonth > 0 ? String(activeMonth).padStart(2, "0") : "--";
   const seasonLabel = activeMonth > 0 ? monthSeason(activeMonth) : "整理中";
+  const theme = MONTH_THEMES[activeMonth] ?? FALLBACK_THEME;
 
   return (
     <div className="stage">
@@ -85,10 +96,7 @@ export default async function PathOverviewPage({
             <PathOverviewScrollRestore />
             <section className="path-head">
               <h1>
-                {/* TODO(Slice 3): derive theme title from goal data so each
-                    month can carry its own theme name. For now the title stays
-                    static — v0.1 only shipped May which has a fixed theme. */}
-                小小<span className="accent">动物科学家</span>
+                {theme.lead}<span className="accent">{theme.accent}</span>
               </h1>
             </section>
 
@@ -203,7 +211,7 @@ export default async function PathOverviewPage({
                   textAlign: "center",
                 }}
               >
-                本月卡片整理中，先留个邮箱。6 月卡出来我们发给你。
+                本月卡片整理中，先留个邮箱。下次更新发你。
               </p>
             ) : null}
 

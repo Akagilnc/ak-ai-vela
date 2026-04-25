@@ -14,9 +14,11 @@
  * 2026 calendar references in this file:
  *   - 端午节 (Dragon Boat Festival): 2026/06/19–06/21 (Fri-Sun, 3-day holiday)
  *   - 芒种 (solar term): 2026/06/05
- *   - 入梅 (Shanghai rainy-season start, ~ annual mid-June): est. 2026/06/16
+ *   - 入梅 (Shanghai rainy-season start, annual mid-June; date varies, met
+ *           bureau publishes within 7d of actual onset)
  *   - 夏至: 2026/06/21 (overlaps 端午 last day + Father's Day)
- *   - 萤火虫 peak: ~ 2026/06/15 – 2026/07/05 (Shanghai near-suburb sites)
+ *   - 萤火虫 peak: ~ 2026/06/21 – 2026/07/15 (Shanghai near-suburb sites,
+ *                  density actually higher in early-mid July than at solstice)
  *
  * Previews: empty for now. The asset pipeline (Wikipedia Commons CC-licensed
  * photos) is on the v0.2 Slice 3 punch list. previews=[] renders the tile
@@ -80,7 +82,7 @@ const SECTIONS_C1: ActivitySection[] = [
     blocks: [
       {
         type: 'paragraph',
-        html: '入梅前 1 周：天闷、傍晚蚊子多、知了开始零散叫。入梅当天前后：第一场连续大雨 → 第二天清晨家门口能看到<b>蜗牛集体爬上墙、蚯蚓被冲到人行道、青蛙在小区水景叫</b>。这是孩子最容易感受到"自然有节奏"的窗口。',
+        html: '入梅前 1 周：天闷、傍晚蚊子多、知了开始零散叫。入梅当天前后：第一场连续大雨 → 第二天清晨家门口能看到<b>蜗牛集体爬上墙、蚯蚓被冲到人行道、青蛙在小区水景叫</b>。1 周内的连续变化是孩子能自己看见的物候。',
       },
       {
         type: 'list-bullets',
@@ -183,7 +185,7 @@ const SECTIONS_C2: ActivitySection[] = [
             effort: 'Med Effort',
             effortKey: 'med',
             bodyHtml:
-              '<p><b>嘉兴 / 湖州 / 绍兴</b>——真实粽子产地。可看老式家庭包粽子（民宿提前问），顺路看<b>桑园</b>（端午前后正好桑葚熟）。两晚短住，避开高速 6/19 早 + 6/21 晚两次峰值。</p>',
+              '<p><b>嘉兴 / 湖州 / 绍兴</b>——真实粽子产地。可看老式家庭包粽子（民宿提前问），顺路看<b>杨梅园</b>（6 月中下旬正盛，端午往往刚好赶上）。两晚短住，避开高速 6/19 早 + 6/21 晚两次峰值。</p>',
           },
           {
             letter: 'C',
@@ -250,7 +252,7 @@ const SECTIONS_C2: ActivitySection[] = [
           {
             variant: 'heart',
             lbl: '心法',
-            html: '<b>节日仪式 = 一年一次的物候记忆锚点</b>。她明年 6 月再闻到艾草，会自动想起"哦端午"。这种气味记忆比"端午是纪念屈原"持久 10 倍。',
+            html: '<b>节日仪式 = 一年一次的物候记忆锚点</b>。她明年 6 月再闻到艾草，会自动想起"哦端午"。这种气味记忆比"端午是纪念屈原"留得更久。',
           },
         ],
       },
@@ -296,32 +298,15 @@ const SECTIONS_C3: ActivitySection[] = [
         html: '<b>入梅当天 + 之后 1 周</b>是黄金窗口——第一场连续雨之后小生物集体出现。错过这 1 周，很多就回到土里了。',
       },
       {
-        type: 'id-table',
-        rows: [
-          {
-            photo: '',
-            name: '蜗牛',
-            desc: '雨后清晨 7 点前最多。墙根、花坛石头、湿叶下。<b>身上有壳的是蜗牛，没壳的是蛞蝓（鼻涕虫）</b>。',
-            difficulty: '易',
-          },
-          {
-            photo: '',
-            name: '蚯蚓',
-            desc: '人行道、绿地边缘。被冲出土后会脱水。<b>用小棍轻拨回土里</b>，不抓。',
-            difficulty: '易',
-          },
-          {
-            photo: '',
-            name: '青蛙叫声',
-            desc: '傍晚 7–9 点。市区小区水景 / 公园池塘 / 校园喷水池。听不到没关系，下次雨后再试。',
-            difficulty: '中',
-          },
-          {
-            photo: '',
-            name: '鼠妇（潮虫）',
-            desc: '花盆底、湿木头下。会卷成球。常被误认成"虫"，其实是<b>陆生甲壳类</b>（和虾蟹一家）。',
-            difficulty: '易',
-          },
+        // List instead of id-table because we don't have species photos for
+        // June yet (Slice 3 asset pipeline). Switch back to id-table once
+        // photos land — the type lives in g1-may-seed.ts as IdTableBlock.
+        type: 'list-bullets',
+        items: [
+          '<b>蜗牛（易）</b>：雨后清晨 7 点前最多。墙根、花坛石头、湿叶下。<b>身上有壳的是蜗牛，没壳的是蛞蝓（鼻涕虫）</b>。',
+          '<b>蚯蚓（易）</b>：人行道、绿地边缘。被冲出土后会脱水。<b>用小棍轻拨回土里</b>，不抓。',
+          '<b>青蛙叫声（中）</b>：傍晚 7–9 点。市区小区水景 / 公园池塘 / 校园喷水池。听不到没关系，下次雨后再试。',
+          '<b>鼠妇（潮虫）（易）</b>：花盆底、湿木头下。会卷成球。常被误认成"虫"，其实是<b>陆生甲壳类</b>（和虾蟹一家）。',
         ],
       },
     ],
@@ -333,7 +318,7 @@ const SECTIONS_C3: ActivitySection[] = [
     blocks: [
       {
         type: 'steps',
-        steps: [
+        items: [
           '雨停后第二天<b>早上 7 点前</b>出门——太阳一晒蜗牛和蚯蚓就消失了。',
           '<b>带本子 + 铅笔</b>。每看到一种，画或写下"在哪 / 多少只"，30 秒就行。',
           '<b>不抓不踩</b>。蜗牛壳薄，捏一下就死。蚯蚓晒干就是干尸。',
@@ -351,7 +336,7 @@ const SECTIONS_C3: ActivitySection[] = [
         type: 'callout',
         variant: 'warn',
         lbl: '避坑',
-        html: '<p><b>湿滑石板上别让她跑。</b>雨后小区台阶最滑。</p><p><b>注意蛇</b>。上海市区罕见但闵行 / 浦东郊野公园偶尔有<b>赤链蛇</b>（无毒但会咬）。看到立即拉开 2 米距离。</p><p><b>蚊子开始密</b>。穿长袖 + 物理防蚊（衣服喷避蚊胺成人版别给小孩用）。</p>',
+        html: '<p><b>湿滑石板上别让她跑。</b>雨后小区台阶最滑。</p><p><b>注意蛇</b>。上海市区罕见但闵行 / 浦东郊野公园偶尔有<b>赤链蛇</b>（<b>有轻微毒性 + 唾液菌群易引起感染</b>，国内有过致死病例）。看到立即拉开距离，被咬就医。</p><p><b>蚊子开始密</b>。穿长袖。<b>给孩子用儿童浓度驱蚊液</b>（DEET ≤ 30% 或派卡瑞丁 ≤ 20%）。<u>3 岁以下避免柠檬桉油（OLE / PMD）</u>。</p>',
       },
     ],
   },
@@ -390,9 +375,9 @@ export const ACTIVITY_C3_JUN_RAINY_SEASON: PathActivityData = {
   title: '入梅 · 家门口生态',
   summary: '入梅后 1 周内，<b>家门口蜗牛 / 蚯蚓 / 青蛙叫</b>集体出现。雨后 7 点出门，30 分钟。',
   triggerLabel: 'Trigger',
-  triggerText: '2026 上海入梅约 6/16 前后 · 入梅当天 + 1 周内黄金窗口',
+  triggerText: '2026 上海入梅约 6 月中旬（气象局每年临 7 日内公告） · 入梅当天 + 1 周内黄金窗口',
   chips: [
-    { cls: 'brick', t: '6/16 入梅' },
+    { cls: 'brick', t: '6 月中入梅' },
     { cls: '', t: '蜗牛 + 蚯蚓 + 蛙鸣' },
   ],
   timeText: '<b>每次 30 分钟</b> · 雨后清晨 · 1 周内 2–3 次',
@@ -414,14 +399,14 @@ const SECTIONS_C4: ActivitySection[] = [
     blocks: [
       {
         type: 'paragraph',
-        html: '上海近郊萤火虫高峰在<b>夏至前后 1–2 周</b>（约 2026/06/15 – 07/05）。再早还没成虫期，再晚密度骤降。每年只开这一扇窗，错过等下一年。',
+        html: '上海近郊萤火虫高峰在<b>夏至到 7 月中旬</b>（约 2026/06/21 – 07/15，部分点位窗口偏窄）。再早成虫期未到，再晚密度骤降。每年只开这一扇窗，错过等下一年。',
       },
       {
         type: 'list-bullets',
         items: [
           '<b>最佳天气</b>：闷热无月光的夜晚（农历月中前后 = 月亮最亮，反而看不到，避开）。',
           '<b>最佳时段</b>：日落后 30 分钟到 22:00 之间。',
-          '<b>2026 夏至</b> = 6/21（撞端午最后一天）。前后 1 周都行。',
+          '<b>2026 夏至</b> = 6/21（撞端午最后一天）。窗口右侧偏后 — 7 月初到中旬密度反而比夏至当周更高。',
         ],
       },
     ],
@@ -514,7 +499,7 @@ const SECTIONS_C4: ActivitySection[] = [
           {
             variant: 'heart',
             lbl: '心法',
-            html: '萤火虫给孩子的不是知识，是<b>"季节性的稀缺"</b>。一年只能看一次的东西，比每天都能看的更让她记住。这种"等一年再来"的体验，是她以后写 application essay 时的差异化素材。',
+            html: '萤火虫给孩子的不是知识，是<b>"季节性的稀缺"</b>。一年只能看一次的东西，比每天都能看的更让她记住。"等一年再来"的体验本身就是教育。',
           },
         ],
       },
@@ -546,11 +531,11 @@ export const ACTIVITY_C4_JUN_FIREFLY: PathActivityData = {
   kicker: '事件卡 · 季节性',
   previews: [],
   title: '夏至 · 萤火虫',
-  summary: '<b>每年只开这扇窗</b>（6/15–7/5）。佘山 / 天马山 / 顾村三选一。看不到也算赢。',
+  summary: '<b>每年只开这扇窗</b>（6 月下旬–7 月中旬）。佘山 / 天马山 / 顾村三选一。看不到也算赢。',
   triggerLabel: 'Trigger',
-  triggerText: '夏至前后 1–2 周（2026 夏至 = 6/21） · 闷热无月光的夜晚最佳',
+  triggerText: '夏至到 7 月中旬（2026 夏至 = 6/21） · 闷热无月光的夜晚最佳',
   chips: [
-    { cls: 'brick', t: '6/15–7/5' },
+    { cls: 'brick', t: '6/21–7/15' },
     { cls: '', t: '夜观 + 不抓 + 等' },
   ],
   timeText: '<b>1 个夜晚</b> · 出发到回家约 4 小时（市区点）/ 6 小时（远郊）',

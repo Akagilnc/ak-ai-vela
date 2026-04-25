@@ -36,7 +36,16 @@ async function seedPathExplorer() {
   // (deduped here by slug), so `validGoalSlugs` shrinks naturally and the
   // purge step below doesn't accidentally delete rows shared between months.
   const allSeeds = [G1_MAY_SEED, G1_JUN_SEED];
-  const stage = allSeeds[0].stage; // both seeds share STAGE_G1_G3 (asserted in path-seed-shape.test.ts)
+  // Loud-fail when a future seed introduces a different stage. Without this,
+  // `allSeeds[0].stage` would silently route the new month's purge under the
+  // wrong stageId and delete its activities/goals.
+  const stageSlugs = new Set(allSeeds.map((s) => s.stage.slug));
+  if (stageSlugs.size !== 1) {
+    throw new Error(
+      `seedPathExplorer assumes one stage across all month seeds, found ${stageSlugs.size}: ${[...stageSlugs].join(", ")}. Generalize the merge step before adding a stage.`,
+    );
+  }
+  const stage = allSeeds[0].stage;
   const goalsBySlug = new Map<string, (typeof allSeeds)[number]["goals"][number]>();
   for (const s of allSeeds) {
     for (const g of s.goals) goalsBySlug.set(g.slug, g);

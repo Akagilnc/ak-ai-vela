@@ -78,6 +78,132 @@ describe("Path seed — per-month shape (May, June)", () => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Block-shape walker — recursive runtime field check per discriminator.
+// Catches drift like {name, desc, difficulty} where {zh, trait, level} is the
+// declared shape, which Slice 2 R1 found AFTER review (because TS type-check
+// was bypassed by `as Prisma.InputJsonValue` in prisma/seed.ts and Vitest
+// doesn't typecheck). Pure runtime walk → no esbuild dependency.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type AnyBlock = { type: string; [key: string]: unknown };
+
+function expectStringArray(arr: unknown, ctx: string) {
+  expect(Array.isArray(arr), `${ctx} must be array`).toBe(true);
+  for (const item of arr as unknown[]) {
+    expect(typeof item, `${ctx} item must be string`).toBe("string");
+  }
+}
+
+function validateBlock(block: AnyBlock, ctx: string): void {
+  switch (block.type) {
+    case "paragraph":
+      expect(typeof block.html, `${ctx} paragraph.html`).toBe("string");
+      break;
+    case "triad":
+      expect(Array.isArray(block.items), `${ctx} triad.items`).toBe(true);
+      for (const it of block.items as Array<Record<string, unknown>>) {
+        for (const k of ["tag", "title", "freq", "html"]) {
+          expect(typeof it[k], `${ctx} triad.items[].${k}`).toBe("string");
+        }
+      }
+      break;
+    case "callout":
+      expect(["output", "heart", "warn"], `${ctx} callout.variant`).toContain(
+        block.variant,
+      );
+      expect(typeof block.lbl, `${ctx} callout.lbl`).toBe("string");
+      expect(typeof block.html, `${ctx} callout.html`).toBe("string");
+      break;
+    case "callout-trio":
+      expect(Array.isArray(block.items), `${ctx} callout-trio.items`).toBe(true);
+      for (const it of block.items as Array<Record<string, unknown>>) {
+        expect(["output", "heart", "warn"]).toContain(it.variant);
+        expect(typeof it.lbl).toBe("string");
+        expect(typeof it.html).toBe("string");
+      }
+      break;
+    case "path-opts":
+      expect(Array.isArray(block.opts), `${ctx} path-opts.opts`).toBe(true);
+      for (const o of block.opts as Array<Record<string, unknown>>) {
+        for (const k of ["letter", "label", "effort"]) {
+          expect(typeof o[k], `${ctx} path-opts[].${k}`).toBe("string");
+        }
+        expect(["low", "med", "no"], `${ctx} path-opts[].effortKey`).toContain(
+          o.effortKey,
+        );
+      }
+      break;
+    case "list-bullets":
+    case "list-check":
+    case "steps":
+      expectStringArray(block.items, `${ctx} ${block.type}.items`);
+      break;
+    case "id-table":
+      expect(Array.isArray(block.rows), `${ctx} id-table.rows`).toBe(true);
+      for (const row of block.rows as Array<Record<string, unknown>>) {
+        for (const k of ["photo", "zh", "trait"]) {
+          expect(typeof row[k], `${ctx} id-table.rows[].${k}`).toBe("string");
+        }
+        expect(["易", "中", "难"], `${ctx} id-table.rows[].level`).toContain(
+          row.level,
+        );
+      }
+      break;
+    case "sources":
+      expect(typeof block.title, `${ctx} sources.title`).toBe("string");
+      expectStringArray(block.items, `${ctx} sources.items`);
+      break;
+    case "trivia":
+      expect(typeof block.label, `${ctx} trivia.label`).toBe("string");
+      expect(typeof block.head, `${ctx} trivia.head`).toBe("string");
+      expectStringArray(block.lines, `${ctx} trivia.lines`);
+      break;
+    case "route":
+      expect(Array.isArray(block.steps), `${ctx} route.steps`).toBe(true);
+      break;
+    case "philosophy":
+      expect(typeof block.lbl, `${ctx} philosophy.lbl`).toBe("string");
+      expect(typeof block.html, `${ctx} philosophy.html`).toBe("string");
+      break;
+    case "aside-note":
+      expect(typeof block.html, `${ctx} aside-note.html`).toBe("string");
+      break;
+    case "photo-row":
+      expect(Array.isArray(block.photos), `${ctx} photo-row.photos`).toBe(true);
+      break;
+    case "sub-block":
+      expect(Array.isArray(block.blocks), `${ctx} sub-block.blocks`).toBe(true);
+      for (const child of block.blocks as AnyBlock[]) {
+        validateBlock(child, `${ctx} > sub-block`);
+      }
+      break;
+    default:
+      throw new Error(`${ctx} unknown block type: "${block.type}"`);
+  }
+}
+
+describe("Path seed — block shape (recursive)", () => {
+  for (const seed of ALL_SEEDS) {
+    const monthLabel = seed.activities[0]?.month ?? "?";
+    describe(`month ${monthLabel}`, () => {
+      for (const a of seed.activities) {
+        it(`${a.slug}: every block in every section matches its declared shape`, () => {
+          for (let si = 0; si < a.sections.length; si++) {
+            const sec = a.sections[si];
+            for (let bi = 0; bi < sec.blocks.length; bi++) {
+              validateBlock(
+                sec.blocks[bi] as unknown as AnyBlock,
+                `${a.slug} §${si + 1}[${bi}]`,
+              );
+            }
+          }
+        });
+      }
+    });
+  }
+});
+
 describe("Path seed — cross-month invariants", () => {
   it("activity slugs are globally unique across all month seeds", () => {
     const allSlugs = ALL_SEEDS.flatMap((s) => s.activities.map((a) => a.slug));
