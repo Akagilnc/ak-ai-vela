@@ -19,11 +19,22 @@ describe("resolveMonth — no param (default routing)", () => {
     expect(resolveMonth(undefined, [5, 6], 6)).toBe(6);
   });
 
-  it("falls back to most-recent month when current month has no data", () => {
-    // current = 4 (April), only 5 available → return 5
+  it("returns nearest upcoming month when current month has no data and upcoming months exist", () => {
+    // current = 4 (April), only 5 available → return 5 (the upcoming month)
     expect(resolveMonth(undefined, [5], 4)).toBe(5);
-    // current = 7, available [5, 6] → return 6 (highest)
+    // current = 4, available [5, 6] → return 5 (nearest upcoming, NOT max=6).
+    // Regression Codex caught Slice 2 R3: previously returned 6 because the
+    // fallback always took Math.max, jumping over the imminent month.
+    expect(resolveMonth(undefined, [5, 6], 4)).toBe(5);
+    // current = 1, available [3, 6, 9] → return 3 (closest upcoming)
+    expect(resolveMonth(undefined, [3, 6, 9], 1)).toBe(3);
+  });
+
+  it("falls back to most-recent past month when nothing is upcoming", () => {
+    // current = 7, available [5, 6] → return 6 (no upcoming, take max past)
     expect(resolveMonth(undefined, [5, 6], 7)).toBe(6);
+    // current = 12, available [5, 6] → return 6
+    expect(resolveMonth(undefined, [5, 6], 12)).toBe(6);
   });
 
   it("returns the only available month regardless of current month", () => {
@@ -31,10 +42,13 @@ describe("resolveMonth — no param (default routing)", () => {
     expect(resolveMonth(undefined, [5], 12)).toBe(5);
   });
 
-  it("fallback returns highest month even when availableMonths is unsorted", () => {
-    // Caller may pass an unsorted array; fallback must still return the maximum.
-    expect(resolveMonth(undefined, [6, 5], 7)).toBe(6);
-    expect(resolveMonth(undefined, [9, 3, 6], 1)).toBe(9);
+  it("upcoming + past fallback both work with unsorted availableMonths", () => {
+    // Caller may pass an unsorted array; nearest-upcoming and max-past both
+    // must work without depending on input order (Prisma orderBy is advisory).
+    expect(resolveMonth(undefined, [9, 3, 6], 1)).toBe(3); // nearest upcoming
+    expect(resolveMonth(undefined, [9, 3, 6], 12)).toBe(9); // max past
+    expect(resolveMonth(undefined, [6, 5], 4)).toBe(5); // nearest upcoming, unsorted
+    expect(resolveMonth(undefined, [6, 5], 7)).toBe(6); // max past, unsorted
   });
 });
 

@@ -36,10 +36,18 @@ export function resolveMonth(
   if (availableMonths.length === 0) return null;
 
   if (rawParam === undefined) {
-    // Default: current calendar month if it has data, else most recent.
+    // Default routing — three-tier fallback so /path always lands on the
+    // most temporally relevant seeded month:
+    //   1. current month if seeded (the obvious case);
+    //   2. else the *nearest upcoming* seeded month (so April with [5,6]
+    //      lands on May, not June — fixes Codex Slice 2 R3 P2);
+    //   3. else the most recent past seeded month (Math.max as a final
+    //      fallback when there's nothing upcoming, e.g. August with [5,6]).
     if (availableMonths.includes(currentMonth)) return currentMonth;
-    // Use Math.max rather than last element: caller may pass an unsorted array
-    // (Prisma orderBy is advisory, not a contract between modules).
+    const upcoming = availableMonths.filter((m) => m > currentMonth);
+    if (upcoming.length > 0) return Math.min(...upcoming);
+    // Math.max not array[last]: caller may pass an unsorted array (Prisma
+    // orderBy is advisory, not a contract between modules).
     return Math.max(...availableMonths);
   }
 
