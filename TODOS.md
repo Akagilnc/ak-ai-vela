@@ -106,6 +106,13 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** Before Slice 3+ adds significant new `route` / `photo-row` payloads. Today only May seed uses `route` (c1 §3 and §4) and there's no `photo-row` usage; risk is low but real.
 - **Signal to start:** any new month seed authoring a `route` or `photo-row` block, OR before merging any seed restructure.
 
+### [P2] resolveMonth: cross-year fallback uses min absolute distance with wrap
+- **What:** `src/lib/path/month-routing.ts::resolveMonth` no-param fallback currently has 3 tiers: current → nearest upcoming (`m > current`, take min) → max past. The "nearest upcoming" branch only considers months with `m > currentMonth`, which breaks at year boundary. Example: December (current=12) with availableMonths=[1, 2] returns `Math.max([1,2])=2` (February) instead of `1` (January, the nearest imminent month after wrap).
+- **Why:** Flagged by Codex on PR #31 R3 as P2. Today's seed is [5, 6] only — bug doesn't manifest. Manifests when v0.3+ seeds early-year content (Jan/Feb) while current month is late in the year (Nov/Dec).
+- **Algorithm fix:** replace strict `m > currentMonth` filter with min-absolute-distance-with-wrap. For each available month `m`, compute `min(forward, backward) = min((m-current+12)%12, (current-m+12)%12)`. Return month with smallest distance (ties → prefer forward). This generalizes correctly: Aug+[5,6] → 6 (backward distance 2, current behavior preserved); Dec+[1,2] → 1 (forward distance 1, fixes the bug); Dec+[11] → 11 (backward distance 1).
+- **When:** Same PR that adds the third or higher month seed (v0.3+) — that's when the algorithm gap becomes load-bearing. Add an explicit test at fix time covering all three regimes (forward-only, backward-only, year-wrap).
+- **Signal to start:** any new month seed where `month < 5` ships AND content for current-month-or-later is in the same release.
+
 ### [P2] PathInterest schema: add `month` column for sign-up attribution
 - **What:** Add `month: Int?` to `PathInterest` Prisma schema + matching field on the Zod payload + form input from `<PathInterestForm>`. Today the form uses `sourcePath="/path"` to track signup origin, but `canonicalSourcePath` strips queries (intentional, prevents `(email, sourcePath)` dedup-key drift). Result: a user signing up from `/path?month=5` is indistinguishable from one signing up from `/path?month=6`.
 - **Why:** Once 2+ months ship (Slice 2 = May+June), founder needs to know which month surface drives interest signal — it informs which month seed gets prioritized next. Flagged by Codex in Slice 1 R2; deferred with TODO comment in `src/app/path/page.tsx:210`.
