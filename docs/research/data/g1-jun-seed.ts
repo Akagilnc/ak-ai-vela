@@ -14,8 +14,9 @@
  * 2026 calendar references in this file:
  *   - 端午节 (Dragon Boat Festival): 2026/06/19–06/21 (Fri-Sun, 3-day holiday)
  *   - 芒种 (solar term): 2026/06/05
- *   - 入梅 (Shanghai rainy-season start, annual mid-June; date varies, met
- *           bureau publishes within 7d of actual onset)
+ *   - 入梅 (Shanghai rainy-season start, annual avg 6/19, range 6/10–6/19
+ *           in recent years per 上海本地宝; met bureau publishes within
+ *           7 days of actual onset)
  *   - 夏至: 2026/06/21 (overlaps 端午 last day + Father's Day)
  *   - 萤火虫 peak: ~ 2026/06/21 – 2026/07/15 (Shanghai near-suburb sites,
  *                  density actually higher in early-mid July than at solstice)
@@ -67,7 +68,7 @@ const SECTIONS_C1: ActivitySection[] = [
             tag: '✨ 萤火虫',
             title: '1 次',
             freq: '1×',
-            html: '<b>夏至前后 1 次夜观</b>：佘山 / 天马山 / 近郊。错过等明年。',
+            html: '<b>夏至前后 1 次夜观</b>：滨江森林 / 上海植物园 / 近郊水网。错过等明年。',
           },
         ],
       },
@@ -142,7 +143,12 @@ export const ACTIVITY_C1_JUN_ROUTINE: PathActivityData = {
   month: 6,
 
   kicker: '月度基本盘',
-  previews: ['snail.jpg', 'firefly.jpg', 'mugwort.jpg'],
+  // Baseline carries no previews — event cards below already show those
+  // species (snail/firefly/mugwort were duplicated here, making the tile
+  // list visually redundant). The 节奏 card is a navigation/rhythm card,
+  // its title alone is enough to identify it. Different shape (no preview
+  // row) also makes baseline visually distinct from event cards.
+  previews: [],
   title: 'G1 六月怎么过',
   summary: '六月节气挤、雨水多。<b>挑 1 件做透</b>比 4 件做一半强。',
   triggerLabel: '节奏',
@@ -176,7 +182,7 @@ const SECTIONS_C2: ActivitySection[] = [
             effort: 'Low Effort',
             effortKey: 'low',
             bodyHtml:
-              '<p><b>嘉定毛桥村 / 闵行浦江郊野公园</b>——端午前后稻田进入插秧后期，水田里有泥鳅 / 田螺 / 黑斑蛙。一日往返，下午 3 点前回家避高峰。</p>',
+              '<b>闵行浦江郊野公园</b>——端午前后有官方"召楼粽情"端午文化节（非遗市集 + 民俗游戏 + 包粽子体验，文旅部官方推广），4A 景区，地铁 8 号线沿园区延伸。<b>嘉定毛桥集市</b>是配套选项（生态市集 + 小吃）。一日往返，下午 3 点前回家避高峰。',
           },
           {
             letter: 'B',
@@ -184,7 +190,7 @@ const SECTIONS_C2: ActivitySection[] = [
             effort: 'Med Effort',
             effortKey: 'med',
             bodyHtml:
-              '<p><b>嘉兴 / 湖州 / 绍兴</b>——真实粽子产地。可看老式家庭包粽子（民宿提前问），顺路看<b>杨梅园</b>（6 月中下旬正盛，端午往往刚好赶上）。两晚短住，避开高速 6/19 早 + 6/21 晚两次峰值。</p>',
+              '<b>绍兴上虞 / 台州 / 宁波</b>——浙江粽子 + 杨梅核心产区。<b>浙江杨梅 6 月初就开始上市</b>，端午（6/19）正在杨梅季中后期（已熟透到落市前）；可去民宿提前约采摘。两晚短住，避开高速 6/19 早 + 6/21 晚两次峰值。',
           },
           {
             letter: 'C',
@@ -192,7 +198,7 @@ const SECTIONS_C2: ActivitySection[] = [
             effort: 'Skip',
             effortKey: 'no',
             bodyHtml:
-              '<p>不出门也行。买<b>新鲜艾草 + 菖蒲</b>（菜场或社区团购），让孩子摸 / 闻 / 认。包 5 个粽子（速冻粽叶超市有），和孩子一起绑线。比远途奔波留下的具体感受更多。</p>',
+              '不出门也行。买<b>新鲜艾草 + 菖蒲</b>（菜场或社区团购），让孩子摸 / 闻 / 认。包 5 个粽子（速冻粽叶超市有），和孩子一起绑线。比远途奔波留下的具体感受更多。',
           },
         ],
       },
@@ -335,7 +341,7 @@ const SECTIONS_C3: ActivitySection[] = [
         type: 'callout',
         variant: 'warn',
         lbl: '避坑',
-        html: '<p><b>湿滑石板上别让她跑。</b>雨后小区台阶最滑。</p><p><b>注意蛇</b>。上海市区罕见但闵行 / 浦东郊野公园偶尔有<b>赤链蛇</b>（<b>有轻微毒性 + 唾液菌群易引起感染</b>，国内有过致死病例）。看到立即拉开距离，被咬就医。</p><p><b>蚊子开始密</b>。穿长袖。<b>给孩子用儿童浓度驱蚊液</b>（DEET ≤ 30% 或派卡瑞丁 ≤ 20%）。<u>3 岁以下避免柠檬桉油（OLE / PMD）</u>。</p>',
+        html: '<p><b>湿滑石板上别让她跑。</b>雨后小区台阶最滑。</p><p><b>注意蛇</b>。上海市区罕见但闵行 / 浦东郊野公园偶尔有<b>赤链蛇</b>（中国蛇咬伤指南 + Wikipedia 列为<b>无毒</b>，但牙锋利且<b>唾液菌群易引起细菌感染</b>，被咬仍需就医清创）。看到立即拉开距离，<b>不要尝试抓或赶</b>。</p><p><b>蚊子开始密</b>。穿长袖。<b>给孩子用儿童浓度驱蚊液</b>（DEET ≤ 30% 或派卡瑞丁 ≤ 20%）。<u>3 岁以下避免柠檬桉油（OLE / PMD）</u>。</p>',
       },
     ],
   },
@@ -374,9 +380,9 @@ export const ACTIVITY_C3_JUN_RAINY_SEASON: PathActivityData = {
   title: '入梅 · 家门口生态',
   summary: '入梅后 1 周内，<b>家门口蜗牛 / 蚯蚓 / 青蛙叫</b>集体出现。雨后 7 点出门，30 分钟。',
   triggerLabel: 'Trigger',
-  triggerText: '2026 上海入梅约 6 月中旬（气象局每年临 7 日内公告） · 入梅当天 + 1 周内黄金窗口',
+  triggerText: '2026 上海入梅常年平均 6 月 19 日前后（中下旬，气象局每年临 7 日内公告） · 入梅当天 + 1 周内黄金窗口',
   chips: [
-    { cls: 'brick', t: '6 月中入梅' },
+    { cls: 'brick', t: '6 月中下旬入梅' },
     { cls: '', t: '蜗牛 + 蚯蚓 + 蛙鸣' },
   ],
   timeText: '<b>每次 30 分钟</b> · 雨后清晨 · 1 周内 2–3 次',
@@ -413,34 +419,38 @@ const SECTIONS_C4: ActivitySection[] = [
   {
     target: '去哪儿',
     numLabel: '§ 2',
-    title: '上海近郊 3 个相对靠谱的点',
+    title: '上海 3 个相对靠谱的点',
     blocks: [
+      {
+        type: 'paragraph',
+        html: '夜场是否对外开放、当年密度都会变。<b>出发前必须查所选点位当年的官方公众号</b>（上海植物园 / 辰山 / 滨江森林公园），有官方夜赏活动最稳。',
+      },
       {
         type: 'path-opts',
         opts: [
           {
             letter: 'A',
-            label: '佘山国家森林公园',
+            label: '滨江森林公园',
             effort: 'Low Effort',
             effortKey: 'low',
             bodyHtml:
-              '<p>松江佘山。地铁 9 号线 + 出租。<b>夜场需要提前确认开放</b>（部分季节闭园）。林下萤火虫密度中等，相对稳定。</p>',
+              '浦东高桥。<b>近年上海公园里萤火虫最多的点</b>（人民网 / 东方网都报道过）。地铁 6 号线 + 公交 / 打车，晚上回家方便。',
           },
           {
             letter: 'B',
-            label: '天马山',
+            label: '上海植物园 / 辰山植物园',
             effort: 'Med Effort',
             effortKey: 'med',
             bodyHtml:
-              '<p>佘山以西，自驾约 1 小时。人少 + 光污染少 = 萤火虫密度更高。<b>需要自驾，公共交通晚上回不来</b>。</p>',
+              '上海植物园（徐汇）观察记录有<b>黄脉翅萤、条背萤</b>等，夏至前后高峰；辰山植物园（松江）夜赏活动逐年办。<b>必须查公众号</b>当年是否开放夜场。',
           },
           {
             letter: 'C',
-            label: '顾村公园 / 共青森林公园',
-            effort: 'Low Effort',
-            effortKey: 'low',
+            label: '青浦金泽 / 朱家角',
+            effort: 'Med Effort',
+            effortKey: 'med',
             bodyHtml:
-              '<p>市区内最近选项。萤火虫密度低（光污染重），但<b>第一次带 G1 孩子的"看到 3–5 只就赢了"标准下够用</b>。地铁直达，晚上方便回家。</p>',
+              '近郊水网地带，光污染低。自驾约 1 小时。<b>密度大但要靠运气</b>，建议跟当地观萤微信群打听当年点位。',
           },
         ],
       },
@@ -512,7 +522,7 @@ const SECTIONS_C4: ActivitySection[] = [
         type: 'sources',
         title: '来源 · 后续补全',
         items: [
-          '上海植物园 / 佘山国家森林公园官方公众号年度萤火虫公告',
+          '上海植物园 / 辰山植物园 / 滨江森林公园官方公众号年度萤火虫夜赏公告',
           '中国科学院昆明动物研究所 萤火虫保护科普',
           'iNaturalist 上海近郊 Lampyridae 历年观察记录',
         ],
@@ -528,9 +538,9 @@ export const ACTIVITY_C4_JUN_FIREFLY: PathActivityData = {
   month: 6,
 
   kicker: '事件卡 · 季节性',
-  previews: ['firefly.jpg', 'sheshan.jpg'],
+  previews: ['firefly.jpg'],
   title: '夏至 · 萤火虫',
-  summary: '<b>每年只开这扇窗</b>（6 月下旬–7 月中旬）。佘山 / 天马山 / 顾村三选一。看不到也算赢。',
+  summary: '<b>每年只开这扇窗</b>（6 月下旬–7 月中旬）。滨江森林公园 / 植物园 / 青浦金泽三选一。看不到也算赢。',
   triggerLabel: 'Trigger',
   triggerText: '夏至到 7 月中旬（2026 夏至 = 6/21） · 闷热无月光的夜晚最佳',
   chips: [
