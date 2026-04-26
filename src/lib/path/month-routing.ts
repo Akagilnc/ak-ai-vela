@@ -14,12 +14,33 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Reads "the current calendar month" in Asia/Shanghai. Hardcoded TZ rather
+ * than reading server local time — Vercel/Cloudflare/etc default to UTC,
+ * and a UTC-served reader on April 30 23:00 Shanghai (= April 30 15:00 UTC)
+ * would correctly see April, but May 1 01:00 Shanghai (= April 30 17:00 UTC)
+ * would still see April. The 8-hour window each month boundary is exactly
+ * the case the seed user (Kailing in Shanghai) hits when she opens /path
+ * late at night on the 30th/31st. Flagged by Gemini PR #31 review.
+ *
+ * `Intl.DateTimeFormat` is the only stdlib API that lets us extract a
+ * specific TZ's calendar month without pulling in `date-fns-tz` etc.
+ */
+function currentMonthShanghai(): number {
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Shanghai",
+    month: "numeric",
+  }).format(new Date());
+  return parseInt(formatted, 10);
+}
+
+/**
  * Resolves which calendar month to display.
  *
  * @param rawParam        Raw `month` query-string value, or undefined if absent.
  * @param availableMonths Month numbers that have DB data (order not required).
- * @param currentMonth    The current calendar month (1-12). Defaults to today.
- *                        Injected as a param so tests are deterministic.
+ * @param currentMonth    The current calendar month (1-12). Defaults to
+ *                        today in Asia/Shanghai. Injected as a param so
+ *                        tests are deterministic.
  *
  * @returns The resolved month (1-12), or null in two cases:
  *   - Explicit param: the value is invalid or has no data in DB.
@@ -31,7 +52,7 @@
 export function resolveMonth(
   rawParam: string | undefined,
   availableMonths: number[],
-  currentMonth: number = new Date().getMonth() + 1,
+  currentMonth: number = currentMonthShanghai(),
 ): number | null {
   if (availableMonths.length === 0) return null;
 

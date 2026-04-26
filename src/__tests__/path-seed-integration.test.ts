@@ -228,28 +228,76 @@ describe("Path Explorer seed — DB integration", () => {
   // Idempotency — re-running the seed must not duplicate rows.
   // ───────────────────────────────────────────────────────────────────────
 
-  it("re-running the seed is idempotent (no duplicate rows)", async () => {
+  it("re-running the seed is idempotent (no churn — row IDs stable)", async () => {
+    // R1 A1: counts alone are insufficient — a regression that swapped the
+    // upsert for `deleteMany({}) + create` would still pass count checks
+    // but every row would have a fresh id each run. Snapshot the row ids
+    // before re-seeding and assert they're identical after, which is the
+    // actual idempotency contract the production seed claims.
+    const beforeIds = (
+      await prisma.pathActivity.findMany({
+        select: { id: true, slug: true },
+        orderBy: { slug: "asc" },
+      })
+    ).map((r) => `${r.slug}:${r.id}`);
+
     await seedPath([G1_MAY_SEED, G1_JUN_SEED]);
     await seedPath([G1_MAY_SEED, G1_JUN_SEED]);
+
     const stages = await prisma.pathStage.count();
     const goals = await prisma.pathGoal.count();
     const activities = await prisma.pathActivity.count();
     expect(stages).toBe(1);
     expect(goals).toBe(1);
     expect(activities).toBe(9);
+
+    const afterIds = (
+      await prisma.pathActivity.findMany({
+        select: { id: true, slug: true },
+        orderBy: { slug: "asc" },
+      })
+    ).map((r) => `${r.slug}:${r.id}`);
+    expect(afterIds).toEqual(beforeIds);
   });
 
   // ───────────────────────────────────────────────────────────────────────
   // Multi-stage runtime guard — must throw before any DB writes happen.
   // ───────────────────────────────────────────────────────────────────────
 
-  it("throws if seeds reference more than one stage (no DB writes)", async () => {
+  it("throws if seeds reference more than one stage AND no DB writes happen", async () => {
+    // R1 A1: testing the pure mergeMonthSeeds() proves the function throws
+    // but doesn't prove the production safety property — that the seed
+    // wrapper bails BEFORE any pathStage/pathGoal/pathActivity rows land.
+    // Snapshot row counts, run the wrapper, expect rejects, assert counts
+    // are byte-identical. This is what the production guard actually
+    // protects against (silent purge under wrong stageId).
     const fakeSecondStageSeed: SeedShape = {
       ...G1_JUN_SEED,
       stage: { ...G1_JUN_SEED.stage, slug: "g4-to-g6-foundation" },
     };
+
+    const before = {
+      stages: await prisma.pathStage.count(),
+      goals: await prisma.pathGoal.count(),
+      activities: await prisma.pathActivity.count(),
+    };
+
+    // Pure-function check: the merge step throws.
     expect(() =>
       mergeMonthSeeds([G1_MAY_SEED, fakeSecondStageSeed]),
     ).toThrow(/one stage across all month seeds/);
+
+    // Production-shape check: the wrapper that owns the prisma transaction
+    // also rejects, and no rows changed.
+    await expect(
+      seedPath([G1_MAY_SEED, fakeSecondStageSeed]),
+    ).rejects.toThrow(/one stage across all month seeds/);
+
+    const after = {
+      stages: await prisma.pathStage.count(),
+      goals: await prisma.pathGoal.count(),
+      activities: await prisma.pathActivity.count(),
+    };
+    expect(after).toEqual(before);
   });
 });
