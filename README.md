@@ -3,7 +3,7 @@
 AI-powered growth guidance for Chinese families planning their child's path to US universities.
 
 Three tools:
-- **Path Explorer** (v0.1) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. 小小动物科学家 theme: 5 cards for May, each with schedule, species id, location tips, and sources. `/path`.
+- **Path Explorer** (v0.2) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards). June = 雨季观察家 (4 cards). Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
 - **Trait assessment quiz** — 10-question branching assessment that builds a personality portrait + staged roadmap (G1–G9). `/trait-quiz`.
 - **Gap analysis engine** — for high schoolers targeting specific universities. `/questionnaire`.
 
@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (514 tests, 27 files) |
+| `npm test` | Run all tests (568 tests, 29 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -44,11 +44,11 @@ npm run dev            # Start dev server at http://localhost:3000
 ```
 src/
   app/                    # Next.js App Router pages
-    path/                 # Path Explorer (v0.1)
+    path/                 # Path Explorer (v0.2)
       [activitySlug]/     # Detail page per activity card
         loading.tsx       # Skeleton for route transitions
       layout.tsx          # Loads vela.css + skip-to-content links
-      page.tsx            # Overview: month + 5 activity tiles
+      page.tsx            # Overview: month-aware (?month=N) tile list, theme map per month
       not-found.tsx       # Chinese brand-styled 404
       error.tsx           # Chinese brand-styled error boundary
     trait-quiz/           # 10-question trait assessment (v0.5.0.0)
@@ -92,9 +92,10 @@ src/
     types.ts              # Zod questionnaire schema + GapResult type
     path/                 # Path Explorer library (@/lib/path)
       canonical-source.ts # sourcePath canonicalizer — NFKC + Default_Ignorable strip + dot-segment resolve + percent decode (15 rounds of Unicode smuggling hardening)
+      month-routing.ts    # resolveMonth() — current → nearest upcoming → max past, validateMonthParam() for ?month=N
       parse.ts            # Runtime Prisma Json shape guards (parseChips, parseSections)
       types.ts            # Block/section type discriminated unions
-      __tests__/          # 100 regression tests pinning every known smuggling vector
+      __tests__/          # Regression tests: canonical-source smuggling vectors + month-routing fallback ladder
     traits/               # Trait assessment engine (pure functions, @/lib/traits)
       types.ts            # Zod schemas for 10 trait dimensions
       questions.ts        # 19 question defs with declarative branching
@@ -113,7 +114,7 @@ src/
   __tests__/              # Top-level Vitest tests (questionnaire, backup, schema)
 prisma/
   schema.prisma           # Path (6 models) + School + Student + QuestionnaireResult
-  seed.ts                 # Seed: 26 schools + G1 May 5 activity cards (seedPathExplorer)
+  seed.ts                 # Seed: 26 schools + G1 month seeds merged by goal+activity slug (May 5 + June 4 = 9 activities, single-stage guard)
 public/assets/
   img/                    # 24 species + location photos (Wikipedia Commons, CC-licensed)
   vela.css                # Brand styles for /path scope (loaded via path/layout.tsx)
@@ -122,7 +123,8 @@ docs/
   process.md              # Git workflow and project management rules
   project-context.md      # Project scope and constraints
   research/               # Path Explorer content drafts + source manifest
-    data/g1-may-seed.ts   # Single source of truth for May card content
+    data/g1-may-seed.ts   # Single source of truth for May card content (5 cards, 小小动物科学家)
+    data/g1-jun-seed.ts   # Single source of truth for June card content (4 cards, 雨季观察家)
 ```
 
 ## Design System
@@ -154,7 +156,8 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | M3 Gap page | Done (v0.4.0.0) |
 | Trait Assessment Phase 1 (pure frontend) | Done (v0.5.0.0) |
 | Path Explorer v0.1 (G1 May activity cards) | Done (v0.6.0.0) |
-| Path Explorer v0.2+ (more months, more stages) | Planned (after Kailing feedback) |
+| Path Explorer v0.2 (multi-month routing + G1 June seed) | Done (v0.7.0.0) |
+| Path Explorer v0.3+ (additional months, second stage G4–G6) | Planned (after Kailing feedback) |
 | Trait Assessment v0.6 (scientific framework) | Planned — issue #24 |
 | Trait Assessment Phase 2 (persistence) | Planned (after seed user feedback) |
 | M4: Interactive report | Planned |

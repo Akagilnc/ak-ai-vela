@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-22 · `main` @ `5c74174` (v0.6.2.1, merged)
+**Last updated:** 2026-04-25 · `feat/path-v0.2` @ `eff1a86` (v0.7.0.0, ready to ship)
 
 ## Product Direction
 
@@ -18,25 +18,39 @@ Vela has three layered tools aimed at different stages of that understanding:
    to selective US universities (Gap analysis).
 
 v0.5 marked the pivot from "gap analysis only" to "growth guidance." v0.6
-extends upstream with Path Explorer v0.1 — the literacy layer.
+extends upstream with Path Explorer v0.1 — the literacy layer. v0.7 makes
+Path Explorer multi-month: routing + theme map + G1 June seed.
 
 ## MVP Semantics
 
-**Tool 1: Path Explorer** (`/path`, v0.6.0.0, shipped 2026-04-19)
-1. Parent opens `/path` and sees 小小动物科学家 theme for G1–G3, May month.
-2. Overview shows 5 activity tiles (1 baseline 月度节奏 + 4 event cards:
-   上海自博物馆 · 海洋馆 · 小故事 · 产出).
-3. Each tile → detail page `/path/{slug}` with chips, trigger, time pacing,
+**Tool 1: Path Explorer** (`/path`, v0.7.0.0, ready to ship)
+1. Parent opens `/path` and lands on the current calendar month if seeded
+   (April→May fallback today via three-tier resolveMonth: current → nearest
+   upcoming → max past). May = 小小动物科学家 (5 cards). June = 雨季观察家 (4 cards).
+2. Month pill row is a real navigation surface: each pill is a `<Link>` for
+   seeded months, a disabled `<button>` for ghost months, and a non-interactive
+   `<span>` for the active month. `aria-current="page"` on the active item.
+3. Overview shows N activity tiles per month (May: 1 baseline + 4 event cards;
+   June: 1 baseline + 3 event cards covering 端午 3-day holiday, 入梅 backyard
+   ecology, 夏至 fireflies). Card count is content-driven, not padded to a
+   fixed number.
+4. Each tile → detail page `/path/{slug}` with chips, trigger, time pacing,
    and 2–5 themed sections rendered from 17 block types (paragraph / triad /
    route / trivia / callout / callout-trio / path-opts / sub-block / list-
    check / list-bullets / photo-row / id-table / steps / philosophy /
    sources / aside-note / callout).
-4. Sticky sub-nav scroll-spy + species-photo lightbox + keyboard (←/→/Esc)
-   and touch-swipe navigation between cards.
-5. CTA form at bottom of overview: email + optional grade → future months.
-6. WeChat share button: native share sheet outside WeChat, clipboard copy
+5. Detail-page back button + Esc shortcut preserve the activity's month
+   (`/path?month=${activity.month}`) so multi-month routing doesn't strand
+   users on a different month after returning.
+6. Sticky sub-nav scroll-spy + species-photo lightbox + keyboard (←/→/Esc)
+   and touch-swipe navigation between cards within the same month.
+7. CTA form at bottom of overview: email + optional grade → future months.
+   Copy is now month-agnostic ("下次更新发你" / "当月卡片"); error.tsx and
+   not-found.tsx match.
+8. WeChat share button: native share sheet outside WeChat, clipboard copy
    inside WeChat webview (+ iOS Safari `execCommand` legacy fallback).
-7. Brand-styled 404 (`/path/not-found`) and error boundary (`/path/error`).
+9. Brand-styled 404 (`/path/not-found`) for invalid `?month=99`/`?month=foo`
+   and error boundary (`/path/error`).
 
 **Tool 2: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
 1. Parent opens the welcome page and clicks "特质测评"
@@ -67,16 +81,22 @@ The system speaks Chinese by default.
   tests covering NFKC normalization, multi-pass percent decoding with
   per-segment fallback, `\p{Default_Ignorable_Code_Point}` strip,
   confusable-separator folding, dot-segment resolution, iteration cap
-  at 10 for DoS resistance).
+  at 10 for DoS resistance). v0.7 adds `month-routing.ts` —
+  `resolveMonth(current, available)` (3-tier: current → nearest upcoming
+  → max past) + `validateMonthParam` (regex int-only, range [1,12], no
+  decimals / leading zeros beyond "01"–"09"). 33 routing tests.
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4
   v1 dimensions (GPA / SAT / ACT / pre-vet experience), 5-level severity,
   tier classification, 20 recommendation templates.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
   portrait generator, insight text. 49 tests.
-- **Tests:** 514 passing via Vitest (27 files, 2.6s). Coverage invariant
+- **Tests:** 568 passing via Vitest (29 files). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
+  v0.7 adds `month-routing.test.ts` (33 tests) and `path-seed-shape.test.ts`
+  (29 tests including a recursive block walker that fails at test time
+  on per-discriminator field-name drift across all month seeds).
 - **Design system:** Tokens + rules in `DESIGN.md` for the trait-quiz +
   gap flows. Path Explorer uses `vela.css` (scoped via `<link>` in
   `src/app/path/layout.tsx`) with its own warm palette layered on the
@@ -91,12 +111,27 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `main`
-- **HEAD:** `5c74174` (v0.6.2.1, squash merge of feat/copy-deslop)
-- **Version:** `0.6.2.1`
-- **Open PR:** none.
+- **Current branch:** `feat/path-v0.2`
+- **HEAD:** `eff1a86` (v0.7.0.0, ready to ship — PR not yet created)
+- **Version:** `0.7.0.0`
+- **Open PR:** none yet — PR creation is the next step after this doc-release pass.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
-  #25 (Path Explorer feature — v0.1 shipped, v0.2+ tracked for more months).
+  #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+ tracked for more
+  months / additional stage).
+- **Branch summary (10 commits, ~1360 insertions across 16 files):**
+  - Slice 1 (`1a5b545`) + R1/R2 fixes (`eac5a50`, `7b5aace`): month-aware
+    routing — `month-routing.ts` (resolveMonth 3-tier fallback +
+    validateMonthParam), `page.tsx` switched to month-driven goal
+    selection, pill row reshape, theme map per month, error/not-found
+    copy made month-agnostic, detail-nav back/Esc preserves
+    `?month=${activity.month}`.
+  - Slice 2 (`ac06d11`) + R1–R3 fixes (`f5bcd61`, `2df34a1`, `5fe8cd4`,
+    `7ea507f`): G1 June seed (1 baseline + 3 event cards covering 端午
+    holiday, 入梅 backyard ecology, 夏至 fireflies). Theme: 雨季观察家.
+    Adds path-seed-shape walker test + recursive validateBlock. Fixes
+    雄黄 / 赤链蛇 / DEET safety errors caught by adversarial review.
+  - `77184fa`: typed `searchParams` as `string | string[]` for Next 16
+    compat. `eff1a86`: VERSION bump + CHANGELOG.
 - **Recently merged:**
   - PR #30 (copy de-slop Slices 1–4 + GPA recovery bug fixes, v0.6.2.1, merged 2026-04-22).
     28 files, 1000+ insertions. Questionnaire step subtitles, trait quiz UI, gap
@@ -122,6 +157,38 @@ The system speaks Chinese by default.
   - PR #21 (schools state pages, v0.4.0.1)
 
 ## Most recent real verification
+
+**2026-04-25** — Path Explorer v0.2 (multi-month routing + G1 June seed),
+branch `feat/path-v0.2` @ `eff1a86`, ready to ship:
+- `npm test`: 568 / 568 green (29 files). New: `month-routing.test.ts`
+  (33 tests covering 3-tier fallback, unsorted-array safety, range
+  [1,12], boundary 1/12, decimal/leading-zero/`"foo"` rejection) and
+  `path-seed-shape.test.ts` (29 tests including the recursive block
+  walker that asserts per-discriminator field shape across every block
+  in every section in every month seed).
+- DB verified: `bun run db:seed` → 9 activities total (5 May + 4 June),
+  all under stage `g1-to-g3-foundation` and goal
+  `g1-g3-observation-culture-foundation`. seed.ts now merges month
+  seeds by goal+activity slug and throws on multi-stage drift.
+- Routing verified manually:
+  - `/path` (today is April) → falls through to nearest upcoming = May.
+  - `/path?month=5` → May (5 cards), `/path?month=6` → June (4 cards).
+  - `/path?month=99` and `/path?month=foo` → branded 404.
+  - June pill renders as `<Link>` (seeded), other months as disabled
+    `<button>` (ghost). Active pill is `<span>` with `aria-current="page"`.
+- Review process: 2 slices, each 4 rounds of cross-model review (3 ×
+  Claude subagent + 1 × Codex per round, parallel dispatch). Slice 1
+  closed at R3 with 4/4 APPROVE; Slice 2 closed at R4 with 4/4 APPROVE
+  after Codex caught a `resolveMonth` semantic bug (returning
+  `Math.max(...availableMonths)` when current month wasn't seeded —
+  meant April→June instead of April→May) all 3 Claude subagents missed.
+- Real safety bugs caught + fixed during review: 赤链蛇 wrongly labeled
+  "无毒" (Lycodon rufozonatus is rear-fanged with documented Chinese
+  fatality cases — fixed to "有轻微毒性 + 唾液菌群"). DEET advice was
+  inverted ("成人版别给小孩用" — actually DEET has child-strength
+  formulations; restriction is OLE/PMD < 3yr per CDC + AAP).
+  雄黄 contradiction: labeled as 含砷矿物粉 yet still in the buy/touch
+  list — moved to "看图认识就行" with a thermal-decomposition rationale.
 
 **2026-04-22** — Full-app Chinese copy de-slop across 4 slices, merged to main (PR #30):
 - 514 / 514 tests green (27 files, 2.6s). 4 new test files created
@@ -232,11 +299,21 @@ The system speaks Chinese by default.
 2. Decide on Path Explorer v0.2 scope (June cards? Different stage?) based
    on Kailing signal.
 
-**Path Explorer v0.2+ (issue #25, new branch):**
-1. Decide which month ships next. June is natural if Kailing tests v0.1
-   in May/June window.
-2. Decide whether to add a second stage (G4–G6) or go deeper on G1–G3.
-3. Address deferred P2 items as they become blocking (see above).
+**Path Explorer v0.3+ (issue #25, future branch):**
+1. v0.2 already ships May + June. Next: decide whether to extend G1–G3
+   into July/August (summer break has different observation surface) or
+   to start a second stage (G4–G6) earlier — depends on whether Kailing
+   tests v0.2 against the same child or shifts to peer feedback.
+2. Address v0.2 cross-review deferrals tracked in TODOS.md:
+   - Tighten the block-shape walker for `route` / `photo-row` /
+     `path-opts.opts[].locCards` per-item field checks (currently outer-array only).
+   - `PathInterest.month` schema column for sign-up attribution. Today
+     `canonicalSourcePath` strips queries, so `/path?month=5` vs
+     `/path?month=6` signups are indistinguishable. Land with the third
+     month seed or alongside the v0.5+ UA retention privacy posture work.
+3. Address remaining v0.5+ deferred items as they become blocking
+   (CSP + sanitization for BlockRenderer, PathInterest UA retention,
+   PathDecisionBranch FK integrity).
 
 **Trait quiz next (issue #24, independent track):**
 1. ~~v0.5 insight + portrait copy de-slop~~ DONE in v0.6.2.0. Next:
