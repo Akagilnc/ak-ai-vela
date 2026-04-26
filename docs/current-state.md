@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-25 · `feat/path-v0.2` @ `eff1a86` (v0.7.0.0, ready to ship)
+**Last updated:** 2026-04-26 · `feat/path-v0.2` @ `02596b5` (v0.7.0.0, PR #31 awaiting human merge)
 
 ## Product Direction
 
@@ -90,7 +90,7 @@ The system speaks Chinese by default.
   tier classification, 20 recommendation templates.
 - **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
   portrait generator, insight text. 49 tests.
-- **Tests:** 568 passing via Vitest (29 files). Coverage invariant
+- **Tests:** 577 passing via Vitest (30 files). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
@@ -112,13 +112,13 @@ The system speaks Chinese by default.
 ## Active branch / PR / review state
 
 - **Current branch:** `feat/path-v0.2`
-- **HEAD:** `eff1a86` (v0.7.0.0, ready to ship — PR not yet created)
+- **HEAD:** `02596b5` (v0.7.0.0, PR #31 open and awaiting human merge)
 - **Version:** `0.7.0.0`
-- **Open PR:** none yet — PR creation is the next step after this doc-release pass.
+- **Open PR:** [#31](https://github.com/Akagilnc/ak-ai-vela/pull/31) — Layer 1 (cross-model) Slice 1+2+3 all 4/4 APPROVE; Layer 3 (PR bot) R1+R2+R3 closed: Gemini fixed-and-approved, Codex bot +1 each round, R3 P2 (cross-year fallback) deferred with rationale.
 - **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
   #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+ tracked for more
   months / additional stage).
-- **Branch summary (10 commits, ~1360 insertions across 16 files):**
+- **Branch summary (16 commits, ~1700 insertions across 20+ files):**
   - Slice 1 (`1a5b545`) + R1/R2 fixes (`eac5a50`, `7b5aace`): month-aware
     routing — `month-routing.ts` (resolveMonth 3-tier fallback +
     validateMonthParam), `page.tsx` switched to month-driven goal
@@ -130,8 +130,24 @@ The system speaks Chinese by default.
     holiday, 入梅 backyard ecology, 夏至 fireflies). Theme: 雨季观察家.
     Adds path-seed-shape walker test + recursive validateBlock. Fixes
     雄黄 / 赤链蛇 / DEET safety errors caught by adversarial review.
-  - `77184fa`: typed `searchParams` as `string | string[]` for Next 16
-    compat. `eff1a86`: VERSION bump + CHANGELOG.
+  - Slice 3 (`9d520a2`): DB integration test suite (9 tests) running
+    against the real Prisma + SQLite test DB. Catches schema drift /
+    JSON round-trip / idempotency-by-row-id / multi-stage-guard-no-DB-
+    writes — what the static walker can't.
+  - PR R1 fixes (`77184fa`, `dcf0cf7`): `searchParams` typed as
+    `string | string[]` for Next 16 compat; `resolveMonth` reads
+    current month in `Asia/Shanghai` via `Intl.DateTimeFormat`
+    (Vercel/Cloudflare default to UTC, so a Shanghai-night-of-the-30th
+    user would have seen previous month for 8 hours).
+  - Asset push (`866d3f4`): 7 Wikipedia Commons CC-licensed photos for
+    G1 June cards (snail, earthworm, frog, mugwort, sweet_flag, zongzi,
+    firefly). Tile previews now visually match May.
+  - PR R3 P2 deferral (`02596b5`): cross-year fallback bug (Dec +
+    `[1, 2]` → 2 instead of 1) recorded in TODOS.md with algorithm fix
+    plan; fires when v0.3+ ships year-wrap content.
+  - `eff1a86`: VERSION bump + CHANGELOG. `b615476`: docs sync via
+    /document-release. `02596b5` (this doc-release): post-merge
+    catch-up for the post-ship work above.
 - **Recently merged:**
   - PR #30 (copy de-slop Slices 1–4 + GPA recovery bug fixes, v0.6.2.1, merged 2026-04-22).
     28 files, 1000+ insertions. Questionnaire step subtitles, trait quiz UI, gap
@@ -159,13 +175,15 @@ The system speaks Chinese by default.
 ## Most recent real verification
 
 **2026-04-25** — Path Explorer v0.2 (multi-month routing + G1 June seed),
-branch `feat/path-v0.2` @ `eff1a86`, ready to ship:
-- `npm test`: 568 / 568 green (29 files). New: `month-routing.test.ts`
-  (33 tests covering 3-tier fallback, unsorted-array safety, range
-  [1,12], boundary 1/12, decimal/leading-zero/`"foo"` rejection) and
-  `path-seed-shape.test.ts` (29 tests including the recursive block
-  walker that asserts per-discriminator field shape across every block
-  in every section in every month seed).
+branch `feat/path-v0.2` @ `02596b5`, ready to ship:
+- `npm test`: 577 / 577 green (30 files, +63 net since 0.6.2.1). New:
+  `month-routing.test.ts` (33 tests covering 3-tier fallback,
+  unsorted-array safety, range [1,12], boundary 1/12, decimal /
+  leading-zero / `"foo"` rejection), `path-seed-shape.test.ts` (29
+  tests including the recursive block walker), and
+  `path-seed-integration.test.ts` (9 DB-level tests catching schema
+  drift, JSON round-trip, idempotency by row-id stability, and the
+  multi-stage runtime guard with a no-DB-writes assertion).
 - DB verified: `bun run db:seed` → 9 activities total (5 May + 4 June),
   all under stage `g1-to-g3-foundation` and goal
   `g1-g3-observation-culture-foundation`. seed.ts now merges month

@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (568 tests, 29 files) |
+| `npm test` | Run all tests (577 tests, 30 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -111,12 +111,12 @@ src/
       engine.ts           # analyzeStudentVsSchool / analyzeStudentVsAllSchools
       normalize.ts        # Chinese GPA → US 4.0 normalization
       recommendations.ts  # Hardcoded action templates (4 dims × 5 severities)
-  __tests__/              # Top-level Vitest tests (questionnaire, backup, schema)
+  __tests__/              # Top-level Vitest tests (questionnaire, backup, schema, path seed shape, path seed integration, copy quality)
 prisma/
   schema.prisma           # Path (6 models) + School + Student + QuestionnaireResult
   seed.ts                 # Seed: 26 schools + G1 month seeds merged by goal+activity slug (May 5 + June 4 = 9 activities, single-stage guard)
 public/assets/
-  img/                    # 24 species + location photos (Wikipedia Commons, CC-licensed)
+  img/                    # 31 species + location photos (Wikipedia Commons, CC-licensed) — covers May (24) + June (7 new: snail, earthworm, frog, mugwort, sweet_flag, zongzi, firefly)
   vela.css                # Brand styles for /path scope (loaded via path/layout.tsx)
 docs/
   current-state.md        # Long-term project status (MVP semantics, blockers, next steps)
