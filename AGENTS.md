@@ -1,44 +1,18 @@
-# AGENTS.md
+# AGENTS.md（项目级）
 
-遵循 `CLAUDE.md` 中的共享仓库规则。
+本项目继承全局规则与通用约定。本文件 TEMPLATE_END 上方是 schema 引导，下方放项目特有 boilerplate。
 
-## 适用范围
-本文件定义 Codex 特有的行为和少量高优先级兜底规则。
-所有共享的工作流、实现、测试和仓库规则，遵循 `CLAUDE.md`。
+## 引用层级
 
-## 角色原则
-- 角色由当前任务决定，而不是由工具名称决定。
-- 当前任务可能是实现、调试、重构、测试或 review。
-- 不要假设 Codex 只能做 review。
-- 不要假设任何 agent 固定负责实现。
+| 层 | 位置 | 内容 |
+|---|---|---|
+| 全局 hard rules + Codex 特有 | `~/.codex/AGENTS.md` | SHARED block（与 `~/.claude/CLAUDE.md` byte-identical）+ verbose 自检 |
+| 通用 dev conventions | `~/WorkSpace/vault/ak-cc-wiki/wiki/concepts/dev-conventions.md` | 同 CLAUDE 引用 |
+| Wiki 全部目录 | `~/WorkSpace/vault/ak-cc-wiki/wiki/index.md` | |
+| 项目特有 | 本文件 TEMPLATE_END 下方 | 仅项目特定 boilerplate |
 
-## 高优先级规则
-- 与我沟通使用中文。
-- 先阅读相关代码、测试、配置和上下文。
-- 修改前先给出简洁方案。
-- 未经确认前不要修改仓库内容。
-- 行为变更默认走 TDD，展示真实测试输出。
-- 优先最小、局部改动。
-- 不要重构无关代码。
-- 不要编造事实、测试结果、issue 状态、milestone 状态或 review 结论。
-- "同意方案""认可分析""这个方向可以"不等于允许修改；未收到明确开工指令前，保持在分析 / review / 验证阶段。
+## 冲突优先级
 
-## Review 行为
-当当前任务是 review 时：
-- 重点关注正确性、回归风险、边界条件、测试覆盖、可维护性和范围控制。
-- 指出具体问题并解释为什么重要。
-- 给出可操作的 review 意见，而不是抽象批评。
-- 除非明确要求，否则不要在 review 中直接接管实现。
+用户当前对话指令 > 项目特有（本文件 TEMPLATE_END 下方）> 全局 hard rules > 通用 dev conventions > 项目 `docs/process.md`（如存在）
 
-## 实现行为
-当当前任务是实现时：
-- 以 `CLAUDE.md` 作为主要规则集。
-- 保持改动最小且可验证。
-- 行为变更时同步更新相关测试、类型和文档。
-
-## 冲突处理
-如果 `AGENTS.md` 和 `CLAUDE.md` 冲突，按以下优先级：
-1. 我在当前对话中的明确指令
-2. `AGENTS.md`
-3. `CLAUDE.md`
-4. `docs/process.md`
+<!-- TEMPLATE_END — 项目特有 sections 写在下面，sync script 不会覆盖下方内容 -->
