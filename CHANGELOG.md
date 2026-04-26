@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0.0] - 2026-04-26
+
+### Added
+- **Path Explorer v0.2 — multi-month navigation** (`/path?month=N`). The overview pill row is now month-aware: each pill is a real `<Link>` for seeded months, a disabled `<button>` for ghost months, or a non-interactive `<span>` for the active month. The default route picks the current calendar month if seeded, else the nearest upcoming seeded month, else the most recent past one. Bad params (`?month=99`, `?month=foo`) get a branded 404; unseeded dev DBs still surface the "PathStage 未 seed" warning instead of a dead 404.
+- **G1 六月内容 — 4 卡** (1 月度 baseline + 3 event 卡 covering 端午 3 天假期, 入梅家门口生态, 夏至萤火虫). Card count is content-driven, not padded to 5: 芒种节气 + World Oceans Day were evaluated and intentionally cut. Theme: 雨季观察家.
+- **Per-month theme map** in the overview H1 — May = 小小动物科学家 (preserved), June = 六月雨季观察家. Future months either land in the map or render the generic G1 月度小路径 fallback. Closes the v0.1 cross-month theme leak where the May theme silently rendered on every month.
+- **Block-shape walker test** (`src/__tests__/path-seed-shape.test.ts`) — recursive runtime validator that walks every block in every section across all month seeds. Asserts per-discriminator field shape so `id-table` / `steps` field-name drift fails at test time, not at render.
+- **Same-shape regex guard** in `copy-quality-slice1.test.ts` — blocks any future hardcoded `[0-9]+\s*月卡` from re-entering the form copy.
+- **DB integration test suite** (`src/__tests__/path-seed-integration.test.ts`) — 9 tests against a real Prisma + SQLite test DB. Covers schema drift, FK / @@unique violations, JSON column round-trip (previews / chips / sections), idempotency via row-id stability (not just count), and the multi-stage runtime guard with a no-DB-writes assertion. Catches what the static walker can't: anything that only surfaces at write time.
+- **Wikipedia Commons CC-licensed photos for G1 June cards** (7 new images: snail, earthworm, frog, mugwort, sweet_flag, zongzi, firefly). Filename → license info in `public/assets/img/species-info.txt`. Tile previews now visually match May.
+
+### Changed
+- **Detail-page back button + Esc shortcut** preserve the activity's month (`/path?month=${activity.month}`) so multi-month routing doesn't strand users on a different month after returning.
+- **CTA form + empty-state copy** on `/path` are now month-agnostic ("下次更新发你" / "当月卡片"). Previously hardcoded to "6 月卡出来" — accurate in v0.1 (May only) but nonsensical when the user was already on /path?month=6.
+- **`error.tsx` and `not-found.tsx`** copy updated to "当月卡片" so error recovery doesn't promise a specific month it can't guarantee.
+- **`prisma/seed.ts`** merges all month seeds (`G1_MAY_SEED` + `G1_JUN_SEED`) by goal slug + activity slug. Adds a runtime guard that throws when seeds reference more than one stage, so a future seed can't silently route purges under the wrong stageId.
+
+### Fixed
+- **`resolveMonth` nearest-upcoming fallback** — was returning `Math.max(...availableMonths)` when current month wasn't seeded. Today's date (April) with [May, June] seeded was defaulting to June; now correctly defaults to May (the imminent month). Three-tier fallback: current → nearest upcoming → max past.
+- **`aria-current="true"` → `"page"`** on the active stage tab. `"true"` is invalid for nav landmarks per WAI-ARIA; the active stage now reads correctly to screen readers as the current item in a navigation set.
+- **赤链蛇 safety advice** — was wrongly described as "无毒" (which is dangerously incorrect: Lycodon rufozonatus is rear-fanged with documented Chinese fatality cases). Updated to "有轻微毒性 + 唾液菌群易引起感染，看到立即拉开距离，被咬就医."
+- **DEET 防蚊液 advice** — was inverted ("成人版别给小孩用"). DEET has child-strength formulations; the actual restriction is OLE/PMD < 3yr per CDC + AAP. Replaced with concrete concentration thresholds (DEET ≤ 30%, 派卡瑞丁 ≤ 20%).
+- **雄黄 safety contradiction** — labeled it as 含砷矿物粉 but still said "让孩子摸 / 闻 / 认". Removed from the buy/touch list; new framing is "看图认识就行" with a thermal-decomposition + inhalation-accumulation explanation.
+- **`resolveMonth` reads current month in Asia/Shanghai** (was server local time). On UTC-served deployments (Vercel/Cloudflare default), the previous helper had an 8-hour window each month boundary where the server returned the previous month while it was already the new month in Shanghai. The Kailing seed user opens `/path` late at night on the 30th/31st — exactly her edge case. Fixed via a `currentMonthShanghai()` helper using `Intl.DateTimeFormat`.
+- **`searchParams` typed honestly as `string | string[]`** (Next 16 reality). URL like `/path?month=5&month=6` arrives as an array at runtime; previously coerced to "5,6" and 404'd. Now normalized at the call site to take the first value, matching Next.js's single-value-param convention.
+
+### Tests
+- 577/577 vitest passing (30 files, +63 net since 0.6.2.1).
+  - `month-routing.test.ts`: 33 tests covering 3-tier fallback, unsorted-array safety, regex int-only validation, range [1,12], boundary months 1/12, edge cases like "00"/"01"/decimal strings.
+  - `path-seed-shape.test.ts`: 29 tests including the recursive block walker. Covers per-month invariants (single month per seed, slug uniqueness, all required fields, asset-file existence) and cross-month invariants (globally unique activity slugs, identical-content shared goals, May+June both covered, single stage assertion).
+  - `copy-quality-slice1.test.ts`: updated to lock the new generic copy and guard against future month-hardcode regression.
+- DB verified: `bun run db:seed` → 9 activities (5 May + 4 June, all under stage `g1-to-g3-foundation` and goal `g1-g3-observation-culture-foundation`).
+
+### Process
+- v0.2 was developed under the autonomous TDD loop ([[tdd-autonomous-dev]] in the cross-project wiki): 2 slices (routing + content), each through 4 rounds of cross-model review (3 × Claude subagent + 1 × Codex per round). Each fix round ran a same-shape sweep before the next dispatch. Slice 1 closed at R3 with 4/4 APPROVE; Slice 2 closed at R4 with 4/4 APPROVE after Codex caught a routing fallback semantic bug all 3 Claude subagents (and the prior Slice 1 rounds) missed.
+
+### Deferred
+Tracked in TODOS.md under "Deferred from Path Explorer v0.2 cross-model review (2026-04-26)":
+- Block-shape walker tightening for `route` / `photo-row` / `path-opts.opts[].locCards` per-item field checks (currently checks outer array shape only).
+- `PathInterest.month` schema column for sign-up attribution (the in-form sourcePath approach was rolled back because `canonicalSourcePath` strips queries by design).
+- `resolveMonth` cross-year fallback (Codex PR R3 P2). Today's seeded set [5, 6] doesn't trigger it; manifests when v0.3+ ships year-wrap content (e.g. December current with [1, 2] seeded). Algorithm fix recorded: replace strict `m > current` filter with min-absolute-distance-with-wrap, tie-break preferring forward.
+
 ## [0.6.2.1] - 2026-04-21
 
 ### Changed

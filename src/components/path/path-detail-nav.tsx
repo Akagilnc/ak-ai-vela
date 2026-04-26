@@ -15,9 +15,13 @@ import { useEffect, useRef } from "react";
 export function PathDetailNav({
   prevSlug,
   nextSlug,
+  month,
 }: {
   prevSlug?: string | null;
   nextSlug?: string | null;
+  // The current activity's month — Esc nav back to overview preserves it
+  // so multi-month routing doesn't strand the user on a different month.
+  month: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -119,7 +123,7 @@ export function PathDetailNav({
       } else if (e.key === "ArrowRight" && nextSlug) {
         navTo(`/path/${nextSlug}`);
       } else if (e.key === "Escape") {
-        navTo("/path");
+        navTo(`/path?month=${month}`);
       }
     }
 
@@ -168,7 +172,7 @@ export function PathDetailNav({
         unlockTimerRef.current = null;
       }
     };
-  }, [prevSlug, nextSlug, router]);
+  }, [prevSlug, nextSlug, month, router]);
 
   return null;
 }

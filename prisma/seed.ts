@@ -4,6 +4,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
 import { schools } from "./schools-data";
 import { G1_MAY_SEED } from "../docs/research/data/g1-may-seed";
+import { G1_JUN_SEED } from "../docs/research/data/g1-jun-seed";
 
 const url =
   process.env.DATABASE_URL ||
@@ -30,9 +31,31 @@ async function seedSchools() {
 }
 
 async function seedPathExplorer() {
-  console.log("Seeding Path Explorer v0.1 (G1 May, 1 stage + 1 goal + 5 activities)...");
+  // Merge per-month seed exports into one set of stage/goals/activities.
+  // Both seeds reference the same STAGE_G1_G3 / GOAL_G1_G3_FOUNDATION rows
+  // (deduped here by slug), so `validGoalSlugs` shrinks naturally and the
+  // purge step below doesn't accidentally delete rows shared between months.
+  const allSeeds = [G1_MAY_SEED, G1_JUN_SEED];
+  // Loud-fail when a future seed introduces a different stage. Without this,
+  // `allSeeds[0].stage` would silently route the new month's purge under the
+  // wrong stageId and delete its activities/goals.
+  const stageSlugs = new Set(allSeeds.map((s) => s.stage.slug));
+  if (stageSlugs.size !== 1) {
+    throw new Error(
+      `seedPathExplorer assumes one stage across all month seeds, found ${stageSlugs.size}: ${[...stageSlugs].join(", ")}. Generalize the merge step before adding a stage.`,
+    );
+  }
+  const stage = allSeeds[0].stage;
+  const goalsBySlug = new Map<string, (typeof allSeeds)[number]["goals"][number]>();
+  for (const s of allSeeds) {
+    for (const g of s.goals) goalsBySlug.set(g.slug, g);
+  }
+  const goals = Array.from(goalsBySlug.values());
+  const activities = allSeeds.flatMap((s) => s.activities);
 
-  const { stage, goals, activities } = G1_MAY_SEED;
+  console.log(
+    `Seeding Path Explorer v0.2 (G1 May+Jun, 1 stage + ${goals.length} goal(s) + ${activities.length} activities)...`,
+  );
 
   // Pre-compute valid slug sets so we can purge anything NOT in the source of
   // truth inside the same transaction — prevents silent orphan rows after the

@@ -1,25 +1,84 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PathActivityTile } from "@/components/path/path-activity-tile";
 import { PathInterestForm } from "@/components/path/path-interest-form";
 import { PathOverviewScrollRestore } from "@/components/path/path-overview-scroll-restore";
+import { resolveMonth, monthSeason, pillRange } from "@/lib/path/month-routing";
 
-export default async function PathOverviewPage() {
-  // v0.1: single stage (G1-G3), single month (5). Query is scoped to that
-  // stage + month so multi-month / multi-stage seeds in the future don't
-  // silently mix content into this view.
+// Per-month theme title shown in the H1. Avoids the v0.1 hardcode of
+// "小小动物科学家" leaking onto June (whose content is broader: 节假日 +
+// 雨季 + 夜观). When a future month adds a goal-derived theme via Prisma,
+// move this map to the seed data.
+const MONTH_THEMES: Record<number, { lead: string; accent: string }> = {
+  5: { lead: "小小", accent: "动物科学家" },
+  6: { lead: "六月", accent: "雨季观察家" },
+};
+const FALLBACK_THEME = { lead: "G1", accent: "月度小路径" };
+
+// Next 16 App Router types `searchParams` repeated keys as `string[]` at
+// runtime: `/path?month=5&month=6` arrives as `month: ["5","6"]`. Type
+// honestly so the normalization below is type-safe; resolveMonth's regex
+// rejects the stringified array → 404 via the explicit-bad-param branch.
+type SearchParams = Promise<{ month?: string | string[] }>;
+
+export default async function PathOverviewPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
+
+  // v0.2: month-aware. Stage slug is still fixed to G1-G3; multi-stage routing
+  // is deferred until a second stage is seeded.
   const stage = await prisma.pathStage.findFirst({
     where: { slug: "g1-to-g3-foundation" },
   });
 
-  const activities = stage
+  // Collect all months that have activity data under this stage.
+  const availableMonthRows = stage
     ? await prisma.pathActivity.findMany({
-        where: { goal: { stageId: stage.id }, month: 5 },
-        orderBy: [{ month: "asc" }, { displayOrder: "asc" }, { slug: "asc" }],
+        where: { goal: { stageId: stage.id } },
+        select: { month: true },
+        distinct: ["month"],
+        orderBy: { month: "asc" },
       })
     : [];
+  const availableMonths = availableMonthRows.map((r) => r.month);
+
+  // Take the first value when the user repeats `?month=5&month=6` rather
+  // than feeding an array to resolveMonth (which would coerce it to "5,6"
+  // and 404). Picking the first matches Next.js's own convention for
+  // single-value params and is the least-surprising semantic.
+  const monthParam = Array.isArray(params.month) ? params.month[0] : params.month;
+  const resolvedMonth = resolveMonth(monthParam, availableMonths);
+
+  // Explicit bad param (?month=99, ?month=foo) → branded 404.
+  // Guard: only 404 when the stage exists and the month param is genuinely
+  // invalid. If stage is null (DB not seeded), fall through to empty state
+  // so the dev-only seed warning renders instead of a dead 404.
+  if (resolvedMonth === null && monthParam !== undefined && stage !== null) {
+    notFound();
+  }
+
+  const activities =
+    stage && resolvedMonth !== null
+      ? await prisma.pathActivity.findMany({
+          where: { goal: { stageId: stage.id }, month: resolvedMonth },
+          orderBy: [{ displayOrder: "asc" }, { slug: "asc" }],
+        })
+      : [];
 
   const baselineCount = activities.filter((a) => a.cardType === "baseline").length;
   const eventCount = activities.filter((a) => a.cardType === "event").length;
+
+  const pills = pillRange(availableMonths);
+  const activeMonth = resolvedMonth ?? 0; // 0 = no data, pills won't mark anything active
+
+  // Zero-pad month number for the display label (e.g. 5 → "05", 12 → "12").
+  const monthNumLabel = activeMonth > 0 ? String(activeMonth).padStart(2, "0") : "--";
+  const seasonLabel = activeMonth > 0 ? monthSeason(activeMonth) : "整理中";
+  const theme = MONTH_THEMES[activeMonth] ?? FALLBACK_THEME;
 
   return (
     <div className="stage">
@@ -40,25 +99,18 @@ export default async function PathOverviewPage() {
               </span>
               <span className="sub">Path Explorer · 预览</span>
             </div>
-            {/* "更多" menu removed in R9: v0.1 has no menu behind it, so
-                leaving the button focusable-but-inert failed WCAG 2.5.3.
-                Re-add when a menu exists. */}
           </header>
 
           <main className="app-body" id="path-main">
             <PathOverviewScrollRestore />
             <section className="path-head">
               <h1>
-                小小<span className="accent">动物科学家</span>
+                {theme.lead}<span className="accent">{theme.accent}</span>
               </h1>
             </section>
 
-            {/* R9: active stage shown as a non-interactive <span> (keyboard-
-                skipped state indicator, not a tab — there's no real tabpanel
-                relationship). Future-stage buttons keep `disabled` so they're
-                visible-but-focus-skipped. */}
             <div className="stage-tabs" aria-label="学段">
-              <span className="is-active" aria-current="true">
+              <span className="is-active" aria-current="page">
                 <span className="t">一~三年级</span>
                 <span className="s">好奇心扎根</span>
               </span>
@@ -83,75 +135,68 @@ export default async function PathOverviewPage() {
             </div>
 
             <div className="month-scroll compact">
-              {/* R9: active month as <span>, ghost months as `disabled`
-                  buttons so keyboard users skip them (visible hint without
-                  a dead focusable control). */}
               <div className="months" aria-label="月份（左右滑动）">
-                <button
-                  className="m-pill"
-                  data-status="ghost"
-                  type="button"
-                  disabled
-                  aria-label="3 月 · 整理中"
-                >
-                  3 月
-                </button>
-                <button
-                  className="m-pill"
-                  data-status="ghost"
-                  type="button"
-                  disabled
-                  aria-label="4 月 · 整理中"
-                >
-                  4 月
-                </button>
-                <span className="m-pill" aria-current="true">
-                  5 月
-                </span>
-                <button
-                  className="m-pill"
-                  data-status="ghost"
-                  type="button"
-                  disabled
-                  aria-label="6 月 · 整理中"
-                >
-                  6 月
-                </button>
-                <button
-                  className="m-pill"
-                  data-status="ghost"
-                  type="button"
-                  disabled
-                  aria-label="7 月 · 整理中"
-                >
-                  7 月
-                </button>
-                <button
-                  className="m-pill"
-                  data-status="ghost"
-                  type="button"
-                  disabled
-                  aria-label="8 月 · 整理中"
-                >
-                  8 月
-                </button>
+                {pills.map((m) => {
+                  const isActive = m === activeMonth;
+                  const isAvailable = availableMonths.includes(m);
+
+                  if (isActive) {
+                    return (
+                      <span key={m} className="m-pill" aria-current="page">
+                        {m} 月
+                      </span>
+                    );
+                  }
+
+                  if (isAvailable) {
+                    return (
+                      <Link
+                        key={m}
+                        href={`/path?month=${m}`}
+                        className="m-pill"
+                        aria-label={`${m} 月`}
+                      >
+                        {m} 月
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={m}
+                      className="m-pill"
+                      data-status="ghost"
+                      type="button"
+                      disabled
+                      aria-label={`${m} 月 · 整理中`}
+                    >
+                      {m} 月
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <section className="month-summary compact" aria-label="本月概览">
               <div className="summary-inline">
                 <span className="month-label">
-                  <span className="num">05</span> 月 · 春末夏初
+                  <span className="num">{monthNumLabel}</span> 月 · {seasonLabel}
                 </span>
-                <span className="dot"></span>
-                <span className="tally">
-                  <b>{baselineCount}</b> 基础卡 · <b>{eventCount}</b> 活动卡
-                </span>
+                {activeMonth > 0 && (
+                  <>
+                    <span className="dot"></span>
+                    <span className="tally">
+                      <b>{baselineCount}</b> 基础卡 · <b>{eventCount}</b> 活动卡
+                    </span>
+                  </>
+                )}
               </div>
             </section>
 
             <div className="section-head">
-              <span className="tag">本月 {activities.length} 张卡</span>
+              <span className="tag">
+                {activeMonth > 0 ? `本月 ${activities.length} 张卡` : "卡片整理中"}
+              </span>
               <span className="bar"></span>
             </div>
 
@@ -175,10 +220,15 @@ export default async function PathOverviewPage() {
                   textAlign: "center",
                 }}
               >
-                本月卡片整理中，先留个邮箱。6 月卡出来我们发给你。
+                本月卡片整理中，先留个邮箱。下次更新发你。
               </p>
             ) : null}
 
+            {/* TODO(v0.2 Slice 2+): preserve month attribution on PathInterest.
+                Cannot use sourcePath="/path?month=N" because canonicalSourcePath
+                strips queries (intentional — prevents dedup-key drift on the
+                (email, sourcePath) @@unique index). Real fix requires a new
+                PathInterest.month column + form field + Zod schema update. */}
             <PathInterestForm sourcePath="/path" />
 
             {!stage && process.env.NODE_ENV !== "production" ? (

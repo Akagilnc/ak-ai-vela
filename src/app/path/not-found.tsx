@@ -41,7 +41,7 @@ export default function PathNotFound() {
               maxWidth: 320,
             }}
           >
-            链接可能已过期，或者卡片还没上线。回到 5 月看看其他活动卡。
+            链接可能已过期，或者卡片还没上线。回到当月卡片看看其他活动。
           </p>
           <Link
             href="/path"
@@ -61,7 +61,7 @@ export default function PathNotFound() {
               textDecoration: "none",
             }}
           >
-            返回 5 月卡片
+            返回当月卡片
           </Link>
         </main>
       </div>
