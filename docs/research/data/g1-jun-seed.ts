@@ -20,9 +20,8 @@
  *   - 萤火虫 peak: ~ 2026/06/21 – 2026/07/15 (Shanghai near-suburb sites,
  *                  density actually higher in early-mid July than at solstice)
  *
- * Previews: empty for now. The asset pipeline (Wikipedia Commons CC-licensed
- * photos) is on the v0.2 Slice 3 punch list. previews=[] renders the tile
- * without a preview-image row — visually OK for v0.2 ship, polish later.
+ * Previews: filled with Wikipedia Commons CC-licensed photos for each card's
+ * dominant subject. Filename → license info in `public/assets/img/species-info.txt`.
  */
 
 import type {
@@ -143,7 +142,7 @@ export const ACTIVITY_C1_JUN_ROUTINE: PathActivityData = {
   month: 6,
 
   kicker: '月度基本盘',
-  previews: [],
+  previews: ['snail.jpg', 'firefly.jpg', 'mugwort.jpg'],
   title: 'G1 六月怎么过',
   summary: '六月节气挤、雨水多。<b>挑 1 件做透</b>比 4 件做一半强。',
   triggerLabel: '节奏',
@@ -267,7 +266,7 @@ export const ACTIVITY_C2_JUN_DRAGON_BOAT: PathActivityData = {
   month: 6,
 
   kicker: '事件卡 · 节假日',
-  previews: [],
+  previews: ['mugwort.jpg', 'sweet_flag.jpg', 'zongzi.jpg'],
   title: '端午 3 天',
   summary: '<b>挑 1 条路径</b>（上海周边 / 江浙短途 / 家里搞），重点是让她<b>闻到艾草和粽叶</b>。',
   triggerLabel: 'Trigger',
@@ -371,7 +370,7 @@ export const ACTIVITY_C3_JUN_RAINY_SEASON: PathActivityData = {
   month: 6,
 
   kicker: '事件卡 · 物候',
-  previews: [],
+  previews: ['snail.jpg', 'earthworm.jpg', 'frog.jpg', 'pill_bug.jpg'],
   title: '入梅 · 家门口生态',
   summary: '入梅后 1 周内，<b>家门口蜗牛 / 蚯蚓 / 青蛙叫</b>集体出现。雨后 7 点出门，30 分钟。',
   triggerLabel: 'Trigger',
@@ -529,7 +528,7 @@ export const ACTIVITY_C4_JUN_FIREFLY: PathActivityData = {
   month: 6,
 
   kicker: '事件卡 · 季节性',
-  previews: [],
+  previews: ['firefly.jpg', 'sheshan.jpg'],
   title: '夏至 · 萤火虫',
   summary: '<b>每年只开这扇窗</b>（6 月下旬–7 月中旬）。佘山 / 天马山 / 顾村三选一。看不到也算赢。',
   triggerLabel: 'Trigger',
