@@ -16,7 +16,11 @@ const MONTH_THEMES: Record<number, { lead: string; accent: string }> = {
 };
 const FALLBACK_THEME = { lead: "G1", accent: "月度小路径" };
 
-type SearchParams = Promise<{ month?: string }>;
+// Next 16 App Router types `searchParams` repeated keys as `string[]` at
+// runtime: `/path?month=5&month=6` arrives as `month: ["5","6"]`. Type
+// honestly so the normalization below is type-safe; resolveMonth's regex
+// rejects the stringified array → 404 via the explicit-bad-param branch.
+type SearchParams = Promise<{ month?: string | string[] }>;
 
 export default async function PathOverviewPage({
   searchParams,
@@ -42,13 +46,18 @@ export default async function PathOverviewPage({
     : [];
   const availableMonths = availableMonthRows.map((r) => r.month);
 
-  const resolvedMonth = resolveMonth(params.month, availableMonths);
+  // Take the first value when the user repeats `?month=5&month=6` rather
+  // than feeding an array to resolveMonth (which would coerce it to "5,6"
+  // and 404). Picking the first matches Next.js's own convention for
+  // single-value params and is the least-surprising semantic.
+  const monthParam = Array.isArray(params.month) ? params.month[0] : params.month;
+  const resolvedMonth = resolveMonth(monthParam, availableMonths);
 
   // Explicit bad param (?month=99, ?month=foo) → branded 404.
   // Guard: only 404 when the stage exists and the month param is genuinely
   // invalid. If stage is null (DB not seeded), fall through to empty state
   // so the dev-only seed warning renders instead of a dead 404.
-  if (resolvedMonth === null && params.month !== undefined && stage !== null) {
+  if (resolvedMonth === null && monthParam !== undefined && stage !== null) {
     notFound();
   }
 
