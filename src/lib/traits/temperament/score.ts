@@ -41,7 +41,7 @@ export interface ClassifyInput {
   /**
    * Live quiz session: pass all 30 raw 1-5 likert answers.
    * Variance guard computes σ from this and triggers if σ < varianceMin.
-   * Mutually exclusive with `lowConfidenceFlag`.
+   * If `lowConfidenceFlag` is also provided, the flag takes precedence.
    */
   allRawAnswers?: number[];
   /**
