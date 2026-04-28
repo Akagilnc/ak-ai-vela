@@ -113,15 +113,23 @@ export const CLASSIFICATION_CONFIG: ClassificationConfig = {
 
 /**
  * Compute the 5-dim core composite, normalized 0-1.
- * 1.0 = max difficulty pole; 0.0 = max easy pole.
+ *
+ * Each dim contributes [0, 4] (range 4) toward the difficulty pole regardless
+ * of polarity convention. Sum / 20 gives output range [0.0, 1.0]:
+ *   - 0.0 = all dims at easy pole
+ *   - 1.0 = all dims at difficulty (hard) pole
+ *
+ * Symmetric mapping (Gemini PR #33 R1 fix — old `v` for hard-pole-true dims
+ * gave [1,5] range, compressing output to [0.08, 0.88] and weighting those
+ * dims 25% more than hard-pole-false ones).
  */
 export function computeCore(scores: DimScores, config = CLASSIFICATION_CONFIG): number {
   let sum = 0;
   for (const { key, highIsHardPole } of config.coreDims) {
     const v = scores[key];
-    sum += highIsHardPole ? v : 5 - v;
+    sum += highIsHardPole ? v - 1 : 5 - v;
   }
-  return sum / 25; // 5 dims × max contribution 5 = 25
+  return sum / 20; // 5 dims × max contribution 4 = 20
 }
 
 /**

@@ -116,9 +116,20 @@ export function TraitQuizV6Provider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Persist draft to localStorage on state change (defensive try/catch for
-  // private browsing / disabled storage).
+  // private browsing / disabled storage). When the quiz reaches `complete`,
+  // we PURGE the draft instead of writing — otherwise getDraftIfExists()
+  // would resurface a finished session as a "filled to halfway" prompt
+  // (Codex PR #33 R1 P2).
   useEffect(() => {
     if (state.phase === "idle") return; // don't persist empty initial state
+    if (state.phase === "complete") {
+      try {
+        localStorage.removeItem(V6_DRAFT_KEY);
+      } catch {
+        /* noop */
+      }
+      return;
+    }
     try {
       localStorage.setItem(
         V6_DRAFT_KEY,

@@ -246,7 +246,11 @@ export function decodeScore(score: string): DecodeResult | DecodeError {
     return { error: "schema_unsupported" };
   }
 
-  // Unpack 9 dims (reverse of encode)
+  // Unpack 9 dims (reverse of encode). Each stored value is 3 bits = [0, 7],
+  // but valid encoded range is [0, 4] (mapping likert 1-5). Reject 5/6/7
+  // even when CRC is valid — a crafted URL with recomputed CRC could
+  // otherwise inject impossible dim scores 6-8 into UI/classify (Codex PR
+  // #33 R1 P2).
   const storedDims = new Array<number>(9);
   storedDims[0] = (bytes[1] >> 5) & 0x07;
   storedDims[1] = (bytes[1] >> 2) & 0x07;
@@ -257,6 +261,9 @@ export function decodeScore(score: string): DecodeResult | DecodeError {
   storedDims[6] = (bytes[3] >> 3) & 0x07;
   storedDims[7] = bytes[3] & 0x07;
   storedDims[8] = (bytes[4] >> 5) & 0x07;
+  for (const v of storedDims) {
+    if (v > 4) return { error: "corrupt" };
+  }
 
   // Re-map 0-4 stored back to likert 1-5, build DimScores keyed by DimensionId
   const dims = {} as DimScores;

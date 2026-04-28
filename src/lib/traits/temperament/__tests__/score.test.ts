@@ -63,7 +63,7 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("灵活型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.08, 2);
+    expect(result.rawCore).toBeCloseTo(0.0, 2); // post-PR#33 R1: symmetric core map
   });
 
   it("case 2 — 慎重型 pure: (1,5,1,5,1) → 慎重型, high", () => {
@@ -75,7 +75,7 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慎重型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.88, 2);
+    expect(result.rawCore).toBeCloseTo(1.0, 2); // post-PR#33 R1
   });
 
   it("case 3 — 慢热型 pure: (1,5,1,2,1) → 慢热型, high", () => {
@@ -87,7 +87,7 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慢热型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.76, 2);
+    expect(result.rawCore).toBeCloseTo(0.85, 2); // post-PR#33 R1
   });
 
   it("case 4 — 中位 σ=0: (3,3,3,3,3) all-3 → 平衡型, low (variance guard)", () => {
@@ -108,7 +108,7 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慢热型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.72, 2);
+    expect(result.rawCore).toBeCloseTo(0.8, 2); // post-PR#33 R1
   });
 
   it("case 6 — hysteresis edge: intensity=3.5 → confidence=low", () => {
@@ -142,19 +142,21 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慎重型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.72, 2);
+    expect(result.rawCore).toBeCloseTo(0.8, 2); // post-PR#33 R1
   });
 
   it("case 8b — mid-zone with high intensity → 平衡型 (not 慢热型, since intensity ≥ 3.5)", () => {
+    // Post-PR#33 R1 fixture rebalance: re-pick to keep core in mid-zone
+    // (0.55-0.70). (rhy=2, app=3, ada=3, int=4, moo=2) → 0.65
     const result = classify({
       scores: makeScores({
-        rhythmicity: 1, approach: 4, adaptability: 2, intensity: 4, mood: 3,
+        rhythmicity: 2, approach: 3, adaptability: 3, intensity: 4, mood: 2,
       }),
       allRawAnswers: makeRawAnswers(),
     });
     expect(result.type).toBe("平衡型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.68, 2);
+    expect(result.rawCore).toBeCloseTo(0.65, 2);
   });
 
   it("case 9a — high-core 慎重型 with high intensity: (1,5,1,5,2) → 慎重型, high", () => {
@@ -166,19 +168,22 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慎重型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.84, 2);
+    expect(result.rawCore).toBeCloseTo(0.95, 2); // post-PR#33 R1
   });
 
-  it("mid-zone slow-warm with hysteresis: core=0.696 + intensity=3.4 → 慢热型, low (covers slowWarm branch hysteresis)", () => {
+  it("mid-zone slow-warm with hysteresis: core ~0.62 + intensity=3.4 → 慢热型, low (covers slowWarm branch hysteresis)", () => {
+    // Post-PR#33 R1 fixture rebalance: under symmetric core map, the
+    // mid-zone (0.55-0.70) requires lower raw scores than before. Pick
+    // (rhy=2, app=3, ada=3, int=3.4, moo=2): contributes 3+2+2+2.4+3 = 12.4 / 20 = 0.62.
     const result = classify({
       scores: makeScores({
-        rhythmicity: 1, approach: 4, adaptability: 2, intensity: 3.4, mood: 2,
+        rhythmicity: 2, approach: 3, adaptability: 3, intensity: 3.4, mood: 2,
       }),
       allRawAnswers: makeRawAnswers(),
     });
     expect(result.type).toBe("慢热型");
     expect(result.confidence).toBe("low"); // |3.4 - 3.5| = 0.1 < 0.2 = band/2
-    expect(result.rawCore).toBeCloseTo(0.696, 3);
+    expect(result.rawCore).toBeCloseTo(0.62, 2);
   });
 
   it("case 9b — high-core slow-warm phenotype: (1,5,1,2,2) → 慢热型 (Thomas & Chess)", () => {
@@ -190,25 +195,18 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     });
     expect(result.type).toBe("慢热型");
     expect(result.confidence).toBe("high");
-    expect(result.rawCore).toBeCloseTo(0.72, 2);
+    expect(result.rawCore).toBeCloseTo(0.8, 2); // post-PR#33 R1
   });
 });
 
-describe("classify — exact cutoff boundary inclusion", () => {
+describe("classify — exact cutoff boundary inclusion (post-PR#33 R1 symmetric core)", () => {
   // Lock 灵活 (≤ 0.30), slowWarm (≥ 0.55), cautious (≥ 0.70), intensityHigh (≥ 3.5)
   it("core exactly 0.30 → 灵活型 (boundary inclusive)", () => {
-    // (rhy=5, app=1, ada=4, int=2, moo=4) → 0+1+1+2+1=5/25=0.20 — too low
-    // Need exact 0.30 = 7.5/25 — use mixed: (5,1,4,2,4) doesn't hit. Try
-    // (rhy=4, app=2, ada=4, int=1, moo=4) → 1+2+1+1+1=6/25=0.24
-    // (rhy=4, app=2, ada=4, int=2, moo=4) → 1+2+1+2+1=7/25=0.28
-    // (rhy=4, app=3, ada=4, int=1, moo=4) → 1+3+1+1+1=7/25=0.28
-    // (rhy=3, app=3, ada=4, int=1, moo=4) → 2+3+1+1+1=8/25=0.32 — past
-    // Try fractional: (rhy=4, app=2.5, ada=4, int=1, moo=4) = 1+2.5+1+1+1=6.5/25=0.26
-    // 0.30 = 7.5/25 — need decimal. (rhy=3.5,app=2,ada=4,int=1,moo=4)=1.5+2+1+1+1=6.5/25=0.26
-    // 0.30 = 7.5: (rhy=4, app=2.5, ada=4, int=2, moo=4) = 1+2.5+1+2+1=7.5/25=0.30 ✓
+    // 0.30 * 20 = 6. (rhy=4, app=2, ada=4, int=3, moo=4):
+    // (5-4)+(2-1)+(5-4)+(3-1)+(5-4) = 1+1+1+2+1 = 6 ✓
     const result = classify({
       scores: makeScores({
-        rhythmicity: 4, approach: 2.5, adaptability: 4, intensity: 2, mood: 4,
+        rhythmicity: 4, approach: 2, adaptability: 4, intensity: 3, mood: 4,
       }),
       allRawAnswers: makeRawAnswers(),
     });
@@ -217,23 +215,23 @@ describe("classify — exact cutoff boundary inclusion", () => {
   });
 
   it("core just above 0.30 → 平衡型 (not 灵活)", () => {
+    // (rhy=4, app=2, ada=4, int=3, moo=3): 1+1+1+2+2 = 7 / 20 = 0.35
     const result = classify({
       scores: makeScores({
-        rhythmicity: 4, approach: 2.5, adaptability: 4, intensity: 2.5, mood: 4,
+        rhythmicity: 4, approach: 2, adaptability: 4, intensity: 3, mood: 3,
       }),
       allRawAnswers: makeRawAnswers(),
     });
-    expect(result.rawCore).toBeCloseTo(0.32, 2);
+    expect(result.rawCore).toBeCloseTo(0.35, 2);
     expect(result.type).toBe("平衡型");
   });
 
   it("core exactly 0.55 + intensity < 3.5 → 慢热型 (slowWarm boundary inclusive)", () => {
-    // 0.55 = 13.75/25. (rhy=2,app=4,ada=2,int=2.75,moo=2) = 3+4+3+2.75+3 = 15.75/25 = 0.63
-    // (rhy=3,app=3,ada=3,int=2.75,moo=2) = 2+3+2+2.75+3 = 12.75/25 = 0.51
-    // 0.55 = 13.75: (rhy=2,app=3,ada=3,int=2.75,moo=2) = 3+3+2+2.75+3 = 13.75/25 = 0.55 ✓
+    // 0.55 * 20 = 11. (rhy=2, app=3, ada=3, int=2, moo=2):
+    // (5-2)+(3-1)+(5-3)+(2-1)+(5-2) = 3+2+2+1+3 = 11 ✓
     const result = classify({
       scores: makeScores({
-        rhythmicity: 2, approach: 3, adaptability: 3, intensity: 2.75, mood: 2,
+        rhythmicity: 2, approach: 3, adaptability: 3, intensity: 2, mood: 2,
       }),
       allRawAnswers: makeRawAnswers(),
     });
@@ -241,19 +239,18 @@ describe("classify — exact cutoff boundary inclusion", () => {
     expect(result.type).toBe("慢热型");
   });
 
-  it("core exactly 0.70 + intensity exactly 3.5 → 慎重型 (cautious + intensityHigh both inclusive)", () => {
-    // 0.70 = 17.5/25. (rhy=1,app=5,ada=1,int=3.5,moo=2) = 4+5+4+3.5+3=19.5 — too high
-    // (rhy=2,app=4,ada=2,int=3.5,moo=2) = 3+4+3+3.5+3=16.5/25=0.66
-    // (rhy=1,app=4,ada=2,int=3.5,moo=2) = 4+4+3+3.5+3=17.5/25=0.70 ✓
+  it("core exactly 0.70 + intensity ≥ 3.5 → 慎重型 (cautious boundary inclusive)", () => {
+    // 0.70 * 20 = 14. (rhy=2, app=3, ada=2, int=4, moo=2):
+    // 3+2+3+3+3 = 14 ✓ (intensity=4 not in hysteresis, so confidence high)
     const result = classify({
       scores: makeScores({
-        rhythmicity: 1, approach: 4, adaptability: 2, intensity: 3.5, mood: 2,
+        rhythmicity: 2, approach: 3, adaptability: 2, intensity: 4, mood: 2,
       }),
       allRawAnswers: makeRawAnswers(),
     });
     expect(result.rawCore).toBeCloseTo(0.70, 2);
-    expect(result.type).toBe("慎重型"); // intensity ≥ 3.5 inclusive
-    expect(result.confidence).toBe("low"); // hysteresis at 3.5
+    expect(result.type).toBe("慎重型"); // ≥ 0.70 inclusive
+    expect(result.confidence).toBe("high");
   });
 });
 
@@ -395,19 +392,19 @@ describe("classify — return shape", () => {
   });
 });
 
-describe("computeCore — 5-dim composite math", () => {
-  it("all-3 → core = 0.48", () => {
+describe("computeCore — 5-dim composite math (post-PR#33 R1 symmetric)", () => {
+  it("all-3 → core = 0.50 (midpoint exactly)", () => {
     const core = computeCore(makeScores());
-    expect(core).toBeCloseTo(0.48, 2);
+    expect(core).toBeCloseTo(0.50, 2);
   });
 
-  it("灵活型 pure (rhy=5, app=1, ada=5, int=1, moo=5) → 0.08", () => {
+  it("灵活型 pure (rhy=5, app=1, ada=5, int=1, moo=5) → 0.00", () => {
     const core = computeCore(
       makeScores({
         rhythmicity: 5, approach: 1, adaptability: 5, intensity: 1, mood: 5,
       }),
     );
-    expect(core).toBeCloseTo(0.08, 2);
+    expect(core).toBeCloseTo(0.00, 2);
   });
 
   it("ignores non-core dims (activityLevel/threshold/distractibility/persistence)", () => {

@@ -402,7 +402,7 @@ describe("decodeAndClassifyScore — wrapper for result page", () => {
     expect(result.dims).toBeDefined();
     expect(result.cutoffVersion).toBe(1);
     expect(result.schemaVersion).toBe(1);
-    expect(result.rawCore).toBeCloseTo(0.88, 2);
+    expect(result.rawCore).toBeCloseTo(1.0, 2); // post-PR#33 R1 symmetric core
   });
 
   it("propagates decode errors unchanged (empty / wrong length / bad chars)", () => {

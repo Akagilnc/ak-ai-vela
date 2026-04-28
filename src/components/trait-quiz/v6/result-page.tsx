@@ -65,14 +65,19 @@ function displayScore(score: number): number {
   return Math.round(1 + (score - 1) * 1.5);
 }
 
-function levelTagText(dim: DimensionMeta, score: number): string {
-  // Returns a brief Chinese descriptor like "中等偏高" / "较低 · 敏感"
-  const isHighPole = dim.attentionPole === "high";
-  if (score <= 1.5) return isHighPole ? "较低" : "较高 · 易";
+function levelTagText(_dim: DimensionMeta, score: number): string {
+  // Describes score MAGNITUDE consistently relative to the dim displayLabel
+  // (e.g., "高规律性" reads as "high score on regularity dim").
+  // Per PR #33 R1 (Gemini high + Codex P1): the previous polarity-aware
+  // labels produced inverted descriptors for low-pole dims (e.g. score=1
+  // on rhythmicity rendered as "较高 · 易" because polarity logic flipped
+  // sides). Attention-level info is conveyed separately via bar color +
+  // smart pick pill icon.
+  if (score <= 1.5) return "较低";
   if (score <= 2.5) return "偏低";
   if (score <= 3.5) return "中等";
   if (score <= 4.5) return "中等偏高";
-  return isHighPole ? "较高" : "较低";
+  return "较高";
 }
 
 function BarRow({ dim, score }: { dim: DimensionMeta; score: number }) {
