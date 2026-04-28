@@ -70,6 +70,32 @@ describe("v0.6 user-facing copy — v0.5 slop forbidden phrases", () => {
       expect(text).not.toContain(phrase);
     }
   });
+
+  // Codex slice 6 R1: error-states.tsx is also user-facing but wasn't in
+  // ALL_USER_COPY scan. Expand the gate.
+  it.each(FORBIDDEN_SLOP)(
+    "error-states.tsx (V9 mockup) does not contain slop phrase '%s'",
+    (phrase) => {
+      const errorStates = srcText("components/trait-quiz/v6/error-states.tsx");
+      expect(errorStates).not.toContain(phrase);
+    },
+  );
+
+  it.each(FORBIDDEN_SLOP)(
+    "welcome page (trait-quiz/page.tsx) does not contain slop phrase '%s'",
+    (phrase) => {
+      const welcome = srcText("app/trait-quiz/page.tsx");
+      expect(welcome).not.toContain(phrase);
+    },
+  );
+
+  it.each(FORBIDDEN_SLOP)(
+    "result page React (result-page.tsx) does not contain slop phrase '%s'",
+    (phrase) => {
+      const resultPage = srcText("components/trait-quiz/v6/result-page.tsx");
+      expect(resultPage).not.toContain(phrase);
+    },
+  );
 });
 
 describe("v0.6 user-facing copy — academic labels NOT in user-visible copy", () => {

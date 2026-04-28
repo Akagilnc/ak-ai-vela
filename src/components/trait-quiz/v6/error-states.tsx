@@ -15,14 +15,14 @@ const COPY: Record<
 > = {
   invalid: {
     icon: "?",
-    title: "链接看起来不完整",
+    title: "链接不完整",
     lead: "结果数据无法解析。可能是链接被截断了——把链接整段复制再试一次通常能解决。",
     tint: "gold",
   },
   corrupt: {
     icon: "!",
-    title: "链接看起来不对",
-    lead: "结果数据无法核实。可能是链接被截断或修改过了。",
+    title: "链接对不上",
+    lead: "结果数据没通过校验。可能是链接被截断或修改过了。",
     tint: "orange",
   },
   schema_unsupported: {
