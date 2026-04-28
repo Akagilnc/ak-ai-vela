@@ -13,7 +13,7 @@
  * `vela-trait-result`) on init; purge them when reset is called.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   TraitQuizV6Provider,
@@ -195,6 +195,15 @@ export default function TraitQuizPage() {
   const router = useRouter();
   const [started, setStarted] = useState(false);
 
+  // Stable callback identity (Gemini PR #33 R3 medium): inline arrow would
+  // cause QuizContent to re-render every parent render, retriggering its
+  // useEffect on state.phase=complete dep (extra encode work + potential
+  // duplicate router.push). useCallback ties to router which is stable.
+  const handleSubmit = useCallback(
+    (url: string) => router.push(url),
+    [router],
+  );
+
   if (!started) {
     return (
       <main className="min-h-[100dvh] bg-background">
@@ -209,7 +218,7 @@ export default function TraitQuizPage() {
     <main className="min-h-[100dvh] bg-background">
       <div className="max-w-[480px] mx-auto px-4 pb-6 min-h-[100dvh] flex flex-col">
         <TraitQuizV6Provider>
-          <QuizContent onSubmitDone={(url) => router.push(url)} />
+          <QuizContent onSubmitDone={handleSubmit} />
         </TraitQuizV6Provider>
       </div>
     </main>
