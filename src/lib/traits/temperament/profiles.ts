@@ -44,7 +44,7 @@ export const TRAIT_HEROES: Record<TraitType, TraitHero> = {
   慢热型: {
     type: "慢热型",
     percentageNote: "在 NYLS 1956 北美样本中约 15%",
-    lead: "她面对新事物的第一反应是退缩，但她不是抵触，是需要更多「看清楚」的时间。她的反应通常温和而不强烈，不会哭闹爆发，只是慢慢热起来。给她铺路，不要替她跳过过渡期。",
+    lead: "她面对新事物的第一反应是退缩，但她不是抵触，是需要更多「看清楚」的时间。她的反应通常温和而不强烈，不会哭闹爆发，只是慢慢热起来。和慎重型不同——慎重型一旦投入情绪反应强烈；慢热型整段都温和。给她铺路，不要替她跳过过渡期。",
     keywords: ["铺路", "慢慢来", "不替代"],
     tint: "notable",
   },
@@ -115,7 +115,7 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
     // Note: dim score 5 = withdrawal (spec footnote 9 inverse). low = approach (easy)
     low: {
       observation: "见到陌生人或新地方，她很快就上去说话或动起来，不需要预热。",
-      action: "→ 她适应新环境快是优势，但要留意她有没有过度信任陌生人。",
+      action: "→ 她不需要预热是优势，但别因此让她总打头阵。问问她内心是否真的准备好，还是只是反应快。",
     },
     mid: {
       observation: "她对新事物有兴趣但不冒进，会观察一会儿再行动。",
@@ -147,7 +147,7 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
     },
     mid: {
       observation: "她的情绪表达适度——开心会笑，难过会皱眉，但不爆发。",
-      action: "→ 这是相对省心的模式，多聊聊她内心的细节感受。",
+      action: "→ 表达适度不代表她内心也适度。多聊聊她没说出来的细节感受。",
     },
     high: {
       observation: "她开心时笑得特别响，生气时反应也强烈。情绪表达「全频段」。",
@@ -156,7 +156,7 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
   },
   threshold: {
     low: {
-      observation: "对感官刺激敏感（光线、噪音、衣服标签）。低阈值是探测雷达，不是矫情。",
+      observation: "她对感官刺激敏感（光线、噪音、衣服标签），别人没察觉她已经受不了。这是她的神经系统设定，不是态度问题。",
       action: "→ 商场、餐厅这类高刺激环境前先短时间过渡。穿衣关注材质和缝线。",
     },
     mid: {
@@ -170,8 +170,8 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
   },
   mood: {
     low: {
-      observation: "她默认情绪偏内敛甚至带点闷，常常皱眉头或抱怨。",
-      action: "→ 不要把这当「不开心」催问。她的情绪基线就在这里。多给她正向小事的注意。",
+      observation: "她默认表情偏严肃，开心也不太外露，新事物的第一反应常带点保留。",
+      action: "→ 别用「你怎么又不开心」催她笑。她的中性表情就是她的舒适状态，记录她真正发光的时刻而不是要求微笑。",
     },
     mid: {
       observation: "她情绪平稳，开心和不爽的比例差不多。",
@@ -192,7 +192,7 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
       action: "→ 写作业最好在相对安静的角落。",
     },
     high: {
-      observation: "邻居打麻将的声音她会一直回头看。专注任务时被外界拉走是常态。",
+      observation: "楼下有人说话、窗外有车经过，她都会停下手里的事抬头看。专注任务时被外界拉走是常态。",
       action: "→ 学习环境要降噪。给她「专注 20 分钟，休息 5 分钟」的清晰节奏。",
     },
   },
@@ -207,7 +207,7 @@ export const DIM_COPY: Record<DimensionId, DimCopyByLevel> = {
     },
     high: {
       observation: "拼图 / 搭积木卡住的时候，她会一直试到拼出来。打断她的中途任务比打断别的孩子更费劲。",
-      action: "→ 「再 5 分钟我们就走」 比 「该走了」 有效很多。重要任务前先帮她排空「未完成的小事」。",
+      action: "→ 「再 5 分钟我们就走」比「该走了」有效很多。重要任务前先帮她排空「未完成的小事」。",
     },
   },
 };

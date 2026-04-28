@@ -26,7 +26,6 @@ interface ResultPageProps {
   type: TraitType;
   confidence: "high" | "low";
   dimScores: Record<string, number>;
-  filledOnDate?: string; // ISO date string
 }
 
 const TINT_CLASSES: Record<
@@ -94,8 +93,13 @@ function BarRow({ dim, score }: { dim: DimensionMeta; score: number }) {
         ? "text-trait-notable-text"
         : "text-trait-strong-text";
 
+  const ariaLabel = `${dim.displayLabel}：${display} / 7（${levelTagText(dim, score)}，注意度${level === "easy" ? "低" : level === "notable" ? "中" : "高"}）`;
   return (
-    <div className="py-[14px] border-b border-vela-border last:border-b-0">
+    <div
+      className="py-[14px] border-b border-vela-border last:border-b-0"
+      role="img"
+      aria-label={ariaLabel}
+    >
       <div className="flex justify-between items-baseline mb-[10px]">
         <span className="font-display text-[16px] text-vela-heading font-medium">
           {dim.displayLabel}
@@ -108,7 +112,7 @@ function BarRow({ dim, score }: { dim: DimensionMeta; score: number }) {
           <span className="text-vela-text-2 text-[12px] font-normal"> / 7</span>
         </span>
       </div>
-      <div className="h-[10px] rounded-full bg-vela-primary/8 overflow-hidden relative">
+      <div className="h-[10px] rounded-full bg-vela-primary/10 overflow-hidden relative" aria-hidden="true">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${fillClass}`}
           style={{ width: `${fillPct}%` }}
@@ -135,6 +139,8 @@ function SmartPickCard({ dim, score }: { dim: DimensionMeta; score: number }) {
       : level === "notable"
         ? "bg-trait-notable-text"
         : "bg-trait-strong-text";
+  // Color-only signaling supplemented by text glyph for colorblind accessibility
+  const pillIcon = level === "easy" ? "" : level === "notable" ? "△" : "▲";
 
   return (
     <article
@@ -143,9 +149,11 @@ function SmartPickCard({ dim, score }: { dim: DimensionMeta; score: number }) {
       <div className="flex justify-between items-baseline mb-2 gap-4">
         <h3 className="font-display text-[17px] text-vela-heading">{dim.displayLabel}</h3>
         <span
-          className={`shrink-0 ${pillClass} text-white rounded-full px-3 py-[3px] text-xs font-mono font-semibold`}
+          className={`shrink-0 ${pillClass} text-white rounded-full px-3 py-[3px] text-xs font-mono font-semibold flex items-center gap-1`}
+          aria-label={`${display} 分（满分 7）${level === "easy" ? "" : `，注意度${level === "notable" ? "中" : "高"}`}`}
         >
-          {display} / 7
+          {pillIcon && <span aria-hidden="true">{pillIcon}</span>}
+          <span>{display} / 7</span>
         </span>
       </div>
       <p className="text-[15px] text-vela-text-1 leading-[1.6]">{insight.observation}</p>
@@ -161,7 +169,6 @@ export function ResultPage({
   type,
   confidence,
   dimScores,
-  filledOnDate,
 }: ResultPageProps) {
   const hero = TRAIT_HEROES[type];
   const tintClasses = TINT_CLASSES[hero.tint];
@@ -187,14 +194,10 @@ export function ResultPage({
 
         <div className="flex flex-wrap items-baseline gap-2 mb-3 text-[13px] text-vela-text-2">
           <span className="font-display text-[17px] text-vela-heading">
-            {childName}的气质画像
+            {childName === "她" ? "孩子的气质画像" : `${childName}的气质画像`}
           </span>
-          <span>·</span>
-          <span>
-            {filledOnDate
-              ? `妈妈基于日常观察填于 ${filledOnDate}`
-              : "妈妈基于日常观察"}
-          </span>
+          <span aria-hidden="true">·</span>
+          <span>妈妈基于日常观察填的</span>
         </div>
 
         {/* HERO */}
@@ -216,7 +219,7 @@ export function ResultPage({
             {hero.lead}
           </p>
           <p
-            className={`text-[13px] text-vela-text-1 pt-4 border-t ${tintClasses.border} border-opacity-40`}
+            className={`text-[13px] text-vela-text-1 pt-4 border-t ${tintClasses.border} opacity-90`}
           >
             {hero.percentageNote}
             ·养育关键词{" "}
