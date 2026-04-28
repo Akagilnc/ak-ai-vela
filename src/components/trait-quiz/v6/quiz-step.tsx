@@ -50,14 +50,14 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
   return (
     <div className="flex flex-col gap-4 pb-12">
       {/* Header: logo + 退出 */}
-      <header className="flex justify-between items-center mb-2 py-2">
+      <header className="flex justify-between items-center mb-2">
         <span className="text-[20px] font-display font-semibold text-vela-primary tracking-tight">
           Vela
         </span>
         <button
           type="button"
           onClick={onExit}
-          className="text-vela-text-2 text-sm hover:text-vela-primary"
+          className="text-vela-text-2 text-sm hover:text-vela-primary min-h-[44px] px-3"
         >
           退出
         </button>
@@ -102,7 +102,7 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
           type="button"
           onClick={prev}
           disabled={state.currentIndex === 0}
-          className="bg-transparent border-none text-vela-text-2 font-medium text-sm py-3 cursor-pointer hover:text-vela-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-transparent border-none text-vela-text-2 font-medium text-sm cursor-pointer hover:text-vela-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] px-3"
         >
           ← 上一题
         </button>
@@ -111,7 +111,7 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
           onClick={handleNext}
           disabled={!canAdvance}
           className={[
-            "rounded-md px-6 py-3 font-semibold text-[15px] min-h-[44px]",
+            "rounded-md px-6 font-semibold text-[15px] min-h-[48px]",
             canAdvance
               ? "bg-vela-primary text-white hover:bg-vela-primary-dark"
               : "bg-vela-border text-vela-muted cursor-not-allowed",
@@ -120,10 +120,6 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
           {isLastQuestion ? "提交" : "下一题"} →
         </button>
       </nav>
-
-      <p className="mt-8 text-center text-[11px] text-vela-muted leading-[1.5]">
-        基于 Thomas &amp; Chess 1956 NYU 9 维气质模型
-      </p>
     </div>
   );
 }

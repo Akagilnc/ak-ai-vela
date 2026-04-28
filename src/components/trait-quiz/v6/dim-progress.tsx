@@ -59,9 +59,10 @@ export function DimProgress({
         className="grid grid-cols-9 gap-[4px] h-[6px]"
         role="progressbar"
         aria-valuemin={0}
-        aria-valuemax={9}
-        aria-valuenow={currentDimIndex + 1}
-        aria-label={`进度：第 ${currentDimIndex + 1} 个维度，共 9 个`}
+        aria-valuemax={totalQuestions}
+        aria-valuenow={answeredCount}
+        aria-valuetext={`已回答 ${answeredCount} 题，共 ${totalQuestions} 题；当前在第 ${currentDimIndex + 1} 个维度`}
+        aria-label="测评进度"
       >
         {DIMENSION_LIST.map((_dim, i) => {
           const isDone = i < currentDimIndex;
@@ -87,10 +88,29 @@ export function DimProgress({
         })}
       </div>
 
-      <p className="mt-2 text-xs text-vela-text-2">
-        已完成 <strong className="text-vela-primary font-semibold">{currentDimIndex} / 9 个维度</strong>
-        {currentDimIndex < 9 ? `，正在评估"${currentDim.displayLabel}"` : "，准备生成画像"}
-      </p>
+      {(() => {
+        // R1 fix: helper line should reflect "completed dims" honestly.
+        // currentDimIndex is the dim of the CURRENT question (in-progress),
+        // so "completed" = currentDimIndex (dims fully done before this one).
+        // Special case: when answeredCount === totalQuestions, all dims done.
+        const completedDims = currentDimIndex;
+        const allDone = answeredCount === totalQuestions;
+        return (
+          <p className="mt-2 text-xs text-vela-text-2">
+            {allDone
+              ? "全部完成，准备生成画像"
+              : (
+                <>
+                  已完成{" "}
+                  <strong className="text-vela-primary font-semibold">
+                    {completedDims} / 9 个维度
+                  </strong>
+                  ，正在评估「{currentDim.displayLabel}」
+                </>
+              )}
+          </p>
+        );
+      })()}
     </div>
   );
 }

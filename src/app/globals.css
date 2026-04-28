@@ -62,10 +62,17 @@
   --color-vela-cream: #FEFAE0;
   --color-vela-surface: #F5F0E1;
   --color-vela-border: #E8E0D0;
-  --color-vela-muted: #8B847C;          /* WCAG AA pass on cream — DESIGN.md 2026-04-29 */
-  --color-vela-text-2: #6B6560;         /* alias of text-secondary, used in v0.6 */
+  /*
+   * vela-muted contrast on cream:
+   *   #B8B0A0 → 2.85:1 (pre-2026-04-29 — failed AA)
+   *   #8B847C → 3.67:1 (intermediate fix — still failed AA, R1#2 caught)
+   *   #6B6560 → 5.45:1 (current — passes WCAG AA 4.5:1)
+   * Unified with vela-text-secondary to drop redundant alias.
+   */
+  --color-vela-muted: #6B6560;
+  --color-vela-text-2: #6B6560;
   --color-vela-text-secondary: #6B6560;
-  --color-vela-text-1: #3D3835;         /* alias of text, used in v0.6 */
+  --color-vela-text-1: #3D3835;
   --color-vela-text: #3D3835;
   --color-vela-heading: #1A1715;
 

@@ -43,7 +43,7 @@
   - `#FEFAE0` — Page background (cream)
   - `#F5F0E1` — Card/surface background
   - `#E8E0D0` — Borders, dividers
-  - `#8B847C` — Muted text, placeholders (revised from `#B8B0A0` 2026-04-29 to pass WCAG AA 4.5:1 against cream bg; old token failed at 2.85:1)
+  - `#6B6560` — Muted text, placeholders (revised from `#B8B0A0` to `#8B847C` to `#6B6560` over 2026-04-29; intermediate `#8B847C` actually only hit 3.67:1 — slice 4 R1 cross-review caught; final value matches `#6B6560` text-secondary, drops redundant alias)
   - `#6B6560` — Secondary text
   - `#3D3835` — Primary text
   - `#1A1715` — Heading text

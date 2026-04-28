@@ -193,6 +193,7 @@ export function useTraitQuizV6() {
 
 /**
  * Detect if a v0.6 draft exists with at least one answer.
+ * Validates shape — corrupted / tampered drafts are silently dropped.
  * Slice 4 quiz UI calls this on mount to decide whether to show resume banner.
  */
 export function getDraftIfExists(): {
@@ -202,18 +203,52 @@ export function getDraftIfExists(): {
   try {
     const raw = localStorage.getItem(V6_DRAFT_KEY);
     if (!raw) return null;
-    const draft = JSON.parse(raw) as {
-      answers: Record<string, number>;
-      currentIndex: number;
-      timestamp: number;
-    };
+    const parsed = JSON.parse(raw) as unknown;
+
+    // Defensive validation — corrupted/tampered/older draft shapes return null
+    // (silently fall back to "no draft" rather than crashing the UI).
     if (
-      !draft.answers ||
-      Object.keys(draft.answers).length === 0
+      !parsed ||
+      typeof parsed !== "object" ||
+      !("answers" in parsed) ||
+      !("currentIndex" in parsed)
     ) {
       return null;
     }
-    return { answers: draft.answers, currentIndex: draft.currentIndex };
+    const draft = parsed as {
+      answers: unknown;
+      currentIndex: unknown;
+    };
+    if (
+      typeof draft.answers !== "object" ||
+      draft.answers === null ||
+      typeof draft.currentIndex !== "number" ||
+      !Number.isInteger(draft.currentIndex) ||
+      draft.currentIndex < 0
+    ) {
+      return null;
+    }
+    const validQuestionIds = new Set(QUESTIONS.map((q) => q.id));
+    const answers = draft.answers as Record<string, unknown>;
+    const cleanAnswers: Record<string, number> = {};
+    for (const [key, val] of Object.entries(answers)) {
+      if (!validQuestionIds.has(key)) continue; // drop unknown question ids
+      if (
+        typeof val !== "number" ||
+        !Number.isFinite(val) ||
+        val < 1 ||
+        val > 5
+      ) {
+        return null; // invalid answer value → drop entire draft
+      }
+      cleanAnswers[key] = val;
+    }
+    if (Object.keys(cleanAnswers).length === 0) return null;
+    const safeIndex = Math.min(
+      draft.currentIndex,
+      QUESTIONS.length - 1,
+    );
+    return { answers: cleanAnswers, currentIndex: safeIndex };
   } catch {
     return null;
   }

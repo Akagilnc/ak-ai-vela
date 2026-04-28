@@ -26,6 +26,7 @@ import {
   TraitQuizV6Provider,
   useTraitQuizV6,
   V6_DRAFT_KEY,
+  getDraftIfExists,
 } from "../quiz-provider";
 import { QUESTIONS } from "@/lib/traits/temperament/questions";
 import type { ReactNode } from "react";
@@ -209,6 +210,96 @@ describe("draft persistence", () => {
     expect(result.current.state.answers[QUESTIONS[0].id]).toBe(3);
 
     Storage.prototype.setItem = originalSetItem;
+  });
+});
+
+describe("getDraftIfExists — validation (Codex P1)", () => {
+  it("returns null on missing draft", () => {
+    expect(getDraftIfExists()).toBeNull();
+  });
+
+  it("returns null on malformed JSON", () => {
+    localStorage.setItem(V6_DRAFT_KEY, "not json");
+    expect(getDraftIfExists()).toBeNull();
+  });
+
+  it("returns null on empty answers", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({ answers: {}, currentIndex: 0, timestamp: Date.now() }),
+    );
+    expect(getDraftIfExists()).toBeNull();
+  });
+
+  it("returns null on out-of-range answer value", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({
+        answers: { [QUESTIONS[0].id]: 99 }, // out of range
+        currentIndex: 0,
+        timestamp: Date.now(),
+      }),
+    );
+    expect(getDraftIfExists()).toBeNull();
+  });
+
+  it("returns null on negative currentIndex", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({
+        answers: { [QUESTIONS[0].id]: 3 },
+        currentIndex: -1,
+        timestamp: Date.now(),
+      }),
+    );
+    expect(getDraftIfExists()).toBeNull();
+  });
+
+  it("strips unknown question ids silently", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({
+        answers: {
+          [QUESTIONS[0].id]: 4,
+          some_unknown_id: 3,
+        },
+        currentIndex: 1,
+        timestamp: Date.now(),
+      }),
+    );
+    const draft = getDraftIfExists();
+    expect(draft).not.toBeNull();
+    expect(draft!.answers).toEqual({ [QUESTIONS[0].id]: 4 });
+  });
+
+  it("clamps currentIndex past max to last question", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({
+        answers: { [QUESTIONS[0].id]: 3 },
+        currentIndex: 999,
+        timestamp: Date.now(),
+      }),
+    );
+    const draft = getDraftIfExists();
+    expect(draft).not.toBeNull();
+    expect(draft!.currentIndex).toBe(QUESTIONS.length - 1);
+  });
+
+  it("accepts well-formed draft", () => {
+    localStorage.setItem(
+      V6_DRAFT_KEY,
+      JSON.stringify({
+        answers: { [QUESTIONS[0].id]: 4, [QUESTIONS[1].id]: 3 },
+        currentIndex: 2,
+        timestamp: Date.now(),
+      }),
+    );
+    const draft = getDraftIfExists();
+    expect(draft).toEqual({
+      answers: { [QUESTIONS[0].id]: 4, [QUESTIONS[1].id]: 3 },
+      currentIndex: 2,
+    });
   });
 });
 

@@ -31,14 +31,13 @@ import {
 } from "@/lib/traits/temperament/score-encoding";
 import { classify, CLASSIFICATION_CONFIG } from "@/lib/traits/temperament/score";
 
-const RAW_ANSWERS_KEY_FOR_VARIANCE = "_internal";
-
 function QuizContent({ onSubmitDone }: { onSubmitDone: (url: string) => void }) {
   const { state, restoreDraft, reset } = useTraitQuizV6();
   const [draftPrompt, setDraftPrompt] = useState<
     { answers: Record<string, number>; currentIndex: number } | null
   >(null);
   const [draftChecked, setDraftChecked] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (draftChecked) return;
@@ -70,11 +69,40 @@ function QuizContent({ onSubmitDone }: { onSubmitDone: (url: string) => void }) 
       });
       onSubmitDone(`/trait-quiz/result?score=${score}`);
     } catch (err) {
-      // Encode failure (NaN dim scores etc) — should never happen since we
-      // validate raw answers in computeDimScores. Log + reset to safe state.
+      // Should be unreachable since computeDimScores validates 1-5 and
+      // encodeScore validates dims. Defense-in-depth: surface error to user
+      // instead of stranding them on the spinner indefinitely.
       console.error("trait-quiz v0.6 encode failed", err);
+      setSubmitError(err instanceof Error ? err.message : "submit failed");
     }
   }, [state.phase, state.answers, onSubmitDone]);
+
+  // Submit error state — let user retry or reset
+  if (submitError) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-fade-in text-center px-4">
+        <div className="w-16 h-16 rounded-full bg-trait-strong-from/10 grid place-items-center text-2xl text-trait-strong-text">
+          !
+        </div>
+        <h3 className="font-display text-[20px] text-vela-heading font-semibold">
+          生成画像出错了
+        </h3>
+        <p className="text-sm text-vela-text-1 max-w-[300px] leading-relaxed">
+          填的内容好像有点问题。重新填一遍通常能解决。
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            setSubmitError(null);
+          }}
+          className="min-h-[48px] px-8 bg-vela-primary text-white rounded-lg font-semibold"
+        >
+          重新测一次
+        </button>
+      </div>
+    );
+  }
 
   // Draft resume banner
   if (draftPrompt) {
@@ -169,8 +197,8 @@ export default function TraitQuizPage() {
 
   if (!started) {
     return (
-      <main className="min-h-screen bg-background">
-        <div className="max-w-[480px] mx-auto px-4 py-6 min-h-screen flex flex-col">
+      <main className="min-h-[100dvh] bg-background">
+        <div className="max-w-[480px] mx-auto px-4 py-6 min-h-[100dvh] flex flex-col">
           <WelcomeScreen onStart={() => setStarted(true)} />
         </div>
       </main>
@@ -178,8 +206,8 @@ export default function TraitQuizPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-[480px] mx-auto px-4 pb-6 min-h-screen flex flex-col">
+    <main className="min-h-[100dvh] bg-background">
+      <div className="max-w-[480px] mx-auto px-4 pb-6 min-h-[100dvh] flex flex-col">
         <TraitQuizV6Provider>
           <QuizContent onSubmitDone={(url) => router.push(url)} />
         </TraitQuizV6Provider>

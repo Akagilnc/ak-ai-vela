@@ -25,15 +25,15 @@ interface LikertOptionsProps {
 
 export function LikertOptions({ value, onChange, disabled }: LikertOptionsProps) {
   return (
-    <div className="flex flex-col gap-[10px]" role="radiogroup" aria-label="选择最贴近的描述">
+    <div className="flex flex-col gap-[10px]" role="group" aria-label="选择最贴近的描述">
       {OPTIONS.map((opt) => {
         const isSelected = value === opt.value;
         return (
           <button
             key={opt.value}
             type="button"
-            role="radio"
-            aria-checked={isSelected}
+            aria-pressed={isSelected}
+            aria-label={`${opt.label}（${opt.value}/5）`}
             disabled={disabled}
             onClick={() => onChange(opt.value)}
             className={[
