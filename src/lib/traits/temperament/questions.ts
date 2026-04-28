@@ -42,7 +42,7 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "act_01",
     dimensionId: "activityLevel",
-    prompt: "她在家里几乎一刻不停，总在跑跳爬上爬下。",
+    prompt: "在家里她很少能在一个地方坐稳超过几分钟，经常起身走动。",
     reverseScored: false, // 5 = high activity
   },
   {
@@ -65,7 +65,7 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "rhy_02",
     dimensionId: "rhythmicity",
-    prompt: "她周末和工作日的睡觉时间差很多。",
+    prompt: "她每天上床睡觉的时间差别比较大，有时候很早有时候很晚。",
     reverseScored: true, // 5 = 不规律 = 反方向，flip 后归 dim
   },
   {
@@ -114,7 +114,7 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "ada_01",
     dimensionId: "adaptability",
-    prompt: "搬家、换学校、换房间这种变化，她两三天就能适应。",
+    prompt: "上次环境有比较大的变化（搬家 / 换班 / 换房间），她两三天就缓过来了。",
     reverseScored: false, // 5 = 适应快 = 自然方向
   },
   {
@@ -158,7 +158,7 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "int_04",
     dimensionId: "intensity",
-    prompt: "她表达感情比较内敛，不太显山露水。",
+    prompt: "她开心或难过的时候，表情和声音变化都不大，要仔细看才看得出来。",
     reverseScored: true,
   },
 
@@ -188,7 +188,7 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "moo_01",
     dimensionId: "mood",
-    prompt: "她大部分时候情绪是上扬的，会主动笑。",
+    prompt: "她大部分时候心情都不错，会主动笑或哼歌。",
     reverseScored: false, // 5 = 正面 = 自然
   },
   {
@@ -220,8 +220,10 @@ export const QUESTIONS: readonly Question[] = [
   {
     id: "dis_02",
     dimensionId: "distractibility",
-    prompt: "她哭闹的时候，给她看手机或讲故事她很快能转移注意力。",
-    reverseScored: false, // 高分=容易被外界拉走（虽然此场景里"被转移"对家长方便）
+    // R1 fix: 原版 "哭闹时被转移" 双关——家长直觉觉得"好哄=好"，但 distractibility
+    // 高分 = hard pole（易被外界拉走）。改成单义场景：专注任务时被外界打断。
+    prompt: "她正在玩自己喜欢的玩具时，旁边有动静她会马上放下手里的转过去看。",
+    reverseScored: false, // 5 = 容易被外界拉走 (hard pole)
   },
   {
     id: "dis_03",
@@ -274,6 +276,11 @@ export function computeDimScores(answers: Record<string, number>): DimScores {
       const raw = answers[q.id];
       if (raw === undefined) {
         throw new Error(`question ${q.id} unanswered (dim ${dim.id})`);
+      }
+      if (!Number.isFinite(raw) || raw < 1 || raw > 5) {
+        throw new Error(
+          `question ${q.id} has out-of-range answer: ${raw} (expected 1-5)`,
+        );
       }
       // Reverse-score: flip 1↔5, 2↔4, 3↔3 to align with attentionPole
       const aligned = q.reverseScored ? 6 - raw : raw;

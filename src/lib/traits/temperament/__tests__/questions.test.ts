@@ -83,16 +83,16 @@ describe("QUESTIONS seed — dim coverage", () => {
     }
   });
 
-  it("every dim has at least one question that is reverseScored=true (avoid response set bias)", () => {
+  it("dims with ≥3 questions have BOTH forward and reverse-scored items (response set bias mitigation)", () => {
     for (const dim of DIMENSION_LIST) {
       const qs = questionsForDim(dim.id);
-      if (qs.length < 2) continue;
+      if (qs.length < 3) continue; // 2-question dims may legitimately be all-forward
       const hasReverse = qs.some((q) => q.reverseScored);
       const hasForward = qs.some((q) => !q.reverseScored);
-      // For dims with ≥3 questions, expect mix of forward + reverse to balance
-      if (qs.length >= 3) {
-        expect(hasReverse || hasForward).toBe(true); // at least one of each
-      }
+      // Codex-caught bug: original was `hasReverse || hasForward` which is
+      // always true for non-empty arrays. Real check is BOTH must be true.
+      expect(hasReverse).toBe(true);
+      expect(hasForward).toBe(true);
     }
   });
 });
@@ -223,6 +223,20 @@ describe("computeDimScores — reverse scoring + averaging", () => {
     expect(() => computeDimScores(partial)).toThrow(/unanswered/);
   });
 
+  it("throws on out-of-range raw answer (0 or 6 or NaN)", () => {
+    const tooLow = fillAll(3);
+    tooLow[QUESTIONS[0].id] = 0;
+    expect(() => computeDimScores(tooLow)).toThrow(/out-of-range/);
+
+    const tooHigh = fillAll(3);
+    tooHigh[QUESTIONS[0].id] = 6;
+    expect(() => computeDimScores(tooHigh)).toThrow(/out-of-range/);
+
+    const nan = fillAll(3);
+    nan[QUESTIONS[0].id] = NaN;
+    expect(() => computeDimScores(nan)).toThrow(/out-of-range/);
+  });
+
   it("integrates with classify pipeline (slice 2 invariant)", async () => {
     const { classify } = await import("../score");
     const { quantizeDimScores } = await import("../score-encoding");
@@ -266,6 +280,37 @@ describe("computeDimScores — reverse scoring + averaging", () => {
     });
     expect(result.type).toBe("慎重型");
     expect(result.confidence).toBe("high");
+  });
+
+  it("full roundtrip: computeDim → quantize → encode → decodeAndClassify (chain invariant)", async () => {
+    const { quantizeDimScores, encodeScore, decodeAndClassifyScore } =
+      await import("../score-encoding");
+
+    // 慎重型 fixture per integration test above
+    const dimTargets: Record<string, number> = {
+      rhythmicity: 1, approach: 5, adaptability: 1, intensity: 5, mood: 1,
+      activityLevel: 3, threshold: 3, distractibility: 3, persistence: 3,
+    };
+    const answers: Record<string, number> = {};
+    for (const q of QUESTIONS) {
+      const target = dimTargets[q.dimensionId];
+      answers[q.id] = q.reverseScored ? 6 - target : target;
+    }
+
+    const dims = computeDimScores(answers);
+    const quantized = quantizeDimScores(dims);
+    const url = encodeScore({
+      schemaVersion: 1,
+      cutoffVersion: 1,
+      dims: quantized,
+      lowConfidenceFlag: false,
+    });
+    const decoded = decodeAndClassifyScore(url);
+    if ("error" in decoded) throw new Error("decode failed");
+
+    expect(decoded.type).toBe("慎重型");
+    expect(decoded.confidence).toBe("high");
+    expect(decoded.dims).toEqual(quantized);
   });
 
   it("constructs 灵活型 fixture: easy-pole-loaded core dims + low intensity", async () => {
