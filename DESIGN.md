@@ -43,7 +43,7 @@
   - `#FEFAE0` — Page background (cream)
   - `#F5F0E1` — Card/surface background
   - `#E8E0D0` — Borders, dividers
-  - `#B8B0A0` — Muted text, placeholders
+  - `#8B847C` — Muted text, placeholders (revised from `#B8B0A0` 2026-04-29 to pass WCAG AA 4.5:1 against cream bg; old token failed at 2.85:1)
   - `#6B6560` — Secondary text
   - `#3D3835` — Primary text
   - `#1A1715` — Heading text
@@ -57,7 +57,12 @@
   - Green (on track): `#2D6A4F`
   - Yellow (needs attention): `#B5942D` (deep gold-yellow, distinct from gold excellent)
   - Red (gap): `#A63D40` (muted brick red, not alarming)
-  - No data: `#B8B0A0`
+  - No data: `#8B847C`
+- **Trait attention scale (3-level, trait-quiz v0.6 specific):** A child's temperament dimension is colored by *parenting attention pole*, not raw 1-7 score. Each dimension carries `attentionPole: 'low' | 'high'` metadata in `score.ts` (no `'neutral'` — BSQ scoring confirms every dim has a direction). Score on the easy pole = green; mild deviation toward attention pole = gold; strong deviation = burnt orange.
+  - Easy: bar fill `linear-gradient(90deg, #2D6A4F, #3D8C6A)`, text `#2D6A4F`
+  - Notable (1 step toward attention pole): bar fill `linear-gradient(90deg, #B5942D, #E9C46A)`, text `#8B6914`
+  - Strong (2+ steps toward attention pole): bar fill `linear-gradient(90deg, #D9622A, #EC8A3E)`, text `#B85A20`
+  - Color choice notes: avoids red entirely (red triggers "alarm" / "this child has a problem" reading). Burnt orange `#B85A20` family signals "highlight" not "warning". Gold and orange both warm-spectrum, hue-adjacent → continuous color story green→gold→orange along temperature axis.
 - **Dark mode strategy:**
   - Background: `#1A1715` → `#252220`
   - Surfaces: `#2D2A27` → `#3D3835`
@@ -123,3 +128,7 @@ When implementing, extend `tailwind.config.ts`:
 | 2026-04-08 | Fraunces + Plus Jakarta Sans + Geist Mono | Warm serif for trust, modern sans for readability, clean mono for data. Avoids overused Inter/Roboto. |
 | 2026-04-08 | Forest green primary | Natural science connection (pre-vet seed user), trust signal, distinct from both US SaaS blue and CN EdTech red. |
 | 2026-04-08 | Cream background over pure white | Reduces screen fatigue, adds warmth, signals "this is not generic software." |
+| 2026-04-29 | Muted token `#B8B0A0` → `#8B847C` | Old value failed WCAG AA 4.5:1 against cream bg (2.85:1). Caught during /plan-design-review for trait quiz v0.6. Same fix carried over to gap severity "No data" color. |
+| 2026-04-29 | Trait attention scale (3-level) added | v0.6 trait quiz needs per-dimension parent-attention coloring. Score 1-7 alone doesn't map to "good/bad" because each Thomas & Chess dimension has a different "easy pole" — e.g. low rhythmicity = harder to parent, but high adaptability = easier. Color reflects deviation toward the per-dim attention pole, not score magnitude. Burnt orange (#B85A20) chosen over terracotta (#E76F51) and brick red (#9D3D40) — warm orange reads as "highlight," red reads as "alarm." |
+| 2026-04-29 | Trait categories: 4 not 3 (灵活/慎重/慢热/**平衡**) | Phase 1 research confirmed Thomas & Chess NYLS: only 65% of children fit easy/difficult/slow-to-warm-up; 35% are intermediate/mixed. v0.6 must have a 4th "balanced" category or product fails for largest single cohort. Consumer-friendly Chinese aliases used (academic 容易/困难/迟缓/中间 disclosed in footnote). "困难型" / "迟缓型" / "容易型" / "中间型" added to forbidden-phrase list. |
+| 2026-04-29 | All 9 dimensions have non-neutral attentionPole | Phase 1 research found my earlier mockup labeled 活动水平 and 坚持性 as `'neutral'` — wrong. BSQ standardized scoring: every dim has a "harder management" direction. Activity Level → high pole; Persistence → low pole. Updated `score.ts` schema to enforce `attentionPole: 'low' \| 'high'` (no neutral). |
