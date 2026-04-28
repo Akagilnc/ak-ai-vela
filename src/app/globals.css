@@ -62,10 +62,22 @@
   --color-vela-cream: #FEFAE0;
   --color-vela-surface: #F5F0E1;
   --color-vela-border: #E8E0D0;
-  --color-vela-muted: #B8B0A0;
+  --color-vela-muted: #8B847C;          /* WCAG AA pass on cream — DESIGN.md 2026-04-29 */
+  --color-vela-text-2: #6B6560;         /* alias of text-secondary, used in v0.6 */
   --color-vela-text-secondary: #6B6560;
+  --color-vela-text-1: #3D3835;         /* alias of text, used in v0.6 */
   --color-vela-text: #3D3835;
   --color-vela-heading: #1A1715;
+
+  /* Trait quiz v0.6 attention scale (3-level, report-specific) */
+  --color-trait-easy-from: #2D6A4F;
+  --color-trait-easy-to: #3D8C6A;
+  --color-trait-notable-from: #B5942D;
+  --color-trait-notable-to: #E9C46A;
+  --color-trait-notable-text: #8B6914;
+  --color-trait-strong-from: #D9622A;
+  --color-trait-strong-to: #EC8A3E;
+  --color-trait-strong-text: #B85A20;
   --color-vela-success: #2D6A4F;
   --color-vela-warning: #E9C46A;
   --color-vela-error: #E63946;

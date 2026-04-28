@@ -54,8 +54,11 @@ describe("Quiz welcome screen (app/trait-quiz/page.tsx)", () => {
     expect(quizPage).not.toContain("规划路线图");
   });
 
-  it("welcome subtitle should still tell the user what they'll receive", () => {
-    // Make sure the replacement still tells the user what they'll get
+  // TODO slice 6: this test was for v0.5 path-recommender copy. v0.6 quiz
+  // delivers a temperament profile, not "路线 / 建议", so this assertion
+  // is obsolete. Slice 6 cleanup will delete the entire v0.5 copy-quality
+  // file in favor of trait-quiz-v06-copy-quality.test.ts.
+  it.skip("welcome subtitle should still tell the user what they'll receive (v0.5 only — superseded by v0.6 copy)", () => {
     expect(quizPage).toMatch(/路线|建议/);
   });
 });
@@ -95,10 +98,9 @@ describe("Quiz welcome subtitle: no '学习风格' pseudoscience term", () => {
     expect(quizPage).not.toContain("学习风格");
   });
 
-  it("welcome subtitle should still describe what the quiz measures", () => {
-    // After removing "学习风格", replacement must still tell the user what
-    // they'll learn about the child. "兴趣" alone or a specific alternative
-    // for the learning dimension is required.
+  // TODO slice 6: v0.5 specific assertion. v0.6 measures temperament not
+  // 兴趣/学习风格 dimensions. Slice 6 deletes this whole file.
+  it.skip("welcome subtitle should still describe what the quiz measures (v0.5 only)", () => {
     expect(quizPage).toMatch(/兴趣.{0,20}(特点|节奏|方式|特质|成长)/);
   });
 });
