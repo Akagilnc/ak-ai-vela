@@ -38,8 +38,25 @@ export type DimScores = Record<DimensionId, number>;
 
 export interface ClassifyInput {
   scores: DimScores;
-  /** All 30 raw 1-5 likert answers (used by variance guard). */
-  allRawAnswers: number[];
+  /**
+   * Live quiz session: pass all 30 raw 1-5 likert answers.
+   * Variance guard computes σ from this and triggers if σ < varianceMin.
+   * Mutually exclusive with `lowConfidenceFlag`.
+   */
+  allRawAnswers?: number[];
+  /**
+   * URL decode path: pre-computed flag (encoded into score URL at quiz
+   * completion). If provided, takes precedence over `allRawAnswers`-based
+   * variance computation. URL decoders always use this — they don't have
+   * raw answers (only 9 dim averages are encoded).
+   */
+  lowConfidenceFlag?: boolean;
+  /**
+   * Optional config override. Slice 2 (score-encoding) will pass
+   * `cutoffHistory[cutoffVersion]` here to keep old URLs rendering with
+   * their original cutoffs. Default: `CLASSIFICATION_CONFIG` (v1).
+   */
+  config?: ClassificationConfig;
 }
 
 export interface ClassifyResult {
@@ -49,13 +66,13 @@ export interface ClassifyResult {
   rawIntensity: number; // 1-5 raw
 }
 
-interface CoreDimSpec {
+export interface CoreDimSpec {
   key: DimensionId;
   /** true = high score is the "hard pole" (e.g. approach: 5=withdrawal) */
   highIsHardPole: boolean;
 }
 
-interface CutoffSet {
+export interface CutoffSet {
   easy: number;
   slowWarm: number;
   cautious: number;
@@ -64,7 +81,7 @@ interface CutoffSet {
   varianceMin: number;
 }
 
-interface ClassificationConfig {
+export interface ClassificationConfig {
   coreDims: readonly CoreDimSpec[];
   differentiator: DimensionId;
   cutoffs: CutoffSet;
@@ -107,6 +124,12 @@ export function computeCore(scores: DimScores, config = CLASSIFICATION_CONFIG): 
   return sum / 25; // 5 dims × max contribution 5 = 25
 }
 
+/**
+ * Population stddev (divides by N, not N-1). Locked choice — for the case 7
+ * fixture both population and sample σ remain < 0.5, so the variance guard
+ * fires either way. A future "fix" to sample stddev would need to re-verify
+ * all fixture cases.
+ */
 function stddev(arr: number[]): number {
   if (arr.length === 0) return 0;
   const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
@@ -116,11 +139,21 @@ function stddev(arr: number[]): number {
 }
 
 export function classify(input: ClassifyInput): ClassifyResult {
-  const { scores, allRawAnswers } = input;
-  const cfg = CLASSIFICATION_CONFIG;
+  const { scores, allRawAnswers, lowConfidenceFlag, config } = input;
+  const cfg = config ?? CLASSIFICATION_CONFIG;
 
-  const variance = stddev(allRawAnswers);
-  const lowVariance = variance < cfg.cutoffs.varianceMin;
+  // Determine lowVariance from explicit flag (URL decode path) OR raw answers
+  // (live quiz path). Caller must supply exactly one — else throw.
+  let lowVariance: boolean;
+  if (lowConfidenceFlag !== undefined) {
+    lowVariance = lowConfidenceFlag;
+  } else if (allRawAnswers !== undefined) {
+    lowVariance = stddev(allRawAnswers) < cfg.cutoffs.varianceMin;
+  } else {
+    throw new Error(
+      "classify() requires either `allRawAnswers` (live mode) or `lowConfidenceFlag` (URL decode mode)",
+    );
+  }
 
   const core = computeCore(scores, cfg);
   const intensity = scores.intensity;

@@ -153,6 +153,7 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
       allRawAnswers: makeRawAnswers(),
     });
     expect(result.type).toBe("平衡型");
+    expect(result.confidence).toBe("high");
     expect(result.rawCore).toBeCloseTo(0.68, 2);
   });
 
@@ -190,6 +191,139 @@ describe("classify — 8 fixture cases from research notes Section 4.2", () => {
     expect(result.type).toBe("慢热型");
     expect(result.confidence).toBe("high");
     expect(result.rawCore).toBeCloseTo(0.72, 2);
+  });
+});
+
+describe("classify — exact cutoff boundary inclusion", () => {
+  // Lock 灵活 (≤ 0.30), slowWarm (≥ 0.55), cautious (≥ 0.70), intensityHigh (≥ 3.5)
+  it("core exactly 0.30 → 灵活型 (boundary inclusive)", () => {
+    // (rhy=5, app=1, ada=4, int=2, moo=4) → 0+1+1+2+1=5/25=0.20 — too low
+    // Need exact 0.30 = 7.5/25 — use mixed: (5,1,4,2,4) doesn't hit. Try
+    // (rhy=4, app=2, ada=4, int=1, moo=4) → 1+2+1+1+1=6/25=0.24
+    // (rhy=4, app=2, ada=4, int=2, moo=4) → 1+2+1+2+1=7/25=0.28
+    // (rhy=4, app=3, ada=4, int=1, moo=4) → 1+3+1+1+1=7/25=0.28
+    // (rhy=3, app=3, ada=4, int=1, moo=4) → 2+3+1+1+1=8/25=0.32 — past
+    // Try fractional: (rhy=4, app=2.5, ada=4, int=1, moo=4) = 1+2.5+1+1+1=6.5/25=0.26
+    // 0.30 = 7.5/25 — need decimal. (rhy=3.5,app=2,ada=4,int=1,moo=4)=1.5+2+1+1+1=6.5/25=0.26
+    // 0.30 = 7.5: (rhy=4, app=2.5, ada=4, int=2, moo=4) = 1+2.5+1+2+1=7.5/25=0.30 ✓
+    const result = classify({
+      scores: makeScores({
+        rhythmicity: 4, approach: 2.5, adaptability: 4, intensity: 2, mood: 4,
+      }),
+      allRawAnswers: makeRawAnswers(),
+    });
+    expect(result.rawCore).toBeCloseTo(0.30, 2);
+    expect(result.type).toBe("灵活型"); // ≤ 0.30 inclusive
+  });
+
+  it("core just above 0.30 → 平衡型 (not 灵活)", () => {
+    const result = classify({
+      scores: makeScores({
+        rhythmicity: 4, approach: 2.5, adaptability: 4, intensity: 2.5, mood: 4,
+      }),
+      allRawAnswers: makeRawAnswers(),
+    });
+    expect(result.rawCore).toBeCloseTo(0.32, 2);
+    expect(result.type).toBe("平衡型");
+  });
+
+  it("core exactly 0.55 + intensity < 3.5 → 慢热型 (slowWarm boundary inclusive)", () => {
+    // 0.55 = 13.75/25. (rhy=2,app=4,ada=2,int=2.75,moo=2) = 3+4+3+2.75+3 = 15.75/25 = 0.63
+    // (rhy=3,app=3,ada=3,int=2.75,moo=2) = 2+3+2+2.75+3 = 12.75/25 = 0.51
+    // 0.55 = 13.75: (rhy=2,app=3,ada=3,int=2.75,moo=2) = 3+3+2+2.75+3 = 13.75/25 = 0.55 ✓
+    const result = classify({
+      scores: makeScores({
+        rhythmicity: 2, approach: 3, adaptability: 3, intensity: 2.75, mood: 2,
+      }),
+      allRawAnswers: makeRawAnswers(),
+    });
+    expect(result.rawCore).toBeCloseTo(0.55, 2);
+    expect(result.type).toBe("慢热型");
+  });
+
+  it("core exactly 0.70 + intensity exactly 3.5 → 慎重型 (cautious + intensityHigh both inclusive)", () => {
+    // 0.70 = 17.5/25. (rhy=1,app=5,ada=1,int=3.5,moo=2) = 4+5+4+3.5+3=19.5 — too high
+    // (rhy=2,app=4,ada=2,int=3.5,moo=2) = 3+4+3+3.5+3=16.5/25=0.66
+    // (rhy=1,app=4,ada=2,int=3.5,moo=2) = 4+4+3+3.5+3=17.5/25=0.70 ✓
+    const result = classify({
+      scores: makeScores({
+        rhythmicity: 1, approach: 4, adaptability: 2, intensity: 3.5, mood: 2,
+      }),
+      allRawAnswers: makeRawAnswers(),
+    });
+    expect(result.rawCore).toBeCloseTo(0.70, 2);
+    expect(result.type).toBe("慎重型"); // intensity ≥ 3.5 inclusive
+    expect(result.confidence).toBe("low"); // hysteresis at 3.5
+  });
+});
+
+describe("classify — URL decode mode (lowConfidenceFlag instead of allRawAnswers)", () => {
+  it("accepts lowConfidenceFlag=true and reproduces case 4 confidence=low", () => {
+    const result = classify({
+      scores: makeScores(), // all 3 → 平衡型
+      lowConfidenceFlag: true,
+    });
+    expect(result.type).toBe("平衡型");
+    expect(result.confidence).toBe("low");
+  });
+
+  it("accepts lowConfidenceFlag=false and confidence stays high", () => {
+    const result = classify({
+      scores: makeScores(),
+      lowConfidenceFlag: false,
+    });
+    expect(result.type).toBe("平衡型");
+    expect(result.confidence).toBe("high");
+  });
+
+  it("lowConfidenceFlag does NOT downgrade 灵活/慎重/慢热 (variance guard scope unchanged)", () => {
+    const result = classify({
+      scores: makeScores({
+        rhythmicity: 5, approach: 1, adaptability: 5, intensity: 1, mood: 5,
+      }),
+      lowConfidenceFlag: true,
+    });
+    expect(result.type).toBe("灵活型");
+    expect(result.confidence).toBe("high"); // flag intentionally only applies to 平衡型
+  });
+
+  it("throws when neither allRawAnswers nor lowConfidenceFlag provided", () => {
+    expect(() =>
+      classify({ scores: makeScores() }),
+    ).toThrow(/allRawAnswers.*lowConfidenceFlag/);
+  });
+
+  it("lowConfidenceFlag takes precedence over allRawAnswers when both given", () => {
+    const result = classify({
+      scores: makeScores(),
+      allRawAnswers: makeRawAnswers(), // σ ≈ 1.4 → would be lowVariance=false
+      lowConfidenceFlag: true, // explicit flag wins
+    });
+    expect(result.confidence).toBe("low");
+  });
+});
+
+describe("classify — config override (cutoff history)", () => {
+  it("accepts custom config and uses its cutoffs", () => {
+    // Override cutoffs to make all-3 fall into 灵活 (extreme easy threshold)
+    const overrideConfig = {
+      ...CLASSIFICATION_CONFIG,
+      cutoffs: { ...CLASSIFICATION_CONFIG.cutoffs, easy: 0.5 }, // all-3 = 0.48
+    };
+    const result = classify({
+      scores: makeScores(),
+      lowConfidenceFlag: false,
+      config: overrideConfig,
+    });
+    expect(result.type).toBe("灵活型"); // 0.48 ≤ 0.50
+  });
+
+  it("default config preserves spec behavior when not overridden", () => {
+    const result = classify({
+      scores: makeScores(),
+      lowConfidenceFlag: false,
+    });
+    expect(result.type).toBe("平衡型"); // standard 0.30 cutoff
   });
 });
 

@@ -14,6 +14,8 @@ import { describe, expect, it } from "vitest";
 import {
   DIMENSION_LIST,
   DIMENSION_META,
+  getAttentionLevel,
+  type AttentionLevel,
   type DimensionId,
   type DimensionMeta,
 } from "../dimensions";
@@ -42,6 +44,23 @@ describe("DIMENSION_META — 9 Thomas & Chess temperament dimensions", () => {
         "threshold",
       ].sort(),
     );
+  });
+
+  it("dimension ORDER is locked (slice 2 score-encoding bit packing depends on this)", () => {
+    // dim0..dim8 positions are baked into score URL byte layout (research §4.5.2).
+    // Reordering would silently break URL backward-compat. Always append new
+    // dims to the END of DIMENSION_LIST.
+    expect(DIMENSION_LIST.map((d) => d.id)).toEqual([
+      "activityLevel",
+      "rhythmicity",
+      "approach",
+      "adaptability",
+      "intensity",
+      "threshold",
+      "mood",
+      "distractibility",
+      "persistence",
+    ]);
   });
 
   it("each dimension carries non-empty Chinese name and displayLabel", () => {
@@ -125,6 +144,40 @@ describe("DIMENSION_META lookup matches DIMENSION_LIST", () => {
     for (const key of Object.keys(DIMENSION_META)) {
       expect(listIds.has(key as DimensionId)).toBe(true);
     }
+  });
+});
+
+describe("getAttentionLevel — 3-level color band per dim", () => {
+  const high = DIMENSION_META.activityLevel; // attentionPole='high'
+  const low = DIMENSION_META.rhythmicity; // attentionPole='low'
+
+  it("attentionPole='high': score 1-2 = easy", () => {
+    expect(getAttentionLevel(high, 1)).toBe("easy");
+    expect(getAttentionLevel(high, 2)).toBe("easy");
+  });
+  it("attentionPole='high': score 3-4 = notable", () => {
+    expect(getAttentionLevel(high, 3)).toBe("notable");
+    expect(getAttentionLevel(high, 4)).toBe("notable");
+  });
+  it("attentionPole='high': score 5 = strong", () => {
+    expect(getAttentionLevel(high, 5)).toBe("strong");
+  });
+
+  it("attentionPole='low': score 4-5 = easy", () => {
+    expect(getAttentionLevel(low, 4)).toBe("easy");
+    expect(getAttentionLevel(low, 5)).toBe("easy");
+  });
+  it("attentionPole='low': score 2-3 = notable", () => {
+    expect(getAttentionLevel(low, 2)).toBe("notable");
+    expect(getAttentionLevel(low, 3)).toBe("notable");
+  });
+  it("attentionPole='low': score 1 = strong", () => {
+    expect(getAttentionLevel(low, 1)).toBe("strong");
+  });
+
+  it("returns AttentionLevel union type", () => {
+    const valid: AttentionLevel[] = ["easy", "notable", "strong"];
+    expect(valid).toContain(getAttentionLevel(high, 3));
   });
 });
 

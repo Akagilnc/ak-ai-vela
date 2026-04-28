@@ -112,3 +112,34 @@ export const DIMENSION_META: Record<DimensionId, DimensionMeta> =
     },
     {} as Record<DimensionId, DimensionMeta>,
   );
+
+/**
+ * 3-level color attention scale for UI bar rendering.
+ *
+ * Score (1-5 likert):
+ *   - On easy pole (far from attentionPole) → 'easy' (forest green)
+ *   - Mid-zone toward attention pole → 'notable' (deep gold)
+ *   - At attention pole extreme → 'strong' (burnt orange)
+ *
+ * Per-dim polarity (1-5 likert space):
+ *   - attentionPole='high': score 1-2 = easy, 3-4 = notable, 5 = strong
+ *   - attentionPole='low': score 4-5 = easy, 2-3 = notable, 1 = strong
+ *
+ * Distance measured against the easy-end anchor (score 1 if pole='high', 5 if
+ * pole='low'). Bands: distance < 2 = easy; < 4 = notable; ≥ 4 = strong.
+ */
+export type AttentionLevel = "easy" | "notable" | "strong";
+
+export function getAttentionLevel(
+  dim: DimensionMeta,
+  score: number,
+): AttentionLevel {
+  // Distance from the easy-end anchor.
+  // High pole: easy anchor = 1, distance = score - 1.
+  // Low pole:  easy anchor = 5, distance = 5 - score.
+  const distance =
+    dim.attentionPole === "high" ? score - 1 : 5 - score;
+  if (distance < 2) return "easy";
+  if (distance < 4) return "notable";
+  return "strong";
+}
