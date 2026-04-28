@@ -20,6 +20,7 @@ import {
   pickInsightDims,
 } from "@/lib/traits/temperament/profiles";
 import type { TraitType } from "@/lib/traits/temperament/score";
+import { ShareButton } from "./share-button";
 
 interface ResultPageProps {
   childName?: string;
@@ -308,16 +309,3 @@ export function ResultPage({
   );
 }
 
-// Client-only share button (uses navigator.clipboard)
-function ShareButton({ type }: { type: TraitType }) {
-  return (
-    <button
-      type="button"
-      data-share-trigger
-      data-share-type={type}
-      className="bg-vela-primary text-white rounded-md min-h-[52px] flex items-center justify-center font-semibold text-[16px] hover:bg-vela-primary-dark"
-    >
-      分享给伴侣
-    </button>
-  );
-}
