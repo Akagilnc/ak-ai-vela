@@ -16,13 +16,15 @@
 import { describe, expect, it } from "vitest";
 import {
   cutoffHistory,
+  decodeAndClassifyScore,
   decodeScore,
   encodeScore,
+  quantizeDimScores,
   type DecodeError,
   type DecodeResult,
   type EncodeInput,
 } from "../score-encoding";
-import type { DimScores } from "../score";
+import { classify, CLASSIFICATION_CONFIG, type DimScores } from "../score";
 
 const sampleDims: DimScores = {
   activityLevel: 3,
@@ -137,6 +139,126 @@ describe("decodeScore — error paths", () => {
   });
 });
 
+describe("decodeScore — additional R1 fixes", () => {
+  it("rejects '.' in input (not in base64url alphabet)", () => {
+    const result = decodeScore("AAAA.AAA");
+    expect(result).toEqual(expect.objectContaining({ error: "invalid" }));
+  });
+
+  it("returns schema_unsupported when cutoffVersion has no history entry", () => {
+    // Encode with cutoffVersion=7 (no history entry exists)
+    const encoded = encodeScore({ ...baseInput, cutoffVersion: 7 });
+    const result = decodeScore(encoded);
+    expect(result).toEqual(
+      expect.objectContaining({ error: "schema_unsupported" }),
+    );
+  });
+
+  it("returns corrupt when padding bits are non-zero (hand-crafted)", () => {
+    // Generate valid encoding then flip padding bits at byte 4 low nibble
+    const valid = encodeScore(baseInput);
+    const validBytes = decodeScoreToBytes(valid);
+    if (!validBytes) throw new Error("test setup failed");
+    validBytes[4] |= 0x0f; // set all padding bits to 1
+    // Re-encode with valid CRC over the tampered bytes
+    validBytes[5] = crc8ForTest(validBytes.subarray(0, 5));
+    const tamperedB64 = bytesToB64urlForTest(validBytes);
+    const result = decodeScore(tamperedB64);
+    expect(result).toEqual(expect.objectContaining({ error: "corrupt" }));
+  });
+});
+
+describe("encodeScore — input validation", () => {
+  it("throws on NaN dim score", () => {
+    expect(() =>
+      encodeScore({
+        ...baseInput,
+        dims: { ...sampleDims, intensity: NaN },
+      }),
+    ).toThrow(/invalid dim score/);
+  });
+
+  it("throws on Infinity dim score", () => {
+    expect(() =>
+      encodeScore({
+        ...baseInput,
+        dims: { ...sampleDims, intensity: Infinity },
+      }),
+    ).toThrow(/invalid dim score/);
+  });
+
+  it("clamps dim score above 5 silently (intentional, e.g. classify uses 3.5)", () => {
+    const encoded = encodeScore({
+      ...baseInput,
+      dims: { ...sampleDims, intensity: 7 }, // out of range
+    });
+    const result = decodeScore(encoded);
+    if ("error" in result) throw new Error("decode failed");
+    expect(result.dims.intensity).toBe(5); // clamped to max
+  });
+
+  it("clamps dim score below 1 silently", () => {
+    const encoded = encodeScore({
+      ...baseInput,
+      dims: { ...sampleDims, intensity: 0 },
+    });
+    const result = decodeScore(encoded);
+    if ("error" in result) throw new Error("decode failed");
+    expect(result.dims.intensity).toBe(1); // clamped to min
+  });
+});
+
+// Test-only helpers (don't export from production module)
+function decodeScoreToBytes(s: string): Uint8Array | null {
+  // Mirror of internal base64urlToBytes for test use
+  const B64URL_CHARS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  if (!/^[A-Za-z0-9_-]+$/.test(s)) return null;
+  if (s.length !== 8) return null;
+  const bytes = new Uint8Array(6);
+  let bitBuffer = 0;
+  let bitCount = 0;
+  let byteIndex = 0;
+  for (const char of s) {
+    const v = B64URL_CHARS.indexOf(char);
+    bitBuffer = (bitBuffer << 6) | v;
+    bitCount += 6;
+    while (bitCount >= 8 && byteIndex < 6) {
+      bitCount -= 8;
+      bytes[byteIndex++] = (bitBuffer >> bitCount) & 0xff;
+    }
+  }
+  return bytes;
+}
+
+function crc8ForTest(bytes: Uint8Array): number {
+  let crc = 0;
+  for (const b of bytes) {
+    crc ^= b;
+    for (let i = 0; i < 8; i++) {
+      crc = (crc & 0x80) ? ((crc << 1) ^ 0x07) & 0xff : (crc << 1) & 0xff;
+    }
+  }
+  return crc;
+}
+
+function bytesToB64urlForTest(bytes: Uint8Array): string {
+  const B64URL_CHARS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const result: string[] = [];
+  for (let i = 0; i < bytes.length; i += 3) {
+    const b0 = bytes[i] ?? 0;
+    const b1 = bytes[i + 1] ?? 0;
+    const b2 = bytes[i + 2] ?? 0;
+    const triplet = (b0 << 16) | (b1 << 8) | b2;
+    const charCount = Math.min(4, Math.ceil(((bytes.length - i) * 8) / 6));
+    for (let j = 0; j < charCount; j++) {
+      result.push(B64URL_CHARS[(triplet >> (18 - j * 6)) & 0x3f]);
+    }
+  }
+  return result.join("");
+}
+
 describe("decodeScore — bit packing edge cases", () => {
   it("handles dim values that span byte boundaries (dim2 across bytes 1+2, dim5 across bytes 2+3)", () => {
     // Set dim2 (approach) and dim5 (threshold) to specific values to exercise byte-spanning
@@ -188,6 +310,126 @@ describe("cutoffHistory — append-only invariant", () => {
         varianceMin: 0.5,
       }),
     );
+  });
+});
+
+describe("quantizeDimScores — quantization invariant for live path", () => {
+  it("rounds fractional avg to integer 1-5", () => {
+    const fractional: DimScores = {
+      activityLevel: 3.5,
+      rhythmicity: 1.25,
+      approach: 4.75,
+      adaptability: 2.5,
+      intensity: 3.5, // critical: this is what causes URL/live mismatch
+      threshold: 3.0,
+      mood: 1.0,
+      distractibility: 4.5,
+      persistence: 5.0,
+    };
+    const quantized = quantizeDimScores(fractional);
+    expect(quantized.activityLevel).toBe(4); // 3.5 → 4
+    expect(quantized.rhythmicity).toBe(1); // 1.25 → 1
+    expect(quantized.approach).toBe(5); // 4.75 → 5
+    expect(quantized.adaptability).toBe(3); // 2.5 → 3 (banker's? Math.round → 3)
+    expect(quantized.intensity).toBe(4); // 3.5 → 4
+    expect(quantized.threshold).toBe(3);
+    expect(quantized.mood).toBe(1);
+    expect(quantized.distractibility).toBe(5); // 4.5 → 5
+    expect(quantized.persistence).toBe(5);
+  });
+
+  it("integer input passes through unchanged", () => {
+    const integer: DimScores = {
+      activityLevel: 3, rhythmicity: 1, approach: 5, adaptability: 1,
+      intensity: 5, threshold: 3, mood: 1, distractibility: 3, persistence: 3,
+    };
+    expect(quantizeDimScores(integer)).toEqual(integer);
+  });
+
+  it("clamps out-of-range values silently", () => {
+    expect(quantizeDimScores({ ...sampleDims, intensity: 7 }).intensity).toBe(5);
+    expect(quantizeDimScores({ ...sampleDims, intensity: 0 }).intensity).toBe(1);
+  });
+
+  it("throws on NaN/Infinity (matches encode behavior)", () => {
+    expect(() =>
+      quantizeDimScores({ ...sampleDims, intensity: NaN }),
+    ).toThrow(/invalid dim score/);
+  });
+
+  it("invariant: classify(quantize(x)) === decodeAndClassify(encode(quantize(x)))", () => {
+    // The whole point: live and URL paths agree post-quantize.
+    const fractional: DimScores = {
+      activityLevel: 3.4, rhythmicity: 1.6, approach: 4.4, adaptability: 1.5,
+      intensity: 3.5, threshold: 2.5, mood: 1.5, distractibility: 3.0, persistence: 4.5,
+    };
+    const quantized = quantizeDimScores(fractional);
+    const encoded = encodeScore({
+      schemaVersion: 1,
+      cutoffVersion: 1,
+      dims: quantized,
+      lowConfidenceFlag: false,
+    });
+    const urlResult = decodeAndClassifyScore(encoded);
+    if ("error" in urlResult) throw new Error("decode failed");
+
+    // Live path: classify directly on quantized
+    const liveResult = classify({
+      scores: quantized,
+      lowConfidenceFlag: false,
+      config: CLASSIFICATION_CONFIG,
+    });
+
+    expect(urlResult.type).toBe(liveResult.type);
+    expect(urlResult.confidence).toBe(liveResult.confidence);
+  });
+});
+
+describe("decodeAndClassifyScore — wrapper for result page", () => {
+  it("returns full ClassifyResult + dims + version metadata", () => {
+    const encoded = encodeScore({
+      schemaVersion: 1,
+      cutoffVersion: 1,
+      dims: { activityLevel: 3, rhythmicity: 1, approach: 5, adaptability: 1,
+              intensity: 5, threshold: 3, mood: 1, distractibility: 3, persistence: 3 },
+      lowConfidenceFlag: false,
+    });
+    const result = decodeAndClassifyScore(encoded);
+    if ("error" in result) throw new Error("decode failed");
+
+    expect(result.type).toBe("慎重型");
+    expect(result.confidence).toBe("high");
+    expect(result.dims).toBeDefined();
+    expect(result.cutoffVersion).toBe(1);
+    expect(result.schemaVersion).toBe(1);
+    expect(result.rawCore).toBeCloseTo(0.88, 2);
+  });
+
+  it("propagates decode errors unchanged (empty / wrong length / bad chars)", () => {
+    expect(decodeAndClassifyScore("")).toEqual(
+      expect.objectContaining({ error: "invalid" }),
+    );
+    expect(decodeAndClassifyScore("AAA")).toEqual(
+      expect.objectContaining({ error: "invalid" }),
+    );
+    expect(decodeAndClassifyScore("AAAA.AAA")).toEqual(
+      expect.objectContaining({ error: "invalid" }),
+    );
+  });
+
+  it("uses cutoffHistory[cutoffVersion] for classification (cross-version safety)", () => {
+    // Encode with cutoffVersion=1
+    const encoded = encodeScore({
+      schemaVersion: 1,
+      cutoffVersion: 1,
+      dims: { activityLevel: 3, rhythmicity: 3, approach: 3, adaptability: 3,
+              intensity: 3, threshold: 3, mood: 3, distractibility: 3, persistence: 3 },
+      lowConfidenceFlag: true,
+    });
+    const result = decodeAndClassifyScore(encoded);
+    if ("error" in result) throw new Error("decode failed");
+    expect(result.type).toBe("平衡型");
+    expect(result.confidence).toBe("low");
   });
 });
 

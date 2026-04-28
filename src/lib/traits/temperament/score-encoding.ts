@@ -29,7 +29,13 @@
  */
 
 import { DIMENSION_LIST, type DimensionId } from "./dimensions";
-import type { CutoffSet, DimScores } from "./score";
+import {
+  classify,
+  CLASSIFICATION_CONFIG,
+  type ClassifyResult,
+  type CutoffSet,
+  type DimScores,
+} from "./score";
 
 const SCHEMA_VERSION_MAX_SUPPORTED = 1;
 const CRC_POLY = 0x07;
@@ -57,20 +63,24 @@ export type DecodeError = {
  * percentile re-cal triggers a v2 entry. ESLint rule (TODO slice 6) should
  * lint-fail any modification of `cutoffHistory[1]`.
  */
-export const cutoffHistory: Record<number, CutoffSet> = {
-  1: {
-    easy: 0.3,
-    slowWarm: 0.55,
-    cautious: 0.7,
-    intensityHigh: 3.5,
-    intensityHysteresisBand: 0.4,
-    varianceMin: 0.5,
-  },
-} as const;
+export const cutoffHistory: Readonly<Record<number, Readonly<CutoffSet>>> =
+  Object.freeze({
+    1: Object.freeze({
+      easy: 0.3,
+      slowWarm: 0.55,
+      cautious: 0.7,
+      intensityHigh: 3.5,
+      intensityHysteresisBand: 0.4,
+      varianceMin: 0.5,
+    }),
+  });
 
 // ===== Bit packing helpers =====
 
 function clampDim(value: number): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(`invalid dim score (NaN or Infinity): ${value}`);
+  }
   // Round to nearest integer, clamp to 1-5
   const rounded = Math.round(value);
   return Math.max(1, Math.min(5, rounded));
@@ -130,6 +140,7 @@ function bytesToBase64url(bytes: Uint8Array): string {
 }
 
 function base64urlToBytes(s: string): Uint8Array | null {
+  // Single regex validation — guarantees all chars are valid base64url alphabet
   if (!/^[A-Za-z0-9_-]+$/.test(s)) return null;
   const byteCount = Math.floor((s.length * 6) / 8);
   if (byteCount !== 6) return null; // we only accept 8-char inputs (6 bytes)
@@ -140,8 +151,8 @@ function base64urlToBytes(s: string): Uint8Array | null {
   let byteIndex = 0;
 
   for (const char of s) {
+    // indexOf safe: regex above guarantees char is in alphabet
     const v = B64URL_CHARS.indexOf(char);
-    if (v === -1) return null;
     bitBuffer = (bitBuffer << 6) | v;
     bitCount += 6;
     while (bitCount >= 8 && byteIndex < 6) {
@@ -208,24 +219,32 @@ export function decodeScore(score: string): DecodeResult | DecodeError {
   const bytes = base64urlToBytes(score);
   if (!bytes) return { error: "invalid" };
 
-  // Validate CRC
-  const expectedCrc = crc8(bytes.subarray(0, 5));
-  if (expectedCrc !== bytes[5]) {
-    return { error: "corrupt" };
-  }
-
-  // Validate padding bits (byte 4 low 4 bits)
-  if ((bytes[4] & 0x0f) !== 0) {
-    return { error: "corrupt" };
-  }
-
-  // Validate schema version
+  // Per spec Section 4.5.3: schema check first (before CRC) so future v2
+  // URLs return "schema_unsupported" cleanly instead of "corrupt" — v2 may
+  // use a different byte layout where v1 CRC math doesn't apply.
   const schemaVersion = (bytes[0] >> 4) & 0x0f;
   if (schemaVersion > SCHEMA_VERSION_MAX_SUPPORTED) {
     return { error: "schema_unsupported" };
   }
 
+  // Validate padding bits (byte 4 low 4 bits) — v1 specific
+  if ((bytes[4] & 0x0f) !== 0) {
+    return { error: "corrupt" };
+  }
+
+  // Validate CRC over bytes 0-4
+  const expectedCrc = crc8(bytes.subarray(0, 5));
+  if (expectedCrc !== bytes[5]) {
+    return { error: "corrupt" };
+  }
+
   const cutoffVersion = bytes[0] & 0x0f;
+  // Validate cutoffVersion has a known cutoffHistory entry — guards against
+  // tampered URLs claiming a future cutoff version with valid CRC for v1
+  // schema (impossible without re-CRC, but defense-in-depth).
+  if (!(cutoffVersion in cutoffHistory)) {
+    return { error: "schema_unsupported" };
+  }
 
   // Unpack 9 dims (reverse of encode)
   const storedDims = new Array<number>(9);
@@ -248,4 +267,70 @@ export function decodeScore(score: string): DecodeResult | DecodeError {
   const lowConfidenceFlag = ((bytes[4] >> 4) & 0x01) === 1;
 
   return { schemaVersion, cutoffVersion, dims, lowConfidenceFlag };
+}
+
+/**
+ * **Quantization invariant** — live quiz path AND URL decode path must produce
+ * the same classification for the same user input. This is enforced by:
+ *
+ *   1. URL encode rounds dim averages to integer 1-5 (`clampDim`)
+ *   2. URL decode produces integer dim scores via this rounding
+ *   3. Live quiz path MUST also round per-dim averages to integer 1-5 before
+ *      calling `classify()` — use `quantizeDimScores()` helper below
+ *
+ * Without (3), `classify(intensity=3.5)` returns 慎重/low in live but the
+ * shared URL renders 慎重/high (intensity rounds to 4, |4-3.5|=0.5 > band/2).
+ *
+ * Trade-off: hysteresis band on intensity (|x-3.5| < 0.2) effectively never
+ * fires for production inputs since integer 3 / 4 are 0.5 away from 3.5.
+ * This is intentional — hysteresis was a precision-aware enhancement; URL
+ * round-trip safety wins. Slice 3 UI may show "接近 X 型" for adjacent
+ * categories via different signal (e.g. cutoff proximity), not via intensity
+ * fractional precision.
+ */
+export function quantizeDimScores(scores: DimScores): DimScores {
+  const result = {} as DimScores;
+  for (const meta of DIMENSION_LIST) {
+    result[meta.id] = clampDim(scores[meta.id]);
+  }
+  return result;
+}
+
+/**
+ * Decode a score URL and immediately classify, so result-page rendering
+ * doesn't have to manually plumb `cutoffHistory[cutoffVersion]` into a
+ * `ClassificationConfig`. Returns full `ClassifyResult` plus the decoded
+ * dims (for bar rendering) and version metadata.
+ */
+export type DecodeAndClassifyResult = ClassifyResult & {
+  schemaVersion: number;
+  cutoffVersion: number;
+  dims: DimScores;
+};
+
+export function decodeAndClassifyScore(
+  score: string,
+): DecodeAndClassifyResult | DecodeError {
+  const decoded = decodeScore(score);
+  if ("error" in decoded) return decoded;
+
+  const cutoffSet = cutoffHistory[decoded.cutoffVersion];
+  // Decoded.cutoffVersion in cutoffHistory is guaranteed by decodeScore
+  const config = {
+    ...CLASSIFICATION_CONFIG,
+    cutoffs: cutoffSet,
+  };
+
+  const result = classify({
+    scores: decoded.dims,
+    lowConfidenceFlag: decoded.lowConfidenceFlag,
+    config,
+  });
+
+  return {
+    ...result,
+    schemaVersion: decoded.schemaVersion,
+    cutoffVersion: decoded.cutoffVersion,
+    dims: decoded.dims,
+  };
 }
