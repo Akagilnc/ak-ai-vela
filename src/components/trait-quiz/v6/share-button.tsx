@@ -5,7 +5,7 @@
  * Falls back to Web Share API on supporting platforms.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { TraitType } from "@/lib/traits/temperament/score";
 
 interface ShareButtonProps {
@@ -14,6 +14,15 @@ interface ShareButtonProps {
 
 export function ShareButton({ type }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
+
+  // Auto-clear "copied" toast after 2s. useEffect cleanup prevents the
+  // "state update on unmounted component" warning if user navigates away
+  // mid-toast (Gemini PR #33 R2 medium).
+  useEffect(() => {
+    if (!copied) return;
+    const timerId = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timerId);
+  }, [copied]);
 
   async function handleShare() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -34,7 +43,6 @@ export function ShareButton({ type }: ShareButtonProps) {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
     } catch {
       // Last fallback: prompt user to copy manually
       window.prompt("复制这个链接", url);
