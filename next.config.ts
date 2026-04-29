@@ -1,19 +1,26 @@
 import type { NextConfig } from "next";
 
-// Resolve the allowed dev-origin list from the environment so rotating a
-// Cloudflare quick-tunnel URL only requires editing `.env.local`, not
-// committing a source change. Accepts a comma-separated list for the rare
-// case where a developer runs multiple tunnels in parallel.
+// Permanent dev tunnel host: `vela.akbot.top` (named cloudflared tunnel
+// `vela-mba`, UUID 625064f1-7c70-42ff-8336-f307d2e0349e). The named tunnel
+// preserves the URL across cloudflared restarts so seed users can bookmark.
+//
+// `DEV_TUNNEL_ORIGIN` env var still supported for ad-hoc quick-tunnel runs
+// (additional hosts comma-separated). Empty env → only the permanent host.
 //
 // Dev-only: `allowedDevOrigins` has no effect on production builds.
-// Empty env → empty list → Next falls back to its normal same-origin check.
-const devTunnelOrigins = (process.env.DEV_TUNNEL_ORIGIN ?? "")
+const PERMANENT_DEV_TUNNEL = "vela.akbot.top";
+
+const envOrigins = (process.env.DEV_TUNNEL_ORIGIN ?? "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
+const allowedDevOrigins = Array.from(
+  new Set([PERMANENT_DEV_TUNNEL, ...envOrigins]),
+);
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: devTunnelOrigins,
+  allowedDevOrigins,
 };
 
 export default nextConfig;
