@@ -17,11 +17,7 @@ import { useRef } from "react";
 import { useTraitQuizV6 } from "./quiz-provider";
 import { LikertOptions } from "./likert-options";
 import { DimProgress } from "./dim-progress";
-import {
-  DIMENSION_LIST,
-  DIMENSION_META,
-} from "@/lib/traits/temperament/dimensions";
-import { QUESTIONS, QUESTIONS_BY_DIM } from "@/lib/traits/temperament/questions";
+import { QUESTIONS } from "@/lib/traits/temperament/questions";
 
 interface QuizStepProps {
   onSubmit: () => void;
@@ -41,14 +37,6 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
   const currentValue = state.answers[question.id];
   const isLastQuestion = state.currentIndex === QUESTIONS.length - 1;
   const canAdvance = currentValue !== undefined;
-
-  // Determine if this is the FIRST question of a new dim → show transition banner
-  const dim = DIMENSION_META[question.dimensionId];
-  const dimQuestions = QUESTIONS_BY_DIM[question.dimensionId];
-  const isDimFirstQuestion = dimQuestions[0]?.id === question.id;
-  const dimIndex = DIMENSION_LIST.findIndex((d) => d.id === dim.id);
-  // First question overall doesn't show transition banner (they just started)
-  const showTransition = isDimFirstQuestion && state.currentIndex > 0;
 
   const handleAnswer = (value: number) => {
     const wasFirstPick = currentValue === undefined;
@@ -110,20 +98,6 @@ export function QuizStep({ onSubmit, onExit }: QuizStepProps) {
         totalQuestions={state.totalQuestions}
         answeredCount={answeredCount}
       />
-
-      {showTransition && (
-        <div
-          className="bg-vela-primary/[0.06] border border-vela-primary/20 rounded-md py-[14px] px-4 mb-2 text-sm text-vela-primary leading-relaxed"
-          role="region"
-          aria-label="维度切换提示"
-        >
-          接下来 {dimQuestions.length} 题关于
-          <strong className="font-display font-semibold mx-1">
-            {dim.displayLabel}
-          </strong>
-          。
-        </div>
-      )}
 
       <section className="mb-2">
         <p className="font-display text-[24px] leading-[1.45] font-medium tracking-tight text-vela-heading">
