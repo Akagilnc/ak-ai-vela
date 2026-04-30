@@ -1,10 +1,15 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema, canonicalizeAnswers } from "@/lib/types";
 import type { QuestionnaireAnswers } from "@/lib/types";
 import { normalizeChineseGpa } from "@/lib/gap";
+import { signStudentToken, verifyStudentToken } from "@/lib/auth/student-token";
 import type { Prisma } from "@prisma/client";
+
+const STUDENT_COOKIE = "vela-student-token";
+const STUDENT_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 90; // 90 days
 
 export type SubmitResult = {
   success: boolean;
@@ -39,10 +44,20 @@ function computeNormalizedGpa(
   return null;
 }
 
-export async function submitQuestionnaire(
-  rawJson: string,
-  studentId?: string,
-): Promise<SubmitResult> {
+/**
+ * Normalize undefined → null for optional fields. Prisma's update treats
+ * `undefined` as "leave column as-is", so an absent SAT score in a fresh
+ * submission silently keeps the old DB value instead of clearing it.
+ * Adversarial review (R5, Codex P1) flagged this as silent data corruption.
+ *
+ * For create, undefined is fine — Prisma uses the column default. We use
+ * null explicitly to make the contract identical for both paths.
+ */
+function nullishify<T>(v: T | undefined): T | null {
+  return v === undefined ? null : v;
+}
+
+export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult> {
   // 1. Parse JSON
   let rawData: Record<string, unknown>;
   try {
@@ -70,17 +85,33 @@ export async function submitQuestionnaire(
 
   const data = result.data;
 
+  // 5. Server-side studentId trust boundary.
+  //    Read the HMAC-signed cookie set on prior submit. The client never
+  //    sees or sends raw studentId — so a leaked /complete?studentId=X URL
+  //    is not a write capability. Adversarial review (R5) flagged the
+  //    prior client-supplied param as IDOR. See lib/auth/student-token.ts.
+  const cookieStore = await cookies();
+  const trustedStudentId = verifyStudentToken(
+    cookieStore.get(STUDENT_COOKIE)?.value,
+  );
+
   try {
-    // 5–6. Upsert Student + create QuestionnaireResult atomically.
-    // Wrapping in $transaction ensures that if the QR insert fails,
-    // the student write is rolled back too.
+    // 6–7. Upsert Student + create QuestionnaireResult atomically.
+    //      Wrapping in $transaction ensures that if the QR insert fails,
+    //      the student write is rolled back too.
     const { studentId: resultStudentId } = await prisma.$transaction(async (tx) => {
-      // Look up by stable ID, not by name. Name-based lookup (findFirst)
-      // caused collision when two students shared a name. studentId is
-      // returned to the client on first submit and passed back on re-submit.
-      const existingStudent = studentId
-        ? await tx.student.findUnique({ where: { id: studentId } })
+      // Trust the HMAC-verified studentId. If absent or invalid, create
+      // a new student. If present but the row's name doesn't match the
+      // submitted childName, treat as a different student (don't clobber).
+      // The mismatch case covers shared-device / multi-tab scenarios where
+      // the cookie survives but the user is filling out a different kid's
+      // form. Adversarial R5 finding.
+      const existingStudent = trustedStudentId
+        ? await tx.student.findUnique({ where: { id: trustedStudentId } })
         : null;
+
+      const useExisting =
+        existingStudent !== null && existingStudent.name === data.childName;
 
       let sid: string;
 
@@ -93,31 +124,30 @@ export async function submitQuestionnaire(
         data.classRank,
       );
 
-      // `name` is in studentData so update path also keeps it in sync.
-      // Pre-fix: only create supplied name; update left student.name stale,
-      // so a corrected childName never reached the DB and /complete/gaps
-      // rendered the old name. Codex R3 finding.
+      // Normalize undefined → null so Prisma update actually clears
+      // optional fields when the user removes them in the form.
+      // Without this, a removed SAT score silently keeps the old DB value.
       const studentData = {
         name: data.childName,
-        gradeLevel: data.currentGrade,
-        schoolSystem: data.schoolSystem,
-        gpaPercentage: data.gpaPercentage,
-        classRank: data.classRank,
+        gradeLevel: nullishify(data.currentGrade),
+        schoolSystem: nullishify(data.schoolSystem),
+        gpaPercentage: nullishify(data.gpaPercentage),
+        classRank: nullishify(data.classRank),
         normalizedGPA,
-        satScore: data.satScore,
-        actScore: data.actScore,
-        toeflScore: data.toeflScore,
-        ieltsScore: data.ieltsScore,
-        scienceGPA: data.scienceGPA,
-        targetMajor: data.targetMajor,
+        satScore: nullishify(data.satScore),
+        actScore: nullishify(data.actScore),
+        toeflScore: nullishify(data.toeflScore),
+        ieltsScore: nullishify(data.ieltsScore),
+        scienceGPA: nullishify(data.scienceGPA),
+        targetMajor: nullishify(data.targetMajor),
       };
 
-      if (existingStudent) {
+      if (useExisting) {
         await tx.student.update({
-          where: { id: existingStudent.id },
+          where: { id: existingStudent!.id },
           data: studentData,
         });
-        sid = existingStudent.id;
+        sid = existingStudent!.id;
       } else {
         const student = await tx.student.create({
           data: studentData,
@@ -136,9 +166,33 @@ export async function submitQuestionnaire(
       return { studentId: sid };
     });
 
+    // 8. Set / refresh the HMAC-signed cookie on success. HttpOnly so
+    //    JavaScript can't read it (defense against XSS-stealing the id);
+    //    SameSite=Lax so it ships on top-level navigations to /complete.
+    cookieStore.set({
+      name: STUDENT_COOKIE,
+      value: signStudentToken(resultStudentId),
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: STUDENT_COOKIE_MAX_AGE_S,
+    });
+
     return { success: true, studentId: resultStudentId };
   } catch (error) {
     console.error("Questionnaire submission failed:", error);
     return { success: false, error: "数据保存失败，请稍后重试" };
   }
+}
+
+/**
+ * Server action invoked by the "重新开始" UI to clear the student token.
+ * Use this when the user explicitly starts a new student record on the
+ * same device (e.g., second child). Without this, the cookie would carry
+ * over and the next submission would attempt to update the prior student.
+ */
+export async function clearStudentSession(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(STUDENT_COOKIE);
 }

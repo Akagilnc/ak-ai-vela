@@ -8,6 +8,7 @@ import {
   useQuestionnaire,
   type DraftInfo,
 } from "@/components/questionnaire/questionnaire-provider";
+import { clearStudentSession } from "@/app/questionnaire/actions";
 
 function formatTimeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -45,12 +46,20 @@ export default function QuestionnairePage() {
     }
   };
 
-  const handleFreshStart = () => {
-    // True fresh start: reset studentId too so the next submit creates a
-    // brand-new Student row. Without resetStudentId:true, R1's CLEAR
-    // would silently preserve the old studentId and the new form would
-    // overwrite the previous Student's profile (Codex R3 finding).
+  const handleFreshStart = async () => {
+    // True fresh start: reset client state AND clear the server-side
+    // HMAC cookie. Without clearing the cookie, the next submission
+    // would still resolve to the previous studentId — silent overwrite
+    // of the prior Student. (Adversarial R5 fix; cookie now lives on the
+    // server, so this server-action call is the only way to clear it.)
     clearAll({ resetStudentId: true });
+    try {
+      await clearStudentSession();
+    } catch {
+      // Non-fatal: if the cookie clear fails (network, etc.), the next
+      // submit still gets a childName mismatch check in actions.ts that
+      // will fall through to create a new Student.
+    }
     router.push("/questionnaire/step/1");
   };
 

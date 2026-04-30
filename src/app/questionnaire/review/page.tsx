@@ -74,7 +74,7 @@ const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ReviewPage() {
-  const { data, flushSave, clearAll, studentId, setStudentId } = useQuestionnaire();
+  const { data, flushSave, clearAll, setStudentId } = useQuestionnaire();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -174,18 +174,17 @@ export default function ReviewPage() {
 
     startTransition(async () => {
       try {
-        const result: SubmitResult = await submitQuestionnaire(
-          payload,
-          studentId ?? undefined,
-        );
+        // Server reads HMAC-signed cookie for studentId trust — the
+        // client no longer passes it as a function arg. Adversarial R5
+        // closed this IDOR by moving the trust boundary server-side.
+        const result: SubmitResult = await submitQuestionnaire(payload);
         if (result.success) {
           const childName = data.childName || "";
           const nextStudentId = result.studentId ?? "";
-          // Persist studentId BEFORE clearAll() so a re-submission in
-          // the same browser (edit + resubmit) goes through findUnique
-          // and updates the existing Student instead of creating a duplicate.
-          // setStudentId writes to its own localStorage key (vela-student-id),
-          // independent of the draft, so clearDraft() doesn't wipe it.
+          // Mirror studentId in client state for UI display continuity
+          // (e.g., "your existing student" hint). The cookie is the only
+          // path that reaches the server — this localStorage copy is
+          // display-only and untrusted.
           if (nextStudentId) {
             setStudentId(nextStudentId);
           }
