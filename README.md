@@ -4,7 +4,7 @@ AI-powered growth guidance for Chinese families planning their child's path to U
 
 Three tools:
 - **Path Explorer** (v0.2) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards). June = 雨季观察家 (4 cards). Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
-- **Trait assessment quiz** — 10-question branching assessment that builds a personality portrait + staged roadmap (G1–G9). `/trait-quiz`.
+- **Trait assessment quiz** (v0.6) — 30-question Likert assessment based on Thomas & Chess 1956 NYU 9-dimension temperament framework. Produces a 9-dimension profile + 4-class hero (灵活型 / 慎重型 / 慢热型 / 平衡型) with consumer-friendly aliases over the academic labels. URL-encoded score payload (8 base64url chars, CRC-8 checksum) so result links are shareable + reproducible. `/trait-quiz`.
 - **Gap analysis engine** — for high schoolers targeting specific universities. `/questionnaire`.
 
 Built for a seed user (Kailing) with a child interested in pre-vet/animal science, living in Shanghai with US citizenship.
@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (577 tests, 30 files) |
+| `npm test` | Run all tests (733 tests, 31 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -51,8 +51,8 @@ src/
       page.tsx            # Overview: month-aware (?month=N) tile list, theme map per month
       not-found.tsx       # Chinese brand-styled 404
       error.tsx           # Chinese brand-styled error boundary
-    trait-quiz/           # 10-question trait assessment (v0.5.0.0)
-      result/[routeId]/   # Result page with portrait + roadmap
+    trait-quiz/           # 30-question Likert temperament assessment (v0.6 / v0.8.0.0)
+      result/[score]/     # Result page (URL-encoded 8-char score → 9-dim profile + 4-class hero)
     schools/              # School browse + detail pages
       [id]/               # Detail page with radar chart
     questionnaire/        # 8-step questionnaire wizard
@@ -76,11 +76,14 @@ src/
       path-interest-form.tsx    # CTA form with client-side email regex
       path-overview-scroll-restore.tsx  # Restores #path-main scrollTop on back-nav from a tile-opened card
       path-icons.tsx            # Inline SVG icons
-    trait-quiz/           # Trait assessment UI components
-      trait-quiz-provider.tsx  # Context + Reducer + localStorage draft
-      trait-step.tsx           # Question card with auto-advance
-      trait-progress.tsx       # Gold progress bar
-      trait-insight.tsx        # Mid-quiz personalized feedback card
+    trait-quiz/v6/        # Trait assessment UI (v0.6 — 30-Q Likert)
+      quiz-provider.tsx        # Context + Reducer + localStorage draft (30-Q state)
+      quiz-step.tsx            # Per-question stem + Likert + auto-advance (250ms after first pick)
+      likert-options.tsx       # 5-point Likert input (1=非常不像 → 5=非常像)
+      dim-progress.tsx         # 9-dimension progress bar
+      result-page.tsx          # 9-dim profile + 4-class hero + drift CTA
+      error-states.tsx         # Branded error / decode-failure boundary
+      share-button.tsx         # Result-link sharing (URL has full encoded score)
     questionnaire/        # Questionnaire UI components
       steps/              # Per-step form components (1-8)
       questionnaire-provider.tsx  # State + localStorage draft persistence
@@ -96,14 +99,13 @@ src/
       parse.ts            # Runtime Prisma Json shape guards (parseChips, parseSections)
       types.ts            # Block/section type discriminated unions
       __tests__/          # Regression tests: canonical-source smuggling vectors + month-routing fallback ladder
-    traits/               # Trait assessment engine (pure functions, @/lib/traits)
-      types.ts            # Zod schemas for 10 trait dimensions
-      questions.ts        # 19 question defs with declarative branching
-      routes.ts           # 24 predefined growth routes with fact-check annotations
-      match.ts            # matchRoute() — answers → route ID
-      portraits.ts        # 12 personality portrait titles + descriptions
-      insights.ts         # 12 mid-quiz insight strings
-      __tests__/          # Trait engine tests (49 tests)
+    traits/temperament/   # Trait assessment engine v0.6 (pure functions, @/lib/traits/temperament)
+      dimensions.ts       # Thomas & Chess 9 dimensions + attentionPole + cutoff history ledger
+      questions.ts        # 30 Likert items (3.3 per dim avg) with reverse-keyed flags
+      score.ts            # Score → 9-dim integer profile (1-5) + 4-class hero (灵活/慎重/慢热/平衡)
+      score-encoding.ts   # 6-byte payload → 8-char base64url URL with CRC-8 checksum
+      profiles.ts         # 4-class hero copy (academic + consumer aliases)
+      __tests__/          # Temperament engine tests (159 tests across 7 files)
     gap/                  # M3 Gap Analysis Engine (pure functions, @/lib/gap)
       dimensions/         # 4 v1 dimensions (gpa, sat, act, prevet-experience)
       classify.ts         # Tier classification (match/reach/possible)
@@ -158,7 +160,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | Path Explorer v0.1 (G1 May activity cards) | Done (v0.6.0.0) |
 | Path Explorer v0.2 (multi-month routing + G1 June seed) | Done (v0.7.0.0) |
 | Path Explorer v0.3+ (additional months, second stage G4–G6) | Planned (after Kailing feedback) |
-| Trait Assessment v0.6 (scientific framework) | Planned — issue #24 |
+| Trait Assessment v0.6 (scientific framework — Thomas & Chess 9-dim) | Done (v0.8.0.0) |
 | Trait Assessment Phase 2 (persistence) | Planned (after seed user feedback) |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |

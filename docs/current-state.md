@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-26 · `feat/path-v0.2` @ `02596b5` (v0.7.0.0, PR #31 awaiting human merge)
+**Last updated:** 2026-04-30 · `feat/trait-quiz-v06` @ `86f339d` (v0.8.0.0, PR #33 awaiting human merge)
 
 ## Product Direction
 
@@ -19,7 +19,9 @@ Vela has three layered tools aimed at different stages of that understanding:
 
 v0.5 marked the pivot from "gap analysis only" to "growth guidance." v0.6
 extends upstream with Path Explorer v0.1 — the literacy layer. v0.7 makes
-Path Explorer multi-month: routing + theme map + G1 June seed.
+Path Explorer multi-month: routing + theme map + G1 June seed. v0.8 replaces
+the v0.5 DIY trait quiz with a Thomas & Chess 9-dimension temperament
+framework (30-Q Likert, URL-encoded score), closing issue #24.
 
 ## MVP Semantics
 
@@ -52,15 +54,28 @@ Path Explorer multi-month: routing + theme map + G1 June seed.
 9. Brand-styled 404 (`/path/not-found`) for invalid `?month=99`/`?month=foo`
    and error boundary (`/path/error`).
 
-**Tool 2: Trait Assessment** (`/trait-quiz`, v0.5.0.0, Phase 1 pure frontend)
+**Tool 2: Trait Assessment** (`/trait-quiz`, v0.8.0.0 / v0.6 trait quiz, Phase 1 pure frontend)
 1. Parent opens the welcome page and clicks "特质测评"
-2. 10-question branching quiz captures the child's interests, learning style,
-   social preferences, and environment (3 branch points, 10 questions per path)
-3. Mid-quiz insight card shows personalized feedback after Q3
-4. matchRoute() maps answers to one of 24 predefined routes
-5. Result page shows personality portrait + staged roadmap (3 life stages
-   with expandable action items, fact-check annotations)
-6. All client-side, localStorage for draft persistence, no database.
+2. 30-question Likert assessment based on Thomas & Chess 1956 NYU 9-dimension
+   temperament framework (activity / rhythmicity / approach / adaptability /
+   intensity / threshold / mood / distractibility / persistence). Roughly 3.3
+   items per dimension, mix of forward + reverse-keyed.
+3. Auto-advance: first-time pick on a question auto-advances after 250ms.
+   Re-pick after 上一题 navigation does NOT auto-advance — user came back
+   deliberately. Last question never auto-advances. Bottom 上一题 / 下一题
+   nav remains as manual override.
+4. Score engine (`src/lib/traits/temperament/`): per-dim mean → quantize to
+   integer 1-5, then 4-class hero (灵活型 / 慎重型 / 慢热型 / 平衡型) with
+   academic Thomas & Chess aliases preserved underneath. attentionPole
+   (low/high) per dim, no neutral.
+5. Score URL encoding: 6-byte payload → 8 base64url characters with CRC-8
+   checksum, schemaVersion + cutoffVersion + lowConfidenceFlag baked in.
+   `cutoffHistory` append-only ledger lets old links re-classify under newer
+   cutoffs without breaking shareability.
+6. Result page (`/trait-quiz/result/[score]`): 4-class hero card + 9-dim
+   profile bars + drift CTA ("月度活动通知"). All decoded from URL — pure
+   client-side, no database.
+7. localStorage draft persistence during quiz fill. No backend writes.
 
 **Tool 3: Gap Analysis** (`/questionnaire` → `/complete/gaps`, v0.4.0.0)
 1. 8-step wizard captures student profile (scores, curriculum, etc.)
@@ -88,15 +103,24 @@ The system speaks Chinese by default.
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4
   v1 dimensions (GPA / SAT / ACT / pre-vet experience), 5-level severity,
   tier classification, 20 recommendation templates.
-- **Trait engine:** `src/lib/traits/` — 24 predefined routes, matchRoute(),
-  portrait generator, insight text. 49 tests.
-- **Tests:** 577 passing via Vitest (30 files). Coverage invariant
+- **Trait engine v0.6:** `src/lib/traits/temperament/` — Thomas & Chess
+  1956 9-dimension framework. 30 Likert items, per-dim quantize-to-int-1-5,
+  4-class hero classification, URL-encoded score (6-byte payload → 8 base64url
+  chars with CRC-8 checksum + schemaVersion + cutoffVersion + lowConfidenceFlag).
+  `cutoffHistory` append-only ledger preserves backward-compat re-classification.
+  `quantizeDimScores` invariant: live-result and URL-decoded paths converge on
+  identical integer profiles. 159 tests across 7 files.
+- **Tests:** 733 passing via Vitest (31 files). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
   v0.7 adds `month-routing.test.ts` (33 tests) and `path-seed-shape.test.ts`
   (29 tests including a recursive block walker that fails at test time
-  on per-discriminator field-name drift across all month seeds).
+  on per-discriminator field-name drift across all month seeds). v0.8 adds
+  7 new test files in `src/lib/traits/temperament/__tests__/` covering score
+  encoding round-trips, CRC-8 tamper detection, dimension polarity, hero
+  classification cutoffs, lowConfidenceFlag thresholds, and the
+  quantizeDimScores live↔URL invariant.
 - **Design system:** Tokens + rules in `DESIGN.md` for the trait-quiz +
   gap flows. Path Explorer uses `vela.css` (scoped via `<link>` in
   `src/app/path/layout.tsx`) with its own warm palette layered on the
@@ -111,44 +135,63 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/path-v0.2`
-- **HEAD:** `02596b5` (v0.7.0.0, PR #31 open and awaiting human merge)
-- **Version:** `0.7.0.0`
-- **Open PR:** [#31](https://github.com/Akagilnc/ak-ai-vela/pull/31) — Layer 1 (cross-model) Slice 1+2+3 all 4/4 APPROVE; Layer 3 (PR bot) R1+R2+R3 closed: Gemini fixed-and-approved, Codex bot +1 each round, R3 P2 (cross-year fallback) deferred with rationale.
-- **Open Issues:** #24 (v0.6 scientific trait quiz direction, P0),
-  #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+ tracked for more
-  months / additional stage).
-- **Branch summary (16 commits, ~1700 insertions across 20+ files):**
-  - Slice 1 (`1a5b545`) + R1/R2 fixes (`eac5a50`, `7b5aace`): month-aware
-    routing — `month-routing.ts` (resolveMonth 3-tier fallback +
-    validateMonthParam), `page.tsx` switched to month-driven goal
-    selection, pill row reshape, theme map per month, error/not-found
-    copy made month-agnostic, detail-nav back/Esc preserves
-    `?month=${activity.month}`.
-  - Slice 2 (`ac06d11`) + R1–R3 fixes (`f5bcd61`, `2df34a1`, `5fe8cd4`,
-    `7ea507f`): G1 June seed (1 baseline + 3 event cards covering 端午
-    holiday, 入梅 backyard ecology, 夏至 fireflies). Theme: 雨季观察家.
-    Adds path-seed-shape walker test + recursive validateBlock. Fixes
-    雄黄 / 赤链蛇 / DEET safety errors caught by adversarial review.
-  - Slice 3 (`9d520a2`): DB integration test suite (9 tests) running
-    against the real Prisma + SQLite test DB. Catches schema drift /
-    JSON round-trip / idempotency-by-row-id / multi-stage-guard-no-DB-
-    writes — what the static walker can't.
-  - PR R1 fixes (`77184fa`, `dcf0cf7`): `searchParams` typed as
-    `string | string[]` for Next 16 compat; `resolveMonth` reads
-    current month in `Asia/Shanghai` via `Intl.DateTimeFormat`
-    (Vercel/Cloudflare default to UTC, so a Shanghai-night-of-the-30th
-    user would have seen previous month for 8 hours).
-  - Asset push (`866d3f4`): 7 Wikipedia Commons CC-licensed photos for
-    G1 June cards (snail, earthworm, frog, mugwort, sweet_flag, zongzi,
-    firefly). Tile previews now visually match May.
-  - PR R3 P2 deferral (`02596b5`): cross-year fallback bug (Dec +
-    `[1, 2]` → 2 instead of 1) recorded in TODOS.md with algorithm fix
-    plan; fires when v0.3+ ships year-wrap content.
-  - `eff1a86`: VERSION bump + CHANGELOG. `b615476`: docs sync via
-    /document-release. `02596b5` (this doc-release): post-merge
-    catch-up for the post-ship work above.
+- **Current branch:** `feat/trait-quiz-v06`
+- **HEAD:** `86f339d` (v0.8.0.0, PR #33 open and awaiting human merge)
+- **Version:** `0.8.0.0`
+- **Open PR:** [#33](https://github.com/Akagilnc/ak-ai-vela/pull/33) — Trait
+  Quiz v0.6 complete rewrite (closes #24). 3 rounds of bot review (Codex +
+  Gemini), all 7 findings addressed: 1 Critical (quantize math drift between
+  live + URL paths), 1 High (dimension polarity inversion), 1 P1, 4 medium /
+  P2. Real-device E2E across `vela.akbot.top` named tunnel surfaced 2 UX
+  iterations: auto-advance after first Likert pick (250ms), removal of
+  redundant dim transition banner.
+- **Open Issues:** #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+
+  tracked for more months / additional stage). #24 (v0.6 scientific trait
+  quiz direction) closed by this PR.
+- **Branch summary (16 commits, +4825 / -2800 LOC across 44 files):**
+  - Slice 1: dimension framework — `dimensions.ts` (Thomas & Chess 9
+    dims, attentionPole low/high, no neutral) + `questions.ts` (30
+    Likert items, ~3.3 per dim, mix of forward + reverse-keyed).
+  - Slice 2: scoring engine — `score.ts` (per-dim mean → quantize int
+    1-5, then 4-class hero classification with cutoff thresholds).
+  - Slice 3: URL encoding — `score-encoding.ts` (6-byte payload → 8
+    base64url chars, CRC-8 checksum, schemaVersion + cutoffVersion +
+    lowConfidenceFlag).  `cutoffHistory` append-only ledger so old
+    score URLs re-classify correctly under newer cutoffs.
+  - Slice 4: result page — `/trait-quiz/result/[score]` decodes URL,
+    renders 4-class hero card with academic + consumer aliases (灵活/
+    慎重/慢热/平衡), 9-dim profile bars, drift CTA.
+  - Slice 5: quiz UI — `quiz-provider.tsx`, `quiz-step.tsx`,
+    `likert-options.tsx`, `dim-progress.tsx`. Auto-advance after
+    first-time Likert pick (250ms `setTimeout` + `useRef`-guarded
+    cancel-on-上一题).
+  - Slice 6: removed v0.5 — deleted `trait-quiz-provider.tsx`,
+    `trait-step.tsx`, `trait-progress.tsx`, `trait-insight.tsx`,
+    `src/lib/traits/{types,questions,routes,match,portraits,insights}.ts`,
+    24-route matchRoute, all v0.5 tests. Net -2800 LOC.
+  - Bot review R1 (Codex): caught Critical math drift — live result
+    used floor; URL-decoded path used round → off-by-one classifications
+    on edge scores. Fixed via shared `quantizeDimScores` helper + invariant
+    test.
+  - Bot review R2 (Gemini): polarity inversion on adaptability and
+    distractibility (reverse-keyed items not flipped). Fixed + test.
+  - Bot review R3: 4 P2 items addressed (label affordance, error
+    boundary copy, share button race, severity scale tokens).
+  - Real-device E2E via `vela.akbot.top` named tunnel: user surfaced
+    2 UX gaps — manual 下一题 click feels heavy after each pick (fixed
+    with auto-advance, `7d51a01`), redundant dim transition banner
+    above progress bar (`86f339d`).
+  - Tunnel infra (`e0f2c51`): permanent dev tunnel host
+    `vela.akbot.top` baked into `next.config.ts allowedDevOrigins`.
+    `DEV_TUNNEL_ORIGIN` env var still supported for ad-hoc parallel
+    quick tunnels via `Set` deduplication.
+  - DESIGN.md severity scale token swap: trait severity now uses
+    forest green / deep gold / burnt orange (replaces v0.5 terracotta
+    on dark which failed contrast).
+  - WCAG AA: muted text `#B8B0A0` → `#6B6560` (5.45:1 on cream),
+    closes the `[P2] A11y muted text contrast` TODO.
 - **Recently merged:**
+  - PR #31 (Path Explorer v0.2 — multi-month routing + G1 June seed, v0.7.0.0, merged 2026-04-26). 16 commits, +1700 LOC. resolveMonth 3-tier fallback + month-routing.ts + path-seed-shape walker + DB integration suite. 2 slices × 4 rounds cross-model review + 3 rounds PR bot.
   - PR #30 (copy de-slop Slices 1–4 + GPA recovery bug fixes, v0.6.2.1, merged 2026-04-22).
     28 files, 1000+ insertions. Questionnaire step subtitles, trait quiz UI, gap
     recommendations, gaps/complete page terminology. Added 4 copy-quality test suites
@@ -173,6 +216,33 @@ The system speaks Chinese by default.
   - PR #21 (schools state pages, v0.4.0.1)
 
 ## Most recent real verification
+
+**2026-04-30** — Trait Quiz v0.6 (30-Q Likert, Thomas & Chess 9 dims),
+branch `feat/trait-quiz-v06` @ `86f339d`, ready to ship:
+- `npm test`: 733 / 733 green (31 files, +156 net since 0.7.0.0). 7 new
+  test files in `src/lib/traits/temperament/__tests__/` covering: 30-Q
+  schema + reverse-key polarity, score-encoding round-trip + CRC-8
+  tamper detection, hero classification cutoff boundaries (incl.
+  lowConfidenceFlag thresholds), `quantizeDimScores` invariant
+  (live profile === decoded URL profile for every reachable answer set).
+- Real-device E2E across `vela.akbot.top` (named cloudflared tunnel
+  `vela-mba`) on iPhone Safari — Reality TUN MITM previously broke
+  cloudflared TLS to argotunnel edge; resolved with `--edge IP:7844`
+  flags + Clash IP-CIDR DIRECT rule for `198.41.192.0/24` (logged in
+  `reference_cloudflared_clash_mitm_workaround.md`).
+- UX surfaced from real-device run: (a) auto-advance after first-time
+  Likert pick (250ms) — re-pick after 上一题 nav does NOT auto-advance,
+  last question never auto-advances; (b) redundant dim transition
+  banner removed (DimProgress already shows the dim).
+- Bot review: 3 rounds Codex + Gemini. R1 caught Critical math drift
+  (live result used `Math.floor`, URL-decoded path used `Math.round` →
+  off-by-one hero on edge scores). R2 caught polarity inversion on
+  adaptability + distractibility (reverse-keyed items not flipped).
+  R3 closed with 4 P2 items addressed.
+- Score URL invariant verified: `/trait-quiz/result/<8-char-code>`
+  decodes deterministically across schema/cutoff version bumps via
+  `cutoffHistory` ledger. CRC-8 mismatch → branded error boundary, not
+  a silent wrong profile.
 
 **2026-04-25** — Path Explorer v0.2 (multi-month routing + G1 June seed),
 branch `feat/path-v0.2` @ `02596b5`, ready to ship:
@@ -299,7 +369,8 @@ branch `feat/path-v0.2` @ `02596b5`, ready to ship:
 **Path Explorer v0.6.0.0 P2 deferred (polish, not shipping blockers):**
 - `--mute-2` (#8F8B72) on cream is 3.1:1 (fails WCAG AA 4.5:1 for small
   text). Brand-compliant fix exists (DESIGN.md #6B6560 secondary tier).
-  Awaiting brand decision.
+  Awaiting brand decision. Note: trait quiz v0.6 already migrated muted
+  text to `#6B6560` (5.45:1); Path Explorer scope still pending.
 - `/schools` landscape safe-area edge — side-effect of global
   `viewport-fit=cover`. `px-4` < notch inset in landscape.
 - `error.tsx` dev-mode error display — currently discards error prop.
@@ -333,14 +404,16 @@ branch `feat/path-v0.2` @ `02596b5`, ready to ship:
    (CSP + sanitization for BlockRenderer, PathInterest UA retention,
    PathDecisionBranch FK integrity).
 
-**Trait quiz next (issue #24, independent track):**
-1. ~~v0.5 insight + portrait copy de-slop~~ DONE in v0.6.2.0. Next:
-   random-pool expansion (every key 1 → 3-24 hand-written variants with
-   seeded selection) is tracked as a P2 TODO, waiting for Kailing signal
-   — one good line may already be enough.
-2. v0.6 scientific trait quiz: replace DIY 10-q with Temperament / VIA /
-   Big5-C / Gardner MI hybrid. Not blocked by Path Explorer.
-3. Phase 2 persistence (Prisma TraitResult) after content is validated.
+**Trait quiz next (issue #24 closed by v0.8.0.0):**
+1. ~~v0.5 insight + portrait copy de-slop~~ DONE in v0.6.2.0.
+2. ~~v0.6 scientific trait quiz: replace DIY 10-q with Temperament~~ DONE
+   in v0.8.0.0. Thomas & Chess 9-dim Likert + 4-class hero shipped.
+3. Phase 2 persistence (Prisma TemperamentResult) after Kailing real-use
+   feedback. Score URL is already self-contained, so persistence is
+   strictly additive (history list, retake comparison, parent-side dashboard).
+4. Optional v0.6.x: 4-class hero copy expansion to 3-N variants per class,
+   seeded selection by score. Same pattern as the deferred trait insight
+   pool. Wait for signal before investing.
 
 **Longer term:**
 - WeChat share card polish (html2canvas spike still unrun).

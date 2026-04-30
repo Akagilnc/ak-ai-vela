@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0.0] - 2026-04-30
+
+### Added
+- **Trait quiz v0.6 — pure Thomas & Chess 9-dim temperament**. Replaces the v0.5 self-made 10-question branching quiz with a 30-question Likert-scale assessment based on the 1956 NYU Longitudinal Study framework. The result page shows a 9-dim profile, a 4-class hero (灵活型 / 慎重型 / 慢热型 / 平衡型), and per-dim parenting insights. Mobile-first, server-rendered, no LLM, no DB — the entire result lives in a shareable URL.
+- **30-question seed library** (`src/lib/traits/temperament/questions.ts`). Each item carries `dimensionId` + `reverseScored` flag + behaviorally-specific Chinese prompt. Five core dims (rhythmicity / approach / adaptability / intensity / mood) carry 4 questions each; the four nuance dims (activity / threshold / distractibility / persistence) carry 2-3.
+- **Score URL encoding** (`src/lib/traits/temperament/score-encoding.ts`) — 6-byte payload, base64url-encoded to 8 chars, with CRC-8 checksum + `schemaVersion` + `cutoffVersion` for backward-compatible re-classification. The append-only `cutoffHistory` ledger means re-calibrating thresholds after seed-user data lands won't silently change result types in URLs that have already been shared. Decoding rejects tampered payloads, payloads with out-of-range dim values, and unsupported schema versions.
+- **Result page (V7 design)** — `/trait-quiz/result?score=ABC123`. Hero with category lead + percentage note + parenting keywords. 9-dim bar list with attention-pole-aware coloring (forest green = easy / deep gold = notable / burnt orange = strong). Three smart-pick insight cards (algorithmically chosen from largest deviations) plus six folded-by-default rest. Footer carries the framework citation + academic name disclosure (gated behind `data-academic-disclosure` so the forbidden-phrase test still passes).
+- **Quiz page (V8 design)** — `/trait-quiz`. Mobile-first welcome → 30-question Likert flow with sequential per-dim ordering → submit → encode URL → navigate to result. Auto-advance 250ms after first-time pick (manual nav still available via 上一题 / 下一题 buttons). Last-question and re-pick on previously-answered question never auto-advance.
+- **Error states (V9 design)** — `ResultEmptyState` for missing `?score`, `ResultErrorState` with three variants (invalid / corrupt / schema_unsupported). Legacy `/trait-quiz/result/[routeId]` URLs render the schema_unsupported "测评已升级" page so old shared links degrade gracefully instead of throwing.
+- **4 type hero copy + 27 dim insight cards** (`src/lib/traits/temperament/profiles.ts`). Each hero inlines difficulty signals (e.g. 慎重型 lead names "对环境敏感、情绪外显得比较强烈" rather than hiding behind a soft label). Each dim has low / mid / high level copy with `observation` + `action` (action always starts with → arrow). All copy scrubbed against v0.5 slop list + abstract personality terms + pseudoscience terms.
+- **Permanent dev tunnel** at `https://vela.akbot.top` via named cloudflared tunnel `vela-mba`. URL persistent across cloudflared restarts, baked into `next.config.ts` `allowedDevOrigins` so seed users can bookmark the link without it rotating.
+- **Comprehensive copy quality test** (`src/__tests__/trait-quiz-v06-copy-quality.test.ts`) — 30 prompts + 4 hero leads + 27 dim insights × forbidden phrase scan + behavioral specificity heuristic + structural totals regression. Locks the 30 / 4 / 27 counts so future PRs can't silently add/remove copy without explicit test updates.
+
+### Changed
+- **`/trait-quiz` page rewritten** end-to-end. v0.5's 10-question branching state machine + v0.5 components (trait-insight, trait-progress, trait-step, trait-quiz-provider) deleted. New `v6/` component subtree under `src/components/trait-quiz/` houses the rewrite (quiz-provider with v0.6 state machine, likert-options, dim-progress, quiz-step, share-button, result-page, error-states).
+- **DESIGN.md muted text contrast fix** — `--color-vela-muted: #B8B0A0 → #6B6560`. Old value failed WCAG AA 4.5:1 against the cream background (was 2.85:1; intermediate `#8B847C` was 3.67:1; final value passes at 5.45:1). Same change carried into Tailwind theme tokens in `src/app/globals.css`. Decisions log entry on 2026-04-29 captures the iteration.
+- **DESIGN.md trait severity scale** added — three-level color band per attention pole (easy / notable / strong) with explicit hex tokens for `--color-trait-easy-from/to`, `--color-trait-notable-from/to`, `--color-trait-strong-from/to`. Uses burnt orange `#D9622A → #EC8A3E` for strong rather than terracotta to read as "highlight" rather than "alarm".
+- **DESIGN.md decisions log** captures all 2026-04-29 v0.6 design choices: 4-class categories with consumer-friendly aliases, non-neutral attentionPole on every dimension, muted contrast revision, trait severity scale.
+- **`next.config.ts` allowedDevOrigins** now hardcodes `vela.akbot.top` (the named tunnel). `DEV_TUNNEL_ORIGIN` env var still supported for ad-hoc parallel quick tunnels (deduplicated via Set).
+
+### Removed
+- **v0.5 trait quiz infrastructure** — `src/lib/traits/{routes,match,portraits,insights,questions,types}.ts` (6 files, ~1,000 LOC) plus their five `__tests__/` suites plus four `src/components/trait-quiz/trait-*.tsx` v0.5 components plus `src/__tests__/copy-quality-slice3.test.ts` (whose assertions were specific to v0.5 path-recommender copy).
+
+### Fixed
+- **Pre-existing TypeScript error** in `src/app/questionnaire/complete/gaps/page.tsx:163` (Map iterator value possibly undefined). Was blocking `tsc --noEmit` clean. Fixed via nullish coalescing on the `.length` lookup. Predates this branch but fixed in scope of slice 6 cleanup since the trait quiz tsc gate would have failed otherwise.
+
+### Tests
+- **733/733 vitest passing** (31 files, +156 net since 0.7.0.0). New suites:
+  - `dimensions.test.ts` (16 tests) — 9-dim metadata invariants, attentionPole map, isCore map, ordering lock for URL bit-packing, getAttentionLevel band cases.
+  - `score.test.ts` (45 tests) — 11 fixture cases verified by `node -e` against the algorithm, exact cutoff boundary inclusion, URL decode mode, config override (cutoffHistory plumbing), variance guard policy, classify return shape.
+  - `score-encoding.test.ts` (32 tests) — base64url 8-char no-padding output, round-trip schema/cutoff/dims/flag, byte-spanning dim values (dim2 across bytes 1-2, dim5 across bytes 2-3), error paths (invalid / corrupt / schema_unsupported), tampered checksum + tampered padding rejection, schema_unsupported on future cutoffVersion, NaN/Infinity throw, clamp out-of-range, full-pipeline integration (computeDim → quantize → encode → decodeAndClassify).
+  - `questions.test.ts` (30 tests) — structure, dim coverage, copy quality (forbidden slop / academic / abstract / pseudoscience), behavioral specificity (≥60% concrete markers / ≥70% pronouns), reverse-scoring math, integration with classify pipeline (慎重型 / 灵活型 fixtures).
+  - `profiles.test.ts` (20 tests) — 4 hero copy fields, dim insight structure (27 cards × {observation, action}), action arrow format, behavioral specificity, 慎重型 inlines difficulty, 平衡型 anti-narrative, getDimLevel boundary buckets, pickInsightDims top-K by deviation.
+  - `quiz-provider.test.tsx` (25 tests) — initial state, answer + next + prev flow, submit + complete transitions, draft persistence + restoration + reset, localStorage disabled fallback, v0.5 → v0.6 migration (ignore old keys + purge on reset), getDraftIfExists shape validation (malformed / empty / out-of-range / negative index / unknown ids / over-large index).
+  - `trait-quiz-v06-copy-quality.test.ts` (38 tests) — comprehensive forbidden phrase scan + structural totals regression guard.
+
+### Process
+- v0.6 was developed under the autonomous TDD loop with 6 slices: (1) dimensions + classify, (2) score URL encoding, (3) 30-question seed, (4) V8 mobile-first quiz UI, (5) V7 result page + 4 hero / 27 dim copy + V9 error states, (6) v0.5 cleanup + comprehensive copy quality test + ShareButton. Each slice ran cross-model review (3+1 or 2+1 reviewers, 1-2 R rounds per slice) before landing.
+- Phase 1 research (Thomas & Chess 9-dim Chinese normative names + 4-class thresholds + Chinese norms) ran 8 R rounds via 3 Claude subagents + 1 Codex independent audit before Phase 2 implementation.
+- PR review loop ran 3 rounds of bot review (Codex + Gemini): R1 surfaced 1 Critical (computeCore math asymmetry) + 1 High (levelTagText inverted polarity) + 1 P1 + 2 P2; R2 surfaced 1 medium (ShareButton setTimeout cleanup); R3 surfaced 1 medium (useCallback for handleSubmit). All findings addressed before merge. Codex 2× APPROVE 🚀 in R2 + R3.
+- Real-device E2E uncovered one redundancy: V8 mockup's "接下来 N 题关于 X" dim transition banner duplicated info already shown in the eyebrow + helper line. Removed in `86f339d` post-bot-review based on user feedback during testing.
+
+### Deferred
+Tracked in TODOS.md under "Deferred from Trait Quiz v0.6 cross-model review (2026-04-29)":
+- Cutoff threshold calibration. v0.6 ships with empirical-placeholder cutoffs (`cutoffHistory[1]`); after 30+ real fills, percentile re-cal triggers `cutoffHistory[2]`.
+- Render tests for `result-page.tsx` / `error-states.tsx` / `quiz-step.tsx` / `likert-options.tsx` / `dim-progress.tsx`. Provider state machine has 25 tests but UI components rely on the copy-quality + algorithm tests for indirect coverage.
+- WeChat URL preview empirical test (manual checklist in test-plan §6.4).
+- Hysteresis band on intensity (3.3-3.7 → confidence='low') only fires for fractional inputs; quantization to integer 1-5 means production paths rarely hit it. Confidence='low' surfaces today only via the variance guard for "all 3" (中位 uniform) inputs. Re-evaluate when calibration data shows boundary cases.
+
 ## [0.7.0.0] - 2026-04-26
 
 ### Added

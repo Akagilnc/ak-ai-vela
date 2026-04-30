@@ -1,99 +1,144 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/**
+ * Trait quiz v0.6 — landing + 30-question flow + draft resume.
+ *
+ * Replaces v0.5's branching quiz. New flow:
+ *   1. Welcome screen ("基于 Thomas & Chess 1956 9 维气质模型")
+ *   2. Draft resume banner if v0.6 draft exists
+ *   3. 30-question Likert flow with sequential per-dim ordering
+ *   4. On submit → /trait-quiz/result?score=ABC123
+ *
+ * v0.5 → v0.6 migration: ignore old keys (`vela-trait-quiz-draft`,
+ * `vela-trait-result`) on init; purge them when reset is called.
+ */
+
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TraitQuizProvider, useTraitQuiz, STORAGE_KEY } from "@/components/trait-quiz/trait-quiz-provider";
-import { TraitProgress } from "@/components/trait-quiz/trait-progress";
-import { TraitStep } from "@/components/trait-quiz/trait-step";
-import { TraitInsight } from "@/components/trait-quiz/trait-insight";
-import { matchRoute } from "@/lib/traits/match";
-import type { TraitAnswers } from "@/lib/traits/types";
+import {
+  TraitQuizV6Provider,
+  useTraitQuizV6,
+  getDraftIfExists,
+} from "@/components/trait-quiz/v6/quiz-provider";
+import { QuizStep } from "@/components/trait-quiz/v6/quiz-step";
+import {
+  computeDimScores,
+  QUESTIONS,
+} from "@/lib/traits/temperament/questions";
+import {
+  encodeScore,
+  quantizeDimScores,
+} from "@/lib/traits/temperament/score-encoding";
+import { classify, CLASSIFICATION_CONFIG } from "@/lib/traits/temperament/score";
 
-const RESULT_STORAGE_KEY = "vela-trait-result";
-
-function QuizContent() {
-  const router = useRouter();
-  const { state, restoreDraft, restart } = useTraitQuiz();
-  const [showDraftPrompt, setShowDraftPrompt] = useState(false);
+function QuizContent({ onSubmitDone }: { onSubmitDone: (url: string) => void }) {
+  const { state, restoreDraft, reset } = useTraitQuizV6();
+  const [draftPrompt, setDraftPrompt] = useState<
+    { answers: Record<string, number>; currentIndex: number } | null
+  >(null);
   const [draftChecked, setDraftChecked] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Check for saved draft on mount
   useEffect(() => {
     if (draftChecked) return;
     setDraftChecked(true);
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const draft = JSON.parse(raw) as {
-        answers: Partial<TraitAnswers>;
-        questionId: string;
-        timestamp: number;
-      };
-      // Only show prompt if draft has at least one answer
-      if (draft.answers && Object.keys(draft.answers).length > 0) {
-        setShowDraftPrompt(true);
-      }
-    } catch {
-      // Invalid draft — ignore
-    }
+    const draft = getDraftIfExists();
+    if (draft) setDraftPrompt(draft);
   }, [draftChecked]);
 
-  // Navigate to result page when quiz completes
+  // Watch for completion → encode score URL → navigate
   useEffect(() => {
-    if (state.phase === "complete") {
-      const routeId = state.answers.ageGroup && state.answers.interest && state.answers.resourceLevel
-        ? matchRoute(state.answers as TraitAnswers)
-        : null;
-      if (routeId) {
-        // Store answers in localStorage for result page
-        try {
-          localStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(state.answers));
-          localStorage.removeItem(STORAGE_KEY);
-        } catch { /* noop */ }
-        router.push(`/trait-quiz/result/${routeId}`);
-      }
-    }
-  }, [state.phase, state.answers, router]);
-
-  // Draft recovery prompt
-  if (showDraftPrompt) {
-    let draftQuestionNum = 1;
-    let draftAnswers: Partial<TraitAnswers> = {};
-    let draftQuestionId = "ageGroup";
+    if (state.phase !== "complete") return;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const draft = JSON.parse(raw ?? "{}");
-      draftAnswers = draft.answers ?? {};
-      draftQuestionId = draft.questionId ?? "ageGroup";
-      draftQuestionNum = Object.keys(draftAnswers).length + 1;
-    } catch { /* localStorage unavailable or invalid draft */ }
+      // Compute dim scores from raw answers
+      const dimScores = computeDimScores(state.answers);
+      // Quantize for URL roundtrip safety (Slice 2 invariant)
+      const quantized = quantizeDimScores(dimScores);
+      // Live classify (with allRawAnswers) to compute lowConfidenceFlag
+      const liveResult = classify({
+        scores: quantized,
+        allRawAnswers: Object.values(state.answers),
+        config: CLASSIFICATION_CONFIG,
+      });
+      // Encode URL with classification metadata
+      const score = encodeScore({
+        schemaVersion: 1,
+        cutoffVersion: 1,
+        dims: quantized,
+        lowConfidenceFlag: liveResult.confidence === "low",
+      });
+      onSubmitDone(`/trait-quiz/result?score=${score}`);
+    } catch (err) {
+      // Should be unreachable since computeDimScores validates 1-5 and
+      // encodeScore validates dims. Defense-in-depth: surface error to user
+      // instead of stranding them on the spinner indefinitely.
+      console.error("trait-quiz v0.6 encode failed", err);
+      setSubmitError(err instanceof Error ? err.message : "submit failed");
+    }
+  }, [state.phase, state.answers, onSubmitDone]);
 
+  // Submit error state — let user retry or reset
+  if (submitError) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-fade-in text-center px-4">
+        <div className="w-16 h-16 rounded-full bg-trait-strong-from/10 grid place-items-center text-2xl text-trait-strong-text">
+          !
+        </div>
+        <h3 className="font-display text-[20px] text-vela-heading font-semibold">
+          生成画像出错了
+        </h3>
+        <p className="text-sm text-vela-text-1 max-w-[300px] leading-relaxed">
+          填的内容好像有点问题。重新填一遍通常能解决。
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            setSubmitError(null);
+          }}
+          className="min-h-[48px] px-8 bg-vela-primary text-white rounded-lg font-semibold"
+        >
+          重新测一次
+        </button>
+      </div>
+    );
+  }
+
+  // Draft resume banner
+  if (draftPrompt) {
+    const filled = Object.keys(draftPrompt.answers).length;
     return (
       <div className="flex-1 flex items-center justify-center animate-fade-in">
-        <div className="bg-vela-surface rounded-xl p-6 max-w-sm text-center">
-          <p className="text-vela-heading font-medium mb-4">
-            你上次答到了第 {Math.min(draftQuestionNum, 10)} 题，继续？
+        <div className="bg-vela-surface border border-vela-border rounded-xl p-6 max-w-sm text-left w-full">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="w-2 h-2 rounded-full bg-trait-notable-text shrink-0" />
+            <h3 className="font-display font-semibold text-base text-vela-heading">
+              你之前填到一半
+            </h3>
+          </div>
+          <p className="text-sm text-vela-text-1 leading-relaxed mb-4">
+            上次填到第 {filled} 题（共 {QUESTIONS.length} 题）。继续填还是从头开始？
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => {
-                restoreDraft(draftAnswers, draftQuestionId);
-                setShowDraftPrompt(false);
+                restoreDraft(draftPrompt.answers, draftPrompt.currentIndex);
+                setDraftPrompt(null);
               }}
-              className="min-h-[44px] px-6 py-3 bg-vela-primary text-white rounded-lg font-medium hover:bg-vela-primary-dark transition-colors"
+              className="flex-1 min-h-[44px] px-4 py-2.5 bg-vela-primary text-white rounded-lg font-semibold text-sm hover:bg-vela-primary-dark"
             >
-              继续测评
+              继续填
             </button>
             <button
               type="button"
               onClick={() => {
-                restart();
-                setShowDraftPrompt(false);
+                reset();
+                setDraftPrompt(null);
               }}
-              className="min-h-[44px] px-6 py-3 text-vela-text-secondary hover:text-vela-primary transition-colors"
+              className="flex-1 min-h-[44px] px-4 py-2.5 border border-vela-primary text-vela-primary rounded-lg font-semibold text-sm hover:bg-vela-primary/5"
             >
-              重新开始
+              从头开始
             </button>
           </div>
         </div>
@@ -101,69 +146,68 @@ function QuizContent() {
     );
   }
 
-  // Insight card
-  if (state.phase === "insight") {
-    return <TraitInsight />;
-  }
-
-  // Loading state while navigating to result page
-  // Without this, the quiz renders the last question while router.push is in flight,
-  // and users tap the option again thinking it didn't register.
+  // Loading state during submit → result navigation
   if (state.phase === "complete") {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-fade-in">
-        <div className="w-12 h-12 border-4 border-vela-border border-t-vela-primary rounded-full animate-spin" />
-        <p className="text-vela-text-secondary text-sm">正在生成画像...</p>
+        <div className="w-12 h-12 border-[3px] border-vela-primary/15 border-t-vela-primary rounded-full animate-spin" />
+        <p className="text-vela-text-2 text-sm">正在生成画像...</p>
       </div>
     );
   }
 
-  // Quiz questions
-  return (
-    <>
-      <TraitProgress />
-      <TraitStep />
-    </>
-  );
+  // Default: quiz step
+  return <QuizStep onSubmit={() => {}} onExit={() => reset()} />;
 }
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center gap-8">
-      <div className="w-20 h-20 bg-vela-primary rounded-full flex items-center justify-center">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-        </svg>
+    <div className="flex-1 flex flex-col items-center justify-center text-center gap-8 px-2">
+      <div className="w-20 h-20 bg-vela-primary rounded-full flex items-center justify-center shadow-md">
+        <span className="font-display text-3xl text-white font-bold">气</span>
       </div>
       <div>
         <h1 className="text-[28px] font-display font-semibold text-vela-heading leading-tight">
-          发现孩子的<br />成长路线
+          基于行为观察<br />识别孩子的气质
         </h1>
       </div>
-      <p className="text-[15px] text-vela-text-secondary max-w-[320px] leading-relaxed">
-        回答 10 个问题，了解孩子的兴趣和成长特点，拿到分阶段活动建议。
+      <p className="text-[15px] text-vela-text-1 max-w-[320px] leading-relaxed">
+        回答 {QUESTIONS.length} 道关于孩子日常表现的题，得到 9 维气质画像 + 综合类型解读。
       </p>
       <button
         type="button"
         onClick={onStart}
-        className="min-h-[44px] px-12 py-3.5 bg-vela-primary text-white rounded-lg text-base font-semibold hover:bg-vela-primary-dark transition-colors active:scale-[0.98]"
+        className="min-h-[48px] px-12 py-3.5 bg-vela-primary text-white rounded-lg text-base font-semibold hover:bg-vela-primary-dark active:scale-[0.98] transition"
       >
         开始测评
       </button>
-      <p className="text-sm text-vela-text-secondary">
-        10 个问题 · 约 2 分钟
+      <p className="text-sm text-vela-text-2">
+        {QUESTIONS.length} 道题 · 约 8-12 分钟
+      </p>
+      <p className="text-[11px] text-vela-muted leading-[1.5] max-w-[300px] mt-auto">
+        基于 Thomas &amp; Chess 1956 NYU 9 维气质模型
       </p>
     </div>
   );
 }
 
 export default function TraitQuizPage() {
+  const router = useRouter();
   const [started, setStarted] = useState(false);
+
+  // Stable callback identity (Gemini PR #33 R3 medium): inline arrow would
+  // cause QuizContent to re-render every parent render, retriggering its
+  // useEffect on state.phase=complete dep (extra encode work + potential
+  // duplicate router.push). useCallback ties to router which is stable.
+  const handleSubmit = useCallback(
+    (url: string) => router.push(url),
+    [router],
+  );
 
   if (!started) {
     return (
-      <main className="min-h-screen bg-background">
-        <div className="max-w-[480px] mx-auto px-5 py-6 min-h-screen flex flex-col">
+      <main className="min-h-[100dvh] bg-background">
+        <div className="max-w-[480px] mx-auto px-4 py-6 min-h-[100dvh] flex flex-col">
           <WelcomeScreen onStart={() => setStarted(true)} />
         </div>
       </main>
@@ -171,11 +215,11 @@ export default function TraitQuizPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-[480px] mx-auto px-5 py-6 min-h-screen flex flex-col">
-        <TraitQuizProvider>
-          <QuizContent />
-        </TraitQuizProvider>
+    <main className="min-h-[100dvh] bg-background">
+      <div className="max-w-[480px] mx-auto px-4 pb-6 min-h-[100dvh] flex flex-col">
+        <TraitQuizV6Provider>
+          <QuizContent onSubmitDone={handleSubmit} />
+        </TraitQuizV6Provider>
       </div>
     </main>
   );
