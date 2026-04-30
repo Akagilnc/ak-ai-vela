@@ -95,6 +95,20 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
     cookieStore.get(STUDENT_COOKIE)?.value,
   );
 
+  // 5a. Validate the signing secret BEFORE any DB write. R6 finding (Codex):
+  //     pre-fix, signStudentToken() was only called AFTER prisma.$transaction
+  //     committed Student + QuestionnaireResult. If the secret was missing or
+  //     misconfigured in prod (signStudentToken throws), the DB rows were
+  //     already committed but the cookie was never set → the client retried
+  //     and created duplicates on every attempt. Fail fast: do a dry sign of
+  //     a probe value so the env-var check fires before we touch the DB.
+  try {
+    signStudentToken("__probe__");
+  } catch (e) {
+    console.error("Questionnaire submission blocked: token secret invalid:", e);
+    return { success: false, error: "服务暂时不可用，请稍后重试" };
+  }
+
   try {
     // 6–7. Upsert Student + create QuestionnaireResult atomically.
     //      Wrapping in $transaction ensures that if the QR insert fails,

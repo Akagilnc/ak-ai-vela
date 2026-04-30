@@ -22,15 +22,28 @@ vi.mock("@/lib/prisma", () => {
 
 // Mock next/headers `cookies()` so the server action can read/write the
 // HMAC-signed studentId cookie in tests. The cookie store is a per-test
-// mutable map reset in beforeEach.
+// mutable map reset in beforeEach. Also records full set-options so tests
+// can assert on httpOnly / secure / sameSite / maxAge / path (R6 Codex
+// finding: prior mock dropped flags → security regressions invisible).
+type CookieSetOpts = {
+  name: string;
+  value: string;
+  httpOnly?: boolean;
+  sameSite?: "lax" | "strict" | "none";
+  secure?: boolean;
+  path?: string;
+  maxAge?: number;
+};
 const mockCookieStore = {
   store: new Map<string, string>(),
+  setLog: [] as CookieSetOpts[],
   get(name: string) {
     const value = this.store.get(name);
     return value !== undefined ? { name, value } : undefined;
   },
-  set(opts: { name: string; value: string }) {
+  set(opts: CookieSetOpts) {
     this.store.set(opts.name, opts.value);
+    this.setLog.push(opts);
   },
   delete(name: string) {
     this.store.delete(name);
@@ -64,6 +77,7 @@ describe("submitQuestionnaire server action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCookieStore.store.clear();
+    mockCookieStore.setLog = [];
   });
 
   it("returns error for invalid JSON", async () => {
@@ -110,6 +124,21 @@ describe("submitQuestionnaire server action", () => {
     expect(result.studentId).toBe("student-1");
     expect(prisma.student.create).toHaveBeenCalledOnce();
     expect(prisma.questionnaireResult.create).toHaveBeenCalledOnce();
+
+    // R6 cookie flag fence (Codex): the studentId cookie MUST be set
+    // with httpOnly, sameSite=lax, path=/, and a non-trivial maxAge.
+    // Pre-fix the test mock dropped these flags, so a regression that
+    // weakened cookie security would have shipped invisibly.
+    const cookieSet = mockCookieStore.setLog.find(
+      (c) => c.name === "vela-student-token",
+    );
+    expect(cookieSet).toBeDefined();
+    expect(cookieSet!.httpOnly).toBe(true);
+    expect(cookieSet!.sameSite).toBe("lax");
+    expect(cookieSet!.path).toBe("/");
+    expect(cookieSet!.maxAge).toBeGreaterThan(0);
+    // value must be a valid HMAC token (round-trip via verify)
+    expect(cookieSet!.value).toMatch(/^.+\.[0-9a-f]+$/);
   });
 
   it("upserts existing student (append QuestionnaireResult)", async () => {

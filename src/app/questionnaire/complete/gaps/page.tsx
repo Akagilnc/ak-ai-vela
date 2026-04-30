@@ -1,12 +1,16 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema } from "@/lib/types";
 import { analyzeStudentVsAllSchools, classifySchools } from "@/lib/gap";
+import { verifyStudentToken } from "@/lib/auth/student-token";
 import type { GapResult, GapSeverity, QuestionnaireAnswers } from "@/lib/types";
 import type { ClassifiedSchool } from "@/lib/gap";
 import type { School } from "@prisma/client";
 import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+const STUDENT_COOKIE = "vela-student-token";
 
 export const metadata = {
   title: "差距分析 — Vela",
@@ -98,8 +102,15 @@ export default async function GapsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const studentId = typeof params.studentId === "string" ? params.studentId : null;
+  // Read-side IDOR fix (R6): trust ONLY the HMAC-signed cookie, not the URL.
+  // R5 closed write-IDOR via the cookie, but `?studentId=X` in this read path
+  // was still trusted, leaking any student's full GPA/SAT/ACT/childName to
+  // anyone with a leaked URL. All 3 R6 reviewers (pre-landing + Claude
+  // adversarial + Codex) converged on this. Now: cookie's verified studentId
+  // is the only source. URL search-params are ignored for auth purposes.
+  await searchParams; // Drain the promise (Next.js 15 contract).
+  const cookieStore = await cookies();
+  const studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE)?.value);
 
   if (!studentId) {
     return <EmptyState reason="no-student" />;
