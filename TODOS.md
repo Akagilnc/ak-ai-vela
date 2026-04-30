@@ -88,23 +88,19 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Why:** Flagged by UX subagent R12-R15 repeatedly. Deferred because changing the brand neutral affects visual feel across the app — not a per-screen fix. Needs design decision.
 - **When:** With next brand/design pass OR when adding the first non-gated public user (the affected text is mostly "ghost" / meta labels, not conversion-critical).
 
-### [P2] `/schools` landscape safe-area edge
-- **What:** With `viewport-fit=cover` now global (R14), on landscape iPhone 14/15 Pro the Dynamic Island inset can sit over the left edge of `/schools` cards (base padding `px-4` = 16px, less than the ~59px notch inset). Fix: wrap `px-4` → `px-[max(16px,env(safe-area-inset-left))]` in `src/app/schools/page.tsx:45`.
-- **Why:** Introduced as side-effect of R14's root-level viewport-fit fix. `/path` compensates via `.stage-inner` + `.d-footer` env padding; `/schools` uses Tailwind container without env awareness.
-- **When:** Landscape iPhone users report clipping, OR next schools design pass.
+### ~~[P2] `/schools` landscape safe-area edge~~ DONE
+- **Status:** Completed in v0.9.0.0 (fix/polish-sprint-p2). Switched to `pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]` per R1 cross-model review (the original `px-/pr-` form was order-fragile).
+- **Completed:** v0.9.0.0 (2026-05-01)
 
-### [P2] error.tsx dev-mode error display
-- **What:** In `src/app/path/error.tsx`, conditionally render `error.message` + `error.stack` when `process.env.NODE_ENV !== "production"`. Currently the error prop is discarded (`error: _error`) — production correct, but dev-mode debugging slow.
-- **Why:** Flagged by UX subagent R15. Low value (Next.js logs server-side, dev rarely hits this boundary) but quick win for fast iteration.
-- **When:** Next time error.tsx is touched.
+### ~~[P2] error.tsx dev-mode error display~~ DONE
+- **Status:** Completed in v0.9.0.0. Renders `error.message` + `error.stack` in a styled `<pre>` (DESIGN.md card surface `#F5F0E1`) gated behind `process.env.NODE_ENV !== "production"`.
+- **Completed:** v0.9.0.0 (2026-05-01)
 
 ## Deferred from Path Explorer v0.2 cross-model review (2026-04-26)
 
-### [P2] Block-shape walker: tighten route / photo-row / locCards per-item field checks
-- **What:** `src/__tests__/path-seed-shape.test.ts` has a `validateBlock` walker that recurses into every block in every section. It enforces full per-field shape for most discriminators, but for `route`, `photo-row`, and `path-opts.opts[].locCards` it only asserts `Array.isArray(block.steps/photos/locCards)` — does NOT validate per-item declared fields (`zone/desc/dur` for route, `src/alt/cap` for photo-row, `photo/name/desc` for locCards). A future seed could ship `step.duration` instead of `step.dur` and the walker would still pass.
-- **Why:** This is the exact class of drift the walker was added for (Slice 2 R1 caught `id-table` field rename + `steps→items` only because tsc complained — the walker would have missed it without those tighter cases). Flagged by R2 Agent 2.
-- **When:** Before Slice 3+ adds significant new `route` / `photo-row` payloads. Today only May seed uses `route` (c1 §3 and §4) and there's no `photo-row` usage; risk is low but real.
-- **Signal to start:** any new month seed authoring a `route` or `photo-row` block, OR before merging any seed restructure.
+### ~~[P2] Block-shape walker: tighten route / photo-row / locCards per-item field checks~~ DONE
+- **Status:** Completed in v0.9.0.0. `validateBlock` now checks per-item field types for `route.steps[].zone/desc/dur`, `photo-row.photos[].src/alt/cap`, and `path-opts.opts[].locCards[].photo/name/desc` (plus optional `link.gotoActivitySlug/label`).
+- **Completed:** v0.9.0.0 (2026-05-01)
 
 ### [P2] resolveMonth: cross-year fallback uses min absolute distance with wrap
 - **What:** `src/lib/path/month-routing.ts::resolveMonth` no-param fallback currently has 3 tiers: current → nearest upcoming (`m > current`, take min) → max past. The "nearest upcoming" branch only considers months with `m > currentMonth`, which breaks at year boundary. Example: December (current=12) with availableMonths=[1, 2] returns `Math.max([1,2])=2` (February) instead of `1` (January, the nearest imminent month after wrap).
@@ -219,29 +215,30 @@ Deferred work items tracked by engineering and CEO reviews.
 - **Status:** Completed in v0.4.0.0 (PR #20). Full gap analysis page with tier classification (match/reach/possible), 5-level severity pills, expandable detail sections, mobile-first layout, loading skeleton. QA health score 98/100.
 - **Completed:** v0.4.0.0 (2026-04-12)
 
-### [M4] Radar chart: handle null radarSAT for test-free schools
-- **What:** `src/app/schools/[id]/page.tsx:51` uses `school.radarSAT ?? 0`, rendering test-free schools (UC Davis, CSU) with SAT competitiveness of 0 ("worst") instead of "not applicable." Fix: skip the SAT dimension from the radar chart when `testPolicy === "free"` or `radarSAT === null`, and show 4-dimension radar instead of 5.
-- **Why:** Codex adversarial review on PR #18 (v0.3.3.0) flagged this as silent visual corruption: "no data" rendered as "worst score."
-- **When:** M4 interactive report, or earlier if schools page gets attention.
-- **Depends on:** `testPolicy` field (added in v0.3.3.0)
+### ~~[M4] Radar chart: handle null radarSAT for test-free schools~~ DONE
+- **Status:** Completed in v0.9.0.0. Added `buildRadarDimensions(school)` pure helper in `radar-utils.ts` that returns `{dims, skipSatReason}`. SAT axis is dropped when `testPolicy === "free" | "blind"` (reason: `"policy"`) or `radarSAT == null` (reason: `"missing-data"`). Page renders distinct legend copy per reason. R6 found and fixed cross-system inconsistency: `sat.ts` and `act.ts` gap dims also now skip both `"free"` and `"blind"`.
+- **Completed:** v0.9.0.0 (2026-05-01)
 
 ### ~~[M4] Gap recommendation copy: distinguish test-free from data-missing~~ DONE
 - **Status:** Completed in feat/m3-gap-dump-page. Added `reason: "test-free"` to `RecommendationContext`, test-free templates for SAT/ACT no-data, early-return branch in `sat.ts`/`act.ts` when `school.testPolicy === "free"`.
 - **Completed:** v0.4.0.0 (2026-04-12)
 
-### [M4] Gap recommendation copy polish
-- **What:** One remaining defensive improvement to `src/lib/gap/recommendations.ts` `school-missing-data` branches:
-  1. **Empty `school.name` fallback** — if upstream imports ever produce `school.name === ""`, templates render `"暂无  的 X 参考数据..."` (double space, subject gone). Add `school.name || "该学校"` fallback in the 3 school-missing templates, or enforce NOT NULL at a schema/validation layer.
-- ~~**Tone softening**~~ — **DONE in v0.6.2.1**: `"当前数据库暂缺 ${name} 的..."` rewritten to `"暂无 ${name} 的... 这项跳过，其余项目的报告不受影响"` across GPA/SAT/ACT school-missing branches.
-- **Why:** Surfaced during PR #11 adversarial review. Not blocking because DB has NOT NULL on `school.name` today, but worth fixing before M4 ships user-visible recommendations.
-- **When:** M4 interactive report, batched with other copy/tone work.
-- **Depends on:** PR #11 (merged)
+### ~~[M4] Gap recommendation copy polish~~ DONE
+- **Status:** Completed in v0.9.0.0. Added `school.name || "该校"` fallback to all 3 `school-missing-data` branches (GPA/SAT/ACT) in `recommendations.ts`. Unified wording — was inconsistent ("该校" vs "该学校"). Documented why the fallback is scoped to school-missing-data branches only (not all schoolName interpolations).
+- **Completed:** v0.9.0.0 (2026-05-01)
 
 ## Deferred from Pre-M3 Stabilization (2026-04-09)
 
-### [P2] Replace Student.name de-facto key with stable student identifier
-- **What:** Today `submitQuestionnaire` uses `Student.name` (childName) as the upsert key and the review/complete flow keys off the same string. Rename a student → orphaned record. Add a stable `studentId` (cuid/uuid), track it in the draft, and make all lookups key off the id. Requires a Prisma migration and questionnaire-provider changes to persist the generated id.
-- **Why:** Codex review P2.1 found this as a correctness risk for multi-user and for any post-submit edit flow. Deferred to its own PR because the fix touches schema, actions, provider, and complete/review pages — larger scope than the pre-M3 stabilization bundle.
-- **When:** Before multi-user or before shipping a "edit submitted questionnaire" flow. Safe to keep for current single-user MVP.
-- **Depends on:** Nothing. Independent PR with its own migration.
-- **Partial progress (v0.4.0.0):** Gap analysis page (`/complete/gaps`) now uses `studentId` from URL params. Review page redirect passes `studentId`. Complete page "← 返回" link from gaps passes both name and studentId. Remaining: complete page URL still uses `name` as primary, review page uses `name` from context.
+### ~~[P2] Replace Student.name de-facto key with stable student identifier~~ DONE
+- **Status:** Completed in v0.9.0.0. Multi-round migration (R1-R7 cross-model review). Final state:
+  - Server-side: `submitQuestionnaire` reads HMAC-signed cookie (`vela-student-token`) for studentId, uses `findUnique({where:{id}})`. Falls through to `create` on cookie absence OR childName mismatch. Updates also propagate `name` field.
+  - Client-side: `vela-student-id` localStorage is now display-only (server ignores it). The new HMAC cookie is HttpOnly, SameSite=Lax, Secure in prod, 90-day max-age.
+  - Read path: `/complete/gaps` now reads cookie-verified studentId, not URL search-param. Closes both write- and read-side IDOR.
+  - `clearStudentSession()` server action invoked by "重新开始" UI to wipe both cookie and client state.
+  - `STUDENT_TOKEN_SECRET` env var required in production, with fail-fast validation before any DB write.
+- **Completed:** v0.9.0.0 (2026-05-01)
+- **Remaining (separate work, deferred):**
+  - **[P3] Stale `vela-student-id` localStorage cleanup** — now dead state since server uses cookies. Real footgun: future dev re-introduces client-trust by mistake. Should remove `STUDENT_ID_KEY` + helpers + `setStudentId` from provider in a focused refactor.
+  - **[P3] `student-token.ts` dedicated unit tests** — sign/verify branches are covered indirectly via integration. Add a tight `__tests__/student-token.test.ts` with: round-trip with `.` in id, wrong-length mac, empty mac, empty id, prod-without-secret-throws.
+  - **[P3] Secret rotation migration path** — rotating `STUDENT_TOKEN_SECRET` silently kills all existing cookies → returning users lose their student row identity. Needs key-id versioning OR previous-secret fallback.
+  - **[P2 — deploy gate] Race condition on concurrent submits** — same-cookie parallel submissions (double-click, two tabs) lose-update under READ COMMITTED. SQLite serializes so not exploitable today, but Postgres/Turso migration will surface it. Mitigate via `Serializable` isolation or `SELECT FOR UPDATE`.

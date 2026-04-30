@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0.0] - 2026-05-01
+
+### Added
+- **HMAC-signed studentId cookie** — `src/lib/auth/student-token.ts`. The questionnaire upsert now reads a server-set HttpOnly cookie (`vela-student-token`) instead of trusting a client-supplied id. Anyone with a leaked `?studentId=X` URL can no longer overwrite that student's profile or read their questionnaire data — closes the IDOR (write + read) that surfaced under cross-model adversarial review. Constant-time HMAC comparison via `timingSafeEqual` defends against timing attacks. `STUDENT_TOKEN_SECRET` env var is required in production (server refuses to boot without it; dev falls back to a banner-warned constant).
+- **`clearStudentSession()` server action** — invoked by the "重新开始" button on `/questionnaire`. Deletes the HMAC cookie so the next submit creates a brand-new Student row instead of overwriting the previous one. Same-device second-child UX now works correctly.
+- **Dynamic radar chart with skip-reason** — `/schools/[id]` radar dimensions adapt: 5 axes when SAT data is meaningful, 4 axes when test-free / test-blind / SAT data missing. The legend renders distinct copy per skip reason: "该校 SAT 成绩非必须" for policy, "暂无该校 SAT 分数数据" for missing-data. Pure helper `buildRadarDimensions(school)` lives in `radar-utils.ts` so the branching logic is unit-testable.
+- **Dev-mode error display** at `/path/error.tsx` — non-production builds now render `error.message` + `error.stack` in a styled `<pre>` so debugging the path explorer doesn't require digging through console output. Production keeps the existing friendly fallback.
+- **iPhone landscape safe-area** on `/schools` — main padding uses `env(safe-area-inset-left/right)` so the school list doesn't clip under the notch / Dynamic Island in landscape orientation.
+
+### Changed
+- **Questionnaire submit signature** — `submitQuestionnaire(rawJson)` no longer takes a `studentId` argument. The server reads it from the cookie. The client-side `vela-student-id` localStorage key is now display-only (server ignores it).
+- **`student.update` propagates `name`** — pre-fix, a corrected `childName` only reached the DB on first submit (create path); update path silently kept the old name. Now `name` is in the shared `studentData` object.
+- **Optional fields normalize undefined → null** — submitting a form without a SAT score now actually clears the DB column. Pre-fix, Prisma's `update` treated `undefined` as "leave column as-is", so removing a score in the UI silently kept the old value.
+- **Gap dimensions skip both `testPolicy === "free"` and `"blind"`** — pre-fix, the radar chart treated them the same but `sat.ts` / `act.ts` only skipped `"free"`. A test-blind school would show no SAT axis on the detail page yet still receive a SAT severity grade.
+- **Gap recommendation school-name fallback** — `recommendations.ts` GPA / SAT / ACT no-data templates now render "该校" when `schoolName` is empty instead of leaving an awkward double-space ("暂无  的 GPA 数据").
+- **CHILD-NAME mismatch on cookie creates new Student** — if the cookie's verified studentId resolves to a Student whose name doesn't match the submission's `childName`, the server falls through to `create` instead of `update`. Defends against the multi-tab / shared-device clobber pattern.
+- **`clearAll()` accepts `{ resetStudentId }` option** — post-submit cleanup keeps studentId (so edit-and-resubmit upserts the same row); "重新开始" passes `resetStudentId: true` to wipe both client state and server cookie.
+
+### Fixed
+- **Read-side IDOR at `/questionnaire/complete/gaps`** — page now reads only the cookie-verified studentId, not the URL search-param. Leaked URL is no longer a read capability.
+- **Block-shape walker tightened** — `src/__tests__/path-seed-shape.test.ts` now validates per-item field types for `route.steps[]`, `photo-row.photos[]`, and `path-opts.opts[].locCards[]`. Drift like a missing `dur` field on a route step now fails the test instead of slipping through.
+- **Unified "该校" wording** across gap recommendations (was inconsistent: some templates said "该校", others "该学校").
+- **Pre-existing `package.json` ↔ `VERSION` drift** synced (was 0.7.0.0 in package.json, 0.8.0.0 in VERSION since the trait-quiz merge).
+
+### Security
+- **Trust boundary moved server-side**. The questionnaire's write authorization is no longer "the client claims this studentId"; it is "the server's HMAC verifies the cookie". URL leakage becomes harmless. Future expansion to a real auth/user model can hang on top of this without a redesign.
+- **Fail-fast secret validation**. The server probes `signStudentToken("__probe__")` before any DB write. A misconfigured `STUDENT_TOKEN_SECRET` in production fails the request cleanly instead of committing Student + QuestionnaireResult rows then throwing on cookie-set, which would have caused duplicate rows on retry.
+
+### Process
+- **7-round cross-model review trail** — this PR went through R1 (3 Claude subagents + Gemini outside voice), R2 polish, R3 (Codex caught 4 cross-section findings including 1 R1-introduced drift), R4 verification, R5 (Codex + Claude adversarial converged on the IDOR), R6 (3 reviewers converged on read-side IDOR), and R7 codex verification (clean). Documented as evidence the cross-model review pattern catches real architectural issues that single-family review misses.
+
 ## [0.8.0.0] - 2026-04-30
 
 ### Added
