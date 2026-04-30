@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-04-30 · `feat/trait-quiz-v06` @ `86f339d` (v0.8.0.0, PR #33 awaiting human merge)
+**Last updated:** 2026-05-01 · `fix/polish-sprint-p2` @ `512577d` (v0.9.0.0, polish sprint + IDOR closure, PR pending)
 
 ## Product Direction
 
@@ -135,20 +135,26 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `feat/trait-quiz-v06`
-- **HEAD:** `86f339d` (v0.8.0.0, PR #33 open and awaiting human merge)
-- **Version:** `0.8.0.0`
-- **Open PR:** [#33](https://github.com/Akagilnc/ak-ai-vela/pull/33) — Trait
-  Quiz v0.6 complete rewrite (closes #24). 3 rounds of bot review (Codex +
-  Gemini), all 7 findings addressed: 1 Critical (quantize math drift between
-  live + URL paths), 1 High (dimension polarity inversion), 1 P1, 4 medium /
-  P2. Real-device E2E across `vela.akbot.top` named tunnel surfaced 2 UX
-  iterations: auto-advance after first Likert pick (250ms), removal of
-  redundant dim transition banner.
+- **Current branch:** `fix/polish-sprint-p2`
+- **HEAD:** `512577d` (v0.9.0.0, PR pending creation)
+- **Version:** `0.9.0.0`
+- **Branch summary (7 commits, +1055 / -137 LOC across 25 files, 753 tests passing):**
+  Polish sprint covering 6 deferred items (radar dimension skip-reason,
+  `/path` dev-mode error display, `/schools` landscape safe-area, gap
+  recommendation school-name fallback, `Student.name` → stable studentId,
+  block-shape walker tightening) plus a 7-round cross-model adversarial
+  review trail that surfaced and closed both write-side and read-side IDOR
+  on the questionnaire flow. Net new file: `src/lib/auth/student-token.ts`
+  (HMAC-signed studentId cookie, `timingSafeEqual` constant-time compare,
+  fail-fast `STUDENT_TOKEN_SECRET` probe in production). New env var
+  `STUDENT_TOKEN_SECRET` (≥32 chars, generate via `openssl rand -hex 32`).
 - **Open Issues:** #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+
-  tracked for more months / additional stage). #24 (v0.6 scientific trait
-  quiz direction) closed by this PR.
-- **Branch summary (16 commits, +4825 / -2800 LOC across 44 files):**
+  tracked for more months / additional stage).
+- **Previously open PR (now reflected in CHANGELOG / "Recently merged" once landed):**
+  PR #33 (Trait Quiz v0.6, v0.8.0.0). 3 rounds of bot review (Codex + Gemini),
+  all 7 findings addressed: 1 Critical (quantize math drift between live + URL
+  paths), 1 High (dimension polarity inversion), 1 P1, 4 medium / P2.
+- **v0.8.0.0 branch summary (16 commits, +4825 / -2800 LOC across 44 files):**
   - Slice 1: dimension framework — `dimensions.ts` (Thomas & Chess 9
     dims, attentionPole low/high, no neutral) + `questions.ts` (30
     Likert items, ~3.3 per dim, mix of forward + reverse-keyed).
@@ -216,6 +222,30 @@ The system speaks Chinese by default.
   - PR #21 (schools state pages, v0.4.0.1)
 
 ## Most recent real verification
+
+**2026-05-01** — Polish sprint + IDOR closure (v0.9.0.0), branch
+`fix/polish-sprint-p2` @ `512577d`, ready to ship:
+- `npm test`: 753 / 753 green (31 files, +20 net since v0.8.0.0). New
+  coverage on `radar-utils` `buildRadarDimensions` (skip-reason branching),
+  `student-token` round-trip integration via `questionnaire-actions`,
+  block-shape walker per-item field validation (`route.steps[]`,
+  `photo-row.photos[]`, `path-opts.opts[].locCards[]`), and the
+  `clearStudentSession` server action.
+- 7 rounds of cross-model adversarial review: R1 (3 Claude subagents +
+  Gemini outside voice), R2 (regression fence + saveStudentId logging),
+  R3 (Codex caught 4 cross-section findings — including 1 R1-introduced
+  drift), R4 verification, R5 (Codex + Claude adversarial converged on
+  the write-side IDOR; closed with HMAC-signed cookie), R6 (3 reviewers
+  converged on read-side IDOR at `/complete/gaps`; closed with
+  cookie-only studentId read), R7 (Codex final clean PASS).
+- Trust boundary moved server-side: questionnaire write authorization is
+  no longer "client claims studentId" but "server's HMAC verifies cookie".
+  URL leakage of `?studentId=X` is now harmless. `STUDENT_TOKEN_SECRET`
+  required in prod (server refuses to boot without it); dev falls back
+  to a banner-warned constant.
+- Cross-system consistency fix: `sat.ts` and `act.ts` gap dimensions now
+  skip both `testPolicy === "free"` and `"blind"` (matched what the radar
+  page already did, closing a R3 cross-section finding).
 
 **2026-04-30** — Trait Quiz v0.6 (30-Q Likert, Thomas & Chess 9 dims),
 branch `feat/trait-quiz-v06` @ `86f339d`, ready to ship:

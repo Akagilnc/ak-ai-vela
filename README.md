@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3000
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (733 tests, 31 files) |
+| `npm test` | Run all tests (753 tests, 31 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -93,6 +93,8 @@ src/
     prisma.ts             # Prisma client singleton (hot-reload safe)
     backup.ts             # SQLite backup via VACUUM INTO
     types.ts              # Zod questionnaire schema + GapResult type
+    auth/
+      student-token.ts    # HMAC-signed studentId cookie (v0.9.0.0) — sign/verify with timingSafeEqual; fail-fast STUDENT_TOKEN_SECRET probe in prod
     path/                 # Path Explorer library (@/lib/path)
       canonical-source.ts # sourcePath canonicalizer — NFKC + Default_Ignorable strip + dot-segment resolve + percent decode (15 rounds of Unicode smuggling hardening)
       month-routing.ts    # resolveMonth() — current → nearest upcoming → max past, validateMonthParam() for ?month=N
@@ -161,6 +163,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | Path Explorer v0.2 (multi-month routing + G1 June seed) | Done (v0.7.0.0) |
 | Path Explorer v0.3+ (additional months, second stage G4–G6) | Planned (after Kailing feedback) |
 | Trait Assessment v0.6 (scientific framework — Thomas & Chess 9-dim) | Done (v0.8.0.0) |
+| Polish sprint + IDOR closure (HMAC-signed studentId cookie) | Done (v0.9.0.0) |
 | Trait Assessment Phase 2 (persistence) | Planned (after seed user feedback) |
 | M4: Interactive report | Planned |
 | M6: Browse enhancements (radar, glossary) | Planned |
