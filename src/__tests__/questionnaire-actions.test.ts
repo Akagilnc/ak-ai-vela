@@ -143,6 +143,64 @@ describe("submitQuestionnaire server action", () => {
     expect(prisma.questionnaireResult.create).toHaveBeenCalledOnce();
   });
 
+  // Codex R3 finding: pre-fix the update path didn't include `name` in
+  // studentData, so a corrected childName never reached the DB even
+  // though create did set it. This test asserts the fix: when an
+  // existing studentId is updated, the new childName propagates.
+  it("update path propagates a changed childName (Student.name stays in sync)", async () => {
+    vi.mocked(prisma.student.findUnique).mockResolvedValue({
+      id: "existing-student",
+      name: "OLD NAME",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 10,
+      schoolSystem: "public",
+      gpaPercentage: 85,
+      classRank: null,
+      normalizedGPA: 3.4,
+      gpaPercentile: null,
+      satScore: null,
+      actScore: null,
+      toeflScore: null,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.student.update).mockResolvedValue({
+      id: "existing-student",
+      name: "张小明",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      gradeLevel: 11,
+      schoolSystem: "international",
+      gpaPercentage: null,
+      classRank: null,
+      normalizedGPA: null,
+      gpaPercentile: null,
+      satScore: 1420,
+      actScore: null,
+      toeflScore: 105,
+      ieltsScore: null,
+      scienceGPA: null,
+      targetMajor: null,
+      targetSchools: null,
+    });
+    vi.mocked(prisma.questionnaireResult.create).mockResolvedValue({
+      id: "qr-name-update",
+      submittedAt: new Date(),
+      studentId: "existing-student",
+      answers: validPayload,
+    });
+
+    await submitQuestionnaire(JSON.stringify(validPayload), "existing-student");
+
+    // The update call must include the new name (validPayload.childName === "张小明")
+    // so Student.name doesn't go stale relative to QuestionnaireResult.answers.
+    const updateCall = vi.mocked(prisma.student.update).mock.calls[0][0];
+    expect(updateCall.data.name).toBe("张小明");
+  });
+
   it("canonicalizes data before validation (strips stale fields)", async () => {
     // Send international student with public fields that should be stripped
     const dirtyPayload = {

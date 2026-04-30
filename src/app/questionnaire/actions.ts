@@ -93,7 +93,12 @@ export async function submitQuestionnaire(
         data.classRank,
       );
 
+      // `name` is in studentData so update path also keeps it in sync.
+      // Pre-fix: only create supplied name; update left student.name stale,
+      // so a corrected childName never reached the DB and /complete/gaps
+      // rendered the old name. Codex R3 finding.
       const studentData = {
+        name: data.childName,
         gradeLevel: data.currentGrade,
         schoolSystem: data.schoolSystem,
         gpaPercentage: data.gpaPercentage,
@@ -115,10 +120,7 @@ export async function submitQuestionnaire(
         sid = existingStudent.id;
       } else {
         const student = await tx.student.create({
-          data: {
-            name: data.childName,
-            ...studentData,
-          },
+          data: studentData,
         });
         sid = student.id;
       }

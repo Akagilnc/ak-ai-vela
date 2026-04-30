@@ -46,7 +46,11 @@ export default function QuestionnairePage() {
   };
 
   const handleFreshStart = () => {
-    clearAll();
+    // True fresh start: reset studentId too so the next submit creates a
+    // brand-new Student row. Without resetStudentId:true, R1's CLEAR
+    // would silently preserve the old studentId and the new form would
+    // overwrite the previous Student's profile (Codex R3 finding).
+    clearAll({ resetStudentId: true });
     router.push("/questionnaire/step/1");
   };
 

@@ -93,48 +93,79 @@ const baseSchool: RadarSchoolInput = {
 };
 
 describe("buildRadarDimensions — skipSat branches", () => {
-  it("includes SAT for testPolicy=required with SAT data (5 dims)", () => {
-    const dims = buildRadarDimensions(baseSchool);
+  it("includes SAT for testPolicy=required with SAT data (5 dims, no skip)", () => {
+    const { dims, skipSatReason } = buildRadarDimensions(baseSchool);
     expect(dims).toHaveLength(5);
     expect(dims.map((d) => d.label)).toContain("SAT");
+    expect(skipSatReason).toBe(null);
   });
 
-  it("includes SAT for testPolicy=optional with SAT data (5 dims)", () => {
-    const dims = buildRadarDimensions({ ...baseSchool, testPolicy: "optional" });
+  it("includes SAT for testPolicy=optional with SAT data (5 dims, no skip)", () => {
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: "optional",
+    });
     expect(dims).toHaveLength(5);
     expect(dims.map((d) => d.label)).toContain("SAT");
+    expect(skipSatReason).toBe(null);
   });
 
-  it("skips SAT when testPolicy=free (4 dims, no SAT axis)", () => {
-    const dims = buildRadarDimensions({ ...baseSchool, testPolicy: "free" });
+  it("skips SAT for testPolicy=free with reason='policy'", () => {
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: "free",
+    });
     expect(dims).toHaveLength(4);
     expect(dims.map((d) => d.label)).not.toContain("SAT");
+    expect(skipSatReason).toBe("policy");
   });
 
-  it("skips SAT when testPolicy=blind (4 dims, no SAT axis)", () => {
-    const dims = buildRadarDimensions({ ...baseSchool, testPolicy: "blind" });
+  it("skips SAT for testPolicy=blind with reason='policy'", () => {
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: "blind",
+    });
     expect(dims).toHaveLength(4);
     expect(dims.map((d) => d.label)).not.toContain("SAT");
+    expect(skipSatReason).toBe("policy");
   });
 
-  it("skips SAT when radarSAT is null even if testPolicy=required", () => {
-    const dims = buildRadarDimensions({ ...baseSchool, radarSAT: null });
+  it("skips SAT for radarSAT=null + testPolicy=required with reason='missing-data'", () => {
+    // CRITICAL: this is the case Codex R3 flagged as a false policy
+    // claim. testPolicy is required so SAT IS necessary; we just don't
+    // have the radar data. Reason must be 'missing-data', NOT 'policy'.
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      radarSAT: null,
+    });
     expect(dims).toHaveLength(4);
     expect(dims.map((d) => d.label)).not.toContain("SAT");
+    expect(skipSatReason).toBe("missing-data");
+  });
+
+  it("policy beats missing-data when both apply (free + null SAT)", () => {
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: "free",
+      radarSAT: null,
+    });
+    expect(dims).toHaveLength(4);
+    expect(skipSatReason).toBe("policy");
   });
 
   it("preserves clockwise order: 录取, 国际生, [SAT,] 费用, 奖学金", () => {
-    const fiveDim = buildRadarDimensions(baseSchool).map((d) => d.label);
+    const fiveDim = buildRadarDimensions(baseSchool).dims.map((d) => d.label);
     expect(fiveDim).toEqual(["录取", "国际生", "SAT", "费用", "奖学金"]);
 
-    const fourDim = buildRadarDimensions({ ...baseSchool, testPolicy: "free" }).map(
-      (d) => d.label,
-    );
+    const fourDim = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: "free",
+    }).dims.map((d) => d.label);
     expect(fourDim).toEqual(["录取", "国际生", "费用", "奖学金"]);
   });
 
   it("each dim carries its own legendLabel (no fragile mapping ladder)", () => {
-    const dims = buildRadarDimensions(baseSchool);
+    const { dims } = buildRadarDimensions(baseSchool);
     const byLabel = Object.fromEntries(dims.map((d) => [d.label, d.legendLabel]));
     expect(byLabel).toEqual({
       "录取": "录取友好度",
@@ -146,7 +177,7 @@ describe("buildRadarDimensions — skipSat branches", () => {
   });
 
   it("null radar fields default to 0 (not undefined / NaN)", () => {
-    const dims = buildRadarDimensions({
+    const { dims } = buildRadarDimensions({
       testPolicy: "required",
       radarAcceptance: null,
       radarInternational: null,
@@ -166,5 +197,14 @@ describe("buildRadarDimensions — skipSat branches", () => {
     expect(valByLabel["SAT"]).toBe(80);
     expect(valByLabel["费用"]).toBe(0);
     expect(valByLabel["奖学金"]).toBe(0);
+  });
+
+  it("includes SAT when testPolicy=null + radarSAT present (default branch)", () => {
+    const { dims, skipSatReason } = buildRadarDimensions({
+      ...baseSchool,
+      testPolicy: null,
+    });
+    expect(dims).toHaveLength(5);
+    expect(skipSatReason).toBe(null);
   });
 });

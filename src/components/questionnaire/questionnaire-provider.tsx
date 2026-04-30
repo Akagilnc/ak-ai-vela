@@ -100,6 +100,12 @@ function saveStudentId(id: string): void {
   }
 }
 
+function clearStudentId(): void {
+  if (typeof window === "undefined") return;
+  try { localStorage.removeItem(STUDENT_ID_KEY); }
+  catch { /* ignore */ }
+}
+
 export { loadDraft };
 
 // --- Reducer ---
@@ -114,7 +120,7 @@ type Action =
   | { type: "SET_FIELDS"; fields: Partial<QuestionnaireDraft> }
   | { type: "SET_STEP"; step: number }
   | { type: "RESTORE_DRAFT"; draft: DraftInfo }
-  | { type: "CLEAR" }
+  | { type: "CLEAR"; resetStudentId?: boolean }
   | { type: "SET_ARRAY_ITEM"; field: string; index: number; value: unknown }
   | { type: "ADD_ARRAY_ITEM"; field: string; value: unknown }
   | { type: "REMOVE_ARRAY_ITEM"; field: string; index: number }
@@ -164,15 +170,23 @@ function reducer(state: State, action: Action): State {
         // studentId restored separately via loadStudentId() — keep current
       };
     case "CLEAR":
-      // CRITICAL: keep studentId. The whole point of moving it out of
-      // the draft is so a fresh form on the same device still updates
-      // the same Student record (upsert, not duplicate).
+      // Two clear modes:
+      //   - resetStudentId: false (default for post-submit cleanup) — keeps
+      //     studentId so an edit-and-resubmit on the same device updates
+      //     the same Student row instead of creating a duplicate.
+      //   - resetStudentId: true (for "重新开始" button) — clears studentId
+      //     too, so the next submission creates a brand-new Student.
+      //     Without this branch, the fresh-start UX silently overwrites the
+      //     previous Student's profile with the new form — Codex flagged
+      //     this as a drift bug introduced by R1's CLEAR-preserves-studentId
+      //     change.
       return {
         ...state,
         data: { schemaVersion: 1 },
         currentStep: 1,
         isDirty: false,
         lastSavedAt: null,
+        ...(action.resetStudentId ? { studentId: null } : {}),
       };
     case "SET_ARRAY_ITEM": {
       const arr = [...((state.data[action.field as keyof QuestionnaireDraft] as unknown[]) || [])];
@@ -212,7 +226,15 @@ type QuestionnaireContextType = {
   setArrayItem: (field: string, index: number, value: unknown) => void;
   addArrayItem: (field: string, value: unknown) => void;
   removeArrayItem: (field: string, index: number) => void;
-  clearAll: () => void;
+  /**
+   * Reset draft state.
+   * - `{ resetStudentId: true }` → also wipes studentId + its localStorage key.
+   *   Use for "重新开始" / fresh-start UX where the next submit must create
+   *   a new Student row.
+   * - default (`{ resetStudentId: false }`) → keeps studentId so a
+   *   submission-cleanup followed by re-edit + resubmit upserts the same row.
+   */
+  clearAll: (options?: { resetStudentId?: boolean }) => void;
   // `overrides.currentStep` lets callers persist a forward-looking step
   // number before dispatching the corresponding setStep, so a navigation
   // flush writes the draft at the target step instead of the stale one.
@@ -340,9 +362,12 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "REMOVE_ARRAY_ITEM", field, index });
   }, []);
 
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback((options?: { resetStudentId?: boolean }) => {
     clearDraft();
-    dispatch({ type: "CLEAR" });
+    if (options?.resetStudentId) {
+      clearStudentId();
+    }
+    dispatch({ type: "CLEAR", resetStudentId: options?.resetStudentId });
   }, []);
 
   // Persist studentId to its own localStorage key so subsequent

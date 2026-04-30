@@ -87,6 +87,29 @@ describe("satDimension.compute — test-free school", () => {
     expect(result.severity).toBe("no-data");
     expect(result.action).toContain("非必须");
   });
+
+  // Codex R3 cross-system finding: radar-utils.ts treats testPolicy="blind"
+  // and "free" the same way (both skip the SAT axis), but sat.ts only
+  // skipped "free". A blind school would have a SAT axis hidden on the
+  // school detail page yet still receive a SAT severity grade in the gap
+  // analysis — internally inconsistent. Fence both branches so the systems
+  // stay aligned.
+  it("test-blind school → no-data with 非必须 copy (mirrors test-free)", () => {
+    const result = satDimension.compute(
+      makeAnswers(),
+      makeSchool({ testPolicy: "blind", sat25th: null, sat75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("非必须");
+  });
+
+  it("test-blind school with populated scores → still no-data", () => {
+    const result = satDimension.compute(
+      makeAnswers({ satScore: 1500 }),
+      makeSchool({ testPolicy: "blind", sat25th: 1200, sat75th: 1400 }),
+    );
+    expect(result.severity).toBe("no-data");
+  });
 });
 
 describe("satDimension.compute — severity", () => {

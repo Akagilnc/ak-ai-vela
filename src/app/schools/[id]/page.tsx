@@ -47,11 +47,11 @@ export default async function SchoolDetailPage({
   );
 
   // Build radar dimensions dynamically. Skip SAT when the school is
-  // test-free or lacks SAT data — rendering null as 0 ("worst score")
-  // is visually misleading. See buildRadarDimensions in radar-utils.ts
-  // for the pure helper + unit tests.
-  const radarDimensions = buildRadarDimensions(school);
-  const skipSat = !radarDimensions.some((d) => d.label === "SAT");
+  // test-free / test-blind (policy) OR lacks SAT data (missing-data) —
+  // rendering null as 0 ("worst score") is visually misleading. The
+  // helper returns BOTH the dim list and a skip reason so the legend
+  // can show distinct copy: "SAT 非必须" vs "暂无 SAT 数据".
+  const { dims: radarDimensions, skipSatReason } = buildRadarDimensions(school);
 
   return (
     <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
@@ -201,9 +201,14 @@ export default async function SchoolDetailPage({
                     value={d.value}
                   />
                 ))}
-                {skipSat && (
+                {skipSatReason === "policy" && (
                   <p className="text-xs text-vela-muted mt-1">
                     该校 SAT 成绩非必须，雷达图不含 SAT 维度
+                  </p>
+                )}
+                {skipSatReason === "missing-data" && (
+                  <p className="text-xs text-vela-muted mt-1">
+                    暂无该校 SAT 分数数据，雷达图不含 SAT 维度
                   </p>
                 )}
               </div>
