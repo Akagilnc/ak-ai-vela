@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 vi.mock("@/lib/prisma", () => {
   const mockPrisma = {
     student: {
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -53,7 +53,6 @@ describe("submitQuestionnaire server action", () => {
   });
 
   it("creates new student and questionnaire result", async () => {
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "student-1",
       name: "张小明",
@@ -88,7 +87,7 @@ describe("submitQuestionnaire server action", () => {
   });
 
   it("upserts existing student (append QuestionnaireResult)", async () => {
-    vi.mocked(prisma.student.findFirst).mockResolvedValue({
+    vi.mocked(prisma.student.findUnique).mockResolvedValue({
       id: "existing-student",
       name: "张小明",
       createdAt: new Date(),
@@ -133,7 +132,10 @@ describe("submitQuestionnaire server action", () => {
       answers: validPayload,
     });
 
-    const result = await submitQuestionnaire(JSON.stringify(validPayload));
+    const result = await submitQuestionnaire(
+      JSON.stringify(validPayload),
+      "existing-student",
+    );
     expect(result.success).toBe(true);
     expect(result.studentId).toBe("existing-student");
     expect(prisma.student.update).toHaveBeenCalledOnce();
@@ -149,7 +151,6 @@ describe("submitQuestionnaire server action", () => {
       classRank: "5/200", // should be stripped for international
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "s1",
       name: "张小明",
@@ -186,7 +187,7 @@ describe("submitQuestionnaire server action", () => {
   });
 
   it("returns error when prisma throws", async () => {
-    vi.mocked(prisma.student.findFirst).mockRejectedValue(new Error("DB down"));
+    vi.mocked(prisma.student.create).mockRejectedValue(new Error("DB down"));
 
     const result = await submitQuestionnaire(JSON.stringify(validPayload));
     expect(result.success).toBe(false);
@@ -222,7 +223,6 @@ describe("submitQuestionnaire server action", () => {
       gpaPercentage: 90,
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "gpa-student",
       name: "GPA Test Child",
@@ -266,7 +266,6 @@ describe("submitQuestionnaire server action", () => {
       classRank: "5/200",
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "rank-student",
       name: "Rank Test Child",
@@ -319,7 +318,6 @@ describe("submitQuestionnaire server action", () => {
       classRank: "5/200",
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "s-stale-pct",
       name: "Rank-over-stale-percent Kid",
@@ -368,7 +366,6 @@ describe("submitQuestionnaire server action", () => {
       classRank: "5/200", // stale
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "s-homeschool-intl",
       name: "Homeschool Intl Kid",
@@ -413,7 +410,6 @@ describe("submitQuestionnaire server action", () => {
       gpaPercentage: 90, // stale
     };
 
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "s-unknown",
       name: "Unknown GPA Kid",
@@ -446,7 +442,6 @@ describe("submitQuestionnaire server action", () => {
   });
 
   it("returns error when questionnaireResult.create fails inside transaction", async () => {
-    vi.mocked(prisma.student.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.student.create).mockResolvedValue({
       id: "s-tx",
       name: "张小明",

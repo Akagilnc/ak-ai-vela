@@ -39,7 +39,10 @@ function computeNormalizedGpa(
   return null;
 }
 
-export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult> {
+export async function submitQuestionnaire(
+  rawJson: string,
+  studentId?: string,
+): Promise<SubmitResult> {
   // 1. Parse JSON
   let rawData: Record<string, unknown>;
   try {
@@ -71,12 +74,13 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
     // 5–6. Upsert Student + create QuestionnaireResult atomically.
     // Wrapping in $transaction ensures that if the QR insert fails,
     // the student write is rolled back too.
-    const { studentId } = await prisma.$transaction(async (tx) => {
-      const existingStudent = await tx.student.findFirst({
-        where: {
-          name: data.childName,
-        },
-      });
+    const { studentId: resultStudentId } = await prisma.$transaction(async (tx) => {
+      // Look up by stable ID, not by name. Name-based lookup (findFirst)
+      // caused collision when two students shared a name. studentId is
+      // returned to the client on first submit and passed back on re-submit.
+      const existingStudent = studentId
+        ? await tx.student.findUnique({ where: { id: studentId } })
+        : null;
 
       let sid: string;
 
@@ -130,7 +134,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
       return { studentId: sid };
     });
 
-    return { success: true, studentId };
+    return { success: true, studentId: resultStudentId };
   } catch (error) {
     console.error("Questionnaire submission failed:", error);
     return { success: false, error: "数据保存失败，请稍后重试" };

@@ -132,6 +132,21 @@ function validateBlock(block: AnyBlock, ctx: string): void {
         expect(["low", "med", "no"], `${ctx} path-opts[].effortKey`).toContain(
           o.effortKey,
         );
+        // Validate locCards per-item shape when present
+        if (o.locCards != null) {
+          expect(Array.isArray(o.locCards), `${ctx} path-opts[].locCards`).toBe(true);
+          for (const lc of o.locCards as Array<Record<string, unknown>>) {
+            for (const k of ["photo", "name", "desc"]) {
+              expect(typeof lc[k], `${ctx} path-opts[].locCards[].${k}`).toBe("string");
+            }
+            // optional link sub-object
+            if (lc.link != null) {
+              const link = lc.link as Record<string, unknown>;
+              expect(typeof link.gotoActivitySlug, `${ctx} locCards[].link.gotoActivitySlug`).toBe("string");
+              expect(typeof link.label, `${ctx} locCards[].link.label`).toBe("string");
+            }
+          }
+        }
       }
       break;
     case "list-bullets":
@@ -161,6 +176,11 @@ function validateBlock(block: AnyBlock, ctx: string): void {
       break;
     case "route":
       expect(Array.isArray(block.steps), `${ctx} route.steps`).toBe(true);
+      for (const step of block.steps as Array<Record<string, unknown>>) {
+        for (const k of ["zone", "desc", "dur"]) {
+          expect(typeof step[k], `${ctx} route.steps[].${k}`).toBe("string");
+        }
+      }
       break;
     case "philosophy":
       expect(typeof block.lbl, `${ctx} philosophy.lbl`).toBe("string");
@@ -171,6 +191,11 @@ function validateBlock(block: AnyBlock, ctx: string): void {
       break;
     case "photo-row":
       expect(Array.isArray(block.photos), `${ctx} photo-row.photos`).toBe(true);
+      for (const photo of block.photos as Array<Record<string, unknown>>) {
+        for (const k of ["src", "alt", "cap"]) {
+          expect(typeof photo[k], `${ctx} photo-row.photos[].${k}`).toBe("string");
+        }
+      }
       break;
     case "sub-block":
       expect(Array.isArray(block.blocks), `${ctx} sub-block.blocks`).toBe(true);

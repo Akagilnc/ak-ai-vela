@@ -21,6 +21,7 @@ export type DraftInfo = {
   currentStep: number;
   data: QuestionnaireDraft;
   savedAt: string; // ISO string
+  studentId?: string; // stable ID returned by server on first submit
 };
 
 function loadDraft(): DraftInfo | null {
@@ -90,13 +91,15 @@ type Action =
   | { type: "SET_ARRAY_ITEM"; field: string; index: number; value: unknown }
   | { type: "ADD_ARRAY_ITEM"; field: string; value: unknown }
   | { type: "REMOVE_ARRAY_ITEM"; field: string; index: number }
-  | { type: "MARK_SAVED"; savedAt: string };
+  | { type: "MARK_SAVED"; savedAt: string }
+  | { type: "SET_STUDENT_ID"; studentId: string };
 
 type State = {
   data: QuestionnaireDraft;
   currentStep: number;
   isDirty: boolean;
   lastSavedAt: string | null;
+  studentId: string | null;
 };
 
 function reducer(state: State, action: Action): State {
@@ -130,6 +133,7 @@ function reducer(state: State, action: Action): State {
         currentStep: action.draft.currentStep,
         isDirty: false,
         lastSavedAt: action.draft.savedAt,
+        studentId: action.draft.studentId ?? null,
       };
     case "CLEAR":
       return {
@@ -137,6 +141,7 @@ function reducer(state: State, action: Action): State {
         currentStep: 1,
         isDirty: false,
         lastSavedAt: null,
+        studentId: null,
       };
     case "SET_ARRAY_ITEM": {
       const arr = [...((state.data[action.field as keyof QuestionnaireDraft] as unknown[]) || [])];
@@ -155,6 +160,8 @@ function reducer(state: State, action: Action): State {
     }
     case "MARK_SAVED":
       return { ...state, isDirty: false, lastSavedAt: action.savedAt };
+    case "SET_STUDENT_ID":
+      return { ...state, studentId: action.studentId };
     default:
       return state;
   }
@@ -166,6 +173,7 @@ type QuestionnaireContextType = {
   data: QuestionnaireDraft;
   currentStep: number;
   lastSavedAt: string | null;
+  studentId: string | null;
   setField: (field: string, value: unknown) => void;
   setFields: (fields: Partial<QuestionnaireDraft>) => void;
   setStep: (step: number) => void;
@@ -197,6 +205,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     currentStep: 1,
     isDirty: false,
     lastSavedAt: null,
+    studentId: null,
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -234,6 +243,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         currentStep: overrides?.currentStep ?? s.currentStep,
         data: s.data,
         savedAt: now,
+        ...(s.studentId ? { studentId: s.studentId } : {}),
       });
       if (ok) {
         dispatch({ type: "MARK_SAVED", savedAt: now });
@@ -255,6 +265,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         currentStep: stateRef.current.currentStep,
         data: stateRef.current.data,
         savedAt: now,
+        ...(stateRef.current.studentId ? { studentId: stateRef.current.studentId } : {}),
       });
       if (ok) {
         dispatch({ type: "MARK_SAVED", savedAt: now });
@@ -304,6 +315,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         data: state.data,
         currentStep: state.currentStep,
         lastSavedAt: state.lastSavedAt,
+        studentId: state.studentId,
         setField,
         setFields,
         setStep,

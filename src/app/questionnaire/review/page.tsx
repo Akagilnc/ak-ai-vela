@@ -74,7 +74,7 @@ const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ReviewPage() {
-  const { data, flushSave, clearAll } = useQuestionnaire();
+  const { data, flushSave, clearAll, studentId } = useQuestionnaire();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -174,7 +174,10 @@ export default function ReviewPage() {
 
     startTransition(async () => {
       try {
-        const result: SubmitResult = await submitQuestionnaire(payload);
+        const result: SubmitResult = await submitQuestionnaire(
+          payload,
+          studentId ?? undefined,
+        );
         if (result.success) {
           const childName = data.childName || "";
           const studentId = result.studentId || "";

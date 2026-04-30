@@ -1,4 +1,3 @@
-export const SIDES = 5;
 export const SIZE = 240;
 export const CENTER = SIZE / 2;
 export const RADIUS = 90;
@@ -12,6 +11,6 @@ export function polarToCartesian(
   return [CENTER + radius * Math.cos(rad), CENTER + radius * Math.sin(rad)];
 }
 
-export function getAngles(): number[] {
-  return Array.from({ length: SIDES }, (_, i) => (360 / SIDES) * i);
+export function getAngles(sides: number): number[] {
+  return Array.from({ length: sides }, (_, i) => (360 / sides) * i);
 }

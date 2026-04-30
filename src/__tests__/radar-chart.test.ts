@@ -9,7 +9,7 @@ import {
 
 describe("RadarChart geometry", () => {
   it("generates correct number of angles", () => {
-    const angles = getAngles();
+    const angles = getAngles(5);
     expect(angles).toHaveLength(5);
     expect(angles[0]).toBe(0);
     expect(angles[1]).toBe(72);
@@ -23,7 +23,7 @@ describe("RadarChart geometry", () => {
   });
 
   it("zero value produces point at center", () => {
-    const angles = getAngles();
+    const angles = getAngles(5);
     const point = polarToCartesian(angles[0], (0 / 100) * RADIUS);
     expect(point[0]).toBeCloseTo(CENTER);
     expect(point[1]).toBeCloseTo(CENTER);
@@ -42,7 +42,27 @@ describe("RadarChart geometry", () => {
   });
 
   it("all points are within SVG bounds", () => {
-    const angles = getAngles();
+    const angles = getAngles(5);
+    for (const a of angles) {
+      const [x, y] = polarToCartesian(a, RADIUS);
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThanOrEqual(SIZE);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(y).toBeLessThanOrEqual(SIZE);
+    }
+  });
+
+  it("generates 4-dim radar for test-free schools (SAT skipped)", () => {
+    const angles = getAngles(4);
+    expect(angles).toHaveLength(4);
+    expect(angles[0]).toBe(0);
+    expect(angles[1]).toBe(90);
+    expect(angles[2]).toBe(180);
+    expect(angles[3]).toBe(270);
+  });
+
+  it("4-dim points are within SVG bounds", () => {
+    const angles = getAngles(4);
     for (const a of angles) {
       const [x, y] = polarToCartesian(a, RADIUS);
       expect(x).toBeGreaterThanOrEqual(0);
