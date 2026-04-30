@@ -9,7 +9,15 @@ function clamp(v: number): number {
 }
 
 export interface RadarDimension {
+  /** Short label shown on the radar axis. */
   label: string;
+  /**
+   * Longer label shown in the legend (e.g. "录取友好度" vs axis "录取").
+   * Defaults to `label` when omitted. Defined alongside the dim value
+   * so adding a new dim doesn't require updating a separate label-mapping
+   * ladder elsewhere.
+   */
+  legendLabel?: string;
   value: number;
 }
 

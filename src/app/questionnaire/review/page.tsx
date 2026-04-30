@@ -74,7 +74,7 @@ const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ReviewPage() {
-  const { data, flushSave, clearAll, studentId } = useQuestionnaire();
+  const { data, flushSave, clearAll, studentId, setStudentId } = useQuestionnaire();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -180,9 +180,17 @@ export default function ReviewPage() {
         );
         if (result.success) {
           const childName = data.childName || "";
-          const studentId = result.studentId || "";
+          const nextStudentId = result.studentId ?? "";
+          // Persist studentId BEFORE clearAll() so a re-submission in
+          // the same browser (edit + resubmit) goes through findUnique
+          // and updates the existing Student instead of creating a duplicate.
+          // setStudentId writes to its own localStorage key (vela-student-id),
+          // independent of the draft, so clearDraft() doesn't wipe it.
+          if (nextStudentId) {
+            setStudentId(nextStudentId);
+          }
           clearAll();
-          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}&studentId=${encodeURIComponent(studentId)}`);
+          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}&studentId=${encodeURIComponent(nextStudentId)}`);
         } else {
           setSubmitError(result.error || "提交失败");
           setIsSubmitting(false);

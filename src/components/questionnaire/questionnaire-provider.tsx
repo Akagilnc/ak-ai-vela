@@ -14,6 +14,12 @@ import type { QuestionnaireDraft } from "@/lib/types";
 // --- Draft persistence ---
 
 const STORAGE_KEY = "vela-questionnaire-draft";
+// studentId persists in its own key, NOT inside the draft. This way
+// clearDraft() (called on every successful submit) doesn't wipe the
+// stable identity. Without this split, every re-submission creates a
+// duplicate Student row instead of upserting — defeating the whole
+// purpose of the findUnique({id}) migration.
+const STUDENT_ID_KEY = "vela-student-id";
 const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const DEBOUNCE_MS = 300;
 
@@ -21,7 +27,6 @@ export type DraftInfo = {
   currentStep: number;
   data: QuestionnaireDraft;
   savedAt: string; // ISO string
-  studentId?: string; // stable ID returned by server on first submit
 };
 
 function loadDraft(): DraftInfo | null {
@@ -71,6 +76,19 @@ export function saveDraft(info: DraftInfo): boolean {
 export function clearDraft(): void {
   if (typeof window === "undefined") return;
   try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
+
+// studentId persistence — separate key so clearDraft() doesn't touch it.
+function loadStudentId(): string | null {
+  if (typeof window === "undefined") return null;
+  try { return localStorage.getItem(STUDENT_ID_KEY); }
+  catch { return null; }
+}
+
+function saveStudentId(id: string): void {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(STUDENT_ID_KEY, id); }
+  catch { /* ignore quota / privacy mode */ }
 }
 
 export { loadDraft };
@@ -129,19 +147,23 @@ function reducer(state: State, action: Action): State {
       return { ...state, currentStep: action.step, isDirty: true };
     case "RESTORE_DRAFT":
       return {
+        ...state,
         data: action.draft.data,
         currentStep: action.draft.currentStep,
         isDirty: false,
         lastSavedAt: action.draft.savedAt,
-        studentId: action.draft.studentId ?? null,
+        // studentId restored separately via loadStudentId() — keep current
       };
     case "CLEAR":
+      // CRITICAL: keep studentId. The whole point of moving it out of
+      // the draft is so a fresh form on the same device still updates
+      // the same Student record (upsert, not duplicate).
       return {
+        ...state,
         data: { schemaVersion: 1 },
         currentStep: 1,
         isDirty: false,
         lastSavedAt: null,
-        studentId: null,
       };
     case "SET_ARRAY_ITEM": {
       const arr = [...((state.data[action.field as keyof QuestionnaireDraft] as unknown[]) || [])];
@@ -174,6 +196,7 @@ type QuestionnaireContextType = {
   currentStep: number;
   lastSavedAt: string | null;
   studentId: string | null;
+  setStudentId: (id: string) => void;
   setField: (field: string, value: unknown) => void;
   setFields: (fields: Partial<QuestionnaireDraft>) => void;
   setStep: (step: number) => void;
@@ -218,11 +241,17 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     stateRef.current = state;
   });
 
-  // Restore draft from localStorage on mount
+  // Restore draft + studentId from localStorage on mount.
+  // studentId lives in its own key so a `clearDraft` (post-submit)
+  // doesn't wipe the student's stable identity — see STUDENT_ID_KEY.
   useEffect(() => {
     const saved = loadDraft();
     if (saved) {
       dispatch({ type: "RESTORE_DRAFT", draft: saved });
+    }
+    const sid = loadStudentId();
+    if (sid) {
+      dispatch({ type: "SET_STUDENT_ID", studentId: sid });
     }
   }, []);
 
@@ -243,7 +272,6 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         currentStep: overrides?.currentStep ?? s.currentStep,
         data: s.data,
         savedAt: now,
-        ...(s.studentId ? { studentId: s.studentId } : {}),
       });
       if (ok) {
         dispatch({ type: "MARK_SAVED", savedAt: now });
@@ -265,7 +293,6 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         currentStep: stateRef.current.currentStep,
         data: stateRef.current.data,
         savedAt: now,
-        ...(stateRef.current.studentId ? { studentId: stateRef.current.studentId } : {}),
       });
       if (ok) {
         dispatch({ type: "MARK_SAVED", savedAt: now });
@@ -309,6 +336,15 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "CLEAR" });
   }, []);
 
+  // Persist studentId to its own localStorage key so subsequent
+  // submissions (re-edit + resubmit) hit the upsert path with the
+  // same studentId and update the existing Student row instead of
+  // creating duplicates.
+  const setStudentId = useCallback((id: string) => {
+    dispatch({ type: "SET_STUDENT_ID", studentId: id });
+    saveStudentId(id);
+  }, []);
+
   return (
     <QuestionnaireContext.Provider
       value={{
@@ -316,6 +352,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         currentStep: state.currentStep,
         lastSavedAt: state.lastSavedAt,
         studentId: state.studentId,
+        setStudentId,
         setField,
         setFields,
         setStep,

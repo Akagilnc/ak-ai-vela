@@ -70,7 +70,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       return "补上年级排名可以让报告更准";
     }
     if (ctx.reason === "school-missing-data") {
-      return `暂无 ${ctx.schoolName || "该学校"} 的 GPA 参考数据，这项跳过，其余项目的报告不受影响`;
+      return `暂无 ${ctx.schoolName || "该校"} 的 GPA 参考数据，这项跳过，其余项目的报告不受影响`;
     }
     return "补上百分制成绩可以让报告更准";
   },
@@ -97,7 +97,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       return "该校 SAT 成绩非必须，跳过这项对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `暂无 ${ctx.schoolName || "该学校"} 的 SAT 分数段参考，这项跳过，其余项目的报告不受影响`;
+      return `暂无 ${ctx.schoolName || "该校"} 的 SAT 分数段参考，这项跳过，其余项目的报告不受影响`;
     }
     return "补上 SAT 或 ACT 分数可以让报告更准";
   },
@@ -123,7 +123,7 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       return "该校 ACT 成绩非必须，跳过这项对比";
     }
     if (ctx.reason === "school-missing-data") {
-      return `暂无 ${ctx.schoolName || "该学校"} 的 ACT 分数段参考，这项跳过，其余项目的报告不受影响`;
+      return `暂无 ${ctx.schoolName || "该校"} 的 ACT 分数段参考，这项跳过，其余项目的报告不受影响`;
     }
     return "补上 ACT 或 SAT 分数可以让报告更准";
   },

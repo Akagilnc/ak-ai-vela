@@ -2,7 +2,8 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { RadarChart, type RadarDimension } from "./radar-chart";
+import { RadarChart } from "./radar-chart";
+import { buildRadarDimensions } from "./radar-utils";
 
 type Params = Promise<{ id: string }>;
 
@@ -47,19 +48,10 @@ export default async function SchoolDetailPage({
 
   // Build radar dimensions dynamically. Skip SAT when the school is
   // test-free or lacks SAT data — rendering null as 0 ("worst score")
-  // is visually misleading. Flagged by Codex adversarial review PR #18.
-  const skipSat =
-    school.testPolicy === "free" ||
-    school.testPolicy === "blind" ||
-    school.radarSAT == null;
-
-  const radarDimensions: RadarDimension[] = [
-    { label: "录取", value: school.radarAcceptance ?? 0 },
-    { label: "国际生", value: school.radarInternational ?? 0 },
-    ...(!skipSat ? [{ label: "SAT", value: school.radarSAT! }] : []),
-    { label: "费用", value: school.radarCost ?? 0 },
-    { label: "奖学金", value: school.radarAid ?? 0 },
-  ];
+  // is visually misleading. See buildRadarDimensions in radar-utils.ts
+  // for the pure helper + unit tests.
+  const radarDimensions = buildRadarDimensions(school);
+  const skipSat = !radarDimensions.some((d) => d.label === "SAT");
 
   return (
     <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
@@ -205,17 +197,7 @@ export default async function SchoolDetailPage({
                 {radarDimensions.map((d) => (
                   <RadarLegendItem
                     key={d.label}
-                    label={
-                      d.label === "录取"
-                        ? "录取友好度"
-                        : d.label === "国际生"
-                          ? "国际生友好度"
-                          : d.label === "SAT"
-                            ? "SAT 竞争力"
-                            : d.label === "费用"
-                              ? "费用可负担度"
-                              : "奖学金力度"
-                    }
+                    label={d.legendLabel ?? d.label}
                     value={d.value}
                   />
                 ))}
