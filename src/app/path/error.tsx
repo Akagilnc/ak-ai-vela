@@ -101,7 +101,7 @@ export default function PathError({
               style={{
                 marginTop: 16,
                 padding: 12,
-                background: "#f5f0e0",
+                background: "#F5F0E1",
                 borderRadius: 8,
                 fontSize: 11,
                 color: "#6B6560",

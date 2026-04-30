@@ -6,7 +6,7 @@
 //   - green:     actScore ≥ act75th
 //   - yellow:    act25th ≤ actScore < act75th
 //   - red:       actScore < act25th
-//   - no-data:   student/school missing, or testPolicy === "free"
+//   - no-data:   student/school missing, or testPolicy === "free" | "blind"
 
 import type { School } from "@prisma/client";
 import type { GapResult, QuestionnaireAnswers } from "@/lib/types";

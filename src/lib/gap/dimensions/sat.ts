@@ -5,7 +5,7 @@
 //   - green:     satScore ≥ sat75th
 //   - yellow:    sat25th ≤ satScore < sat75th
 //   - red:       satScore < sat25th
-//   - no-data:   student/school missing, or testPolicy === "free"
+//   - no-data:   student/school missing, or testPolicy === "free" | "blind"
 //
 // `normalized` is always null — SAT is a raw score, no normalization needed.
 

@@ -70,6 +70,12 @@ export const RECOMMENDATIONS: Record<string, RecommendationFn> = {
       return "补上年级排名可以让报告更准";
     }
     if (ctx.reason === "school-missing-data") {
+      // Defensive fallback scoped to school-missing-data branches only.
+      // school.name is non-nullable in Prisma, so this only triggers if a
+      // caller passes an empty string. Other interpolation sites in this
+      // file (yellow/red/excellent severities) intentionally do NOT have
+      // this fallback — if schoolName were empty there, we have a bigger
+      // upstream problem than typography. Pre-landing review R-final.
       return `暂无 ${ctx.schoolName || "该校"} 的 GPA 参考数据，这项跳过，其余项目的报告不受影响`;
     }
     return "补上百分制成绩可以让报告更准";
