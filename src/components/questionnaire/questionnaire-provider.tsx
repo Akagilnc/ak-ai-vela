@@ -87,8 +87,17 @@ function loadStudentId(): string | null {
 
 function saveStudentId(id: string): void {
   if (typeof window === "undefined") return;
-  try { localStorage.setItem(STUDENT_ID_KEY, id); }
-  catch { /* ignore quota / privacy mode */ }
+  try {
+    localStorage.setItem(STUDENT_ID_KEY, id);
+  } catch (e) {
+    // Mirror saveDraft's logging so the founder sees a signal when
+    // private/incognito mode (or quota) silently breaks studentId
+    // persistence — symptom would be duplicate Student rows on
+    // resubmit with no obvious cause.
+    if (e instanceof DOMException && e.name === "QuotaExceededError") {
+      console.warn("localStorage quota exceeded, studentId not saved");
+    }
+  }
 }
 
 export { loadDraft };
