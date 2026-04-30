@@ -134,11 +134,17 @@ Deferred work items tracked by engineering and CEO reviews.
 
 ## Deferred from Trait Assessment v3
 
-### [P0] v0.6 特质测评科学化：用学术框架替换自造问题
-- **Tracking:** #24 (详细调研方向、4 个候选框架、分阶段 scope、open questions 都记录在 issue 里)
-- **TL;DR:** 用户反馈"10 题看不出个性"。v0.6 不继续造轮子，用已验证的儿童心理学框架（Temperament + VIA + Big5-C + Gardner MI 四选组合）替换自造题目。
-- **When:** v0.6，v0.5 文案池扩充（P1 TODO）完成后启动。
-- **Depends on:** v0.5.0.0（已完成）, 更多家长反馈
+### ~~[P0] v0.6 特质测评科学化：用学术框架替换自造问题~~ DONE in v0.8.0.0
+- **Status:** Shipped 2026-04-30 (PR #33, branch `feat/trait-quiz-v06`).
+  最终选定 Thomas & Chess 1956 NYU 9-dimension Temperament 框架（不是
+  四选组合）。30 题 Likert（每 dim ~3.3 题，含 reverse-keyed），per-dim 量化
+  到 1-5 整数 + 4-class hero（灵活 / 慎重 / 慢热 / 平衡，consumer-friendly
+  alias 覆盖学术 label）。Score URL 6-byte payload → 8-char base64url + CRC-8
+  + schemaVersion + cutoffVersion + lowConfidenceFlag，cutoffHistory
+  append-only ledger 保证旧链接在新 cutoff 下重分类不破。3 轮 bot review
+  关掉所有 finding；real-device E2E surfaced auto-advance + 删除冗余 dim
+  transition banner 两处 UX 调整。Issue #24 closed. 159 tests across 7 files.
+- **Completed:** v0.8.0.0 (2026-04-30)
 
 ### ~~[P0] Path Explorer: 路径卡片探路器（新功能）~~ DONE (v0.1)
 - **Status:** Completed in v0.6.0.0 (2026-04-19). Scope pivoted 4/18 from "17 升学决策卡" to "G1 五月 · 5 月度活动卡" per seed-user validation (Kailing + 4 peers). Shipped: 6 Prisma models, seed for 5 activity cards, overview + detail pages, CTA form + API, 17-block-type renderer, sub-nav scroll-spy, species photo lightbox, keyboard + touch nav, Web Share + WeChat UA fallback, error / not-found pages, 97 canonical-source regression tests, 15 rounds of adversarial cross-review.
@@ -154,17 +160,25 @@ Deferred work items tracked by engineering and CEO reviews.
 - **When:** 等 seed user（Kailing）真实使用反馈后再决定优先级。1 条写得好的文案 > 24 条 mediocre，当前 1 条的状态可能已经够用。
 - **Depends on:** v0.6.2.0（已完成的 de-slop 基础）
 
-### [P2] A11y: Fix muted text contrast in trait quiz
-- **What:** Replace `#B8B0A0` (muted) with `#6B6560` (secondary text) for functional labels in trait quiz (step counter, feature badges, subtitles). Reserve `#B8B0A0` for purely decorative elements only.
-- **Why:** `#B8B0A0` on cream `#FEFAE0` = 2.3:1 contrast ratio, fails WCAG AA (4.5:1 required for normal text). Design review flagged this.
-- **When:** Phase 2 or next trait quiz iteration.
-- **Depends on:** v0.5.0.0 trait quiz implementation
+### ~~[P2] A11y: Fix muted text contrast in trait quiz~~ DONE in v0.8.0.0
+- **Status:** Migrated all functional labels (step counter, dim progress
+  caption, feature badges, subtitles) from `#B8B0A0` to `#6B6560` during
+  the v0.6 rewrite. New ratio on cream is 5.45:1 (passes WCAG AA 4.5:1).
+  `#B8B0A0` reserved for decorative elements only.
+- **Completed:** v0.8.0.0 (2026-04-30)
+- **Note:** Path Explorer scope still uses `--mute-2 #8F8B72` (3.1:1) on
+  ghost month pills + aside-note + overview footer stamps — separate P2
+  item above, awaiting brand-wide decision.
 
 ### [P2] Trait quiz Phase 2: Add persistence
-- **What:** Prisma TraitResult model, server actions for submit + history, retake history UI, radar chart.
-- **Why:** Phase 1 is pure frontend for content validation with Kailing. Phase 2 adds data persistence after content is validated.
-- **When:** After Kailing feedback (4/16 call)
-- **Depends on:** Resolve studentId stability (existing P2 TODO)
+- **What:** Prisma TemperamentResult model, server actions for submit +
+  history, retake comparison UI (radar chart over 9 dims, hero drift
+  across retakes). Score URL is self-contained, so persistence is strictly
+  additive — no breaking change to result page contract.
+- **Why:** v0.8.0.0 ships pure frontend for content validation with Kailing.
+  Persistence comes after real-use signal confirms the framework lands.
+- **When:** After Kailing real-use feedback on v0.6.
+- **Depends on:** Resolve studentId stability (existing P2 TODO above), v0.8.0.0 (done)
 
 ### [P3] WeChat share card for trait results
 - **What:** Generate shareable image card from trait quiz results using html2canvas or server-side rendering.
