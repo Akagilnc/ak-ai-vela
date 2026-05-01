@@ -28,14 +28,34 @@ import { createHmac, timingSafeEqual } from "crypto";
 const ALGO = "sha256";
 
 /**
- * Get the signing secret. In production, the env var MUST be set.
- * In dev/test, fall back to a banner-warned constant so local dev works
- * without setup, but production deploys without the env var refuse to
- * boot (defense against accidentally shipping the dev secret).
+ * The cookie name used to store the HMAC-signed studentId. Exported so
+ * read-side and write-side consumers can't drift (R1 PR review, gemini).
  */
+export const STUDENT_COOKIE_NAME = "vela-student-token";
+
+/**
+ * Resolved signing secret. Cached after first resolution (R1 PR review,
+ * gemini): pre-fix, env-var lookups + branch checks ran on every call.
+ *
+ * Resolution defers to first use rather than module load. Module-load
+ * resolution would block `next build` (Next.js imports server modules
+ * during page data collection with NODE_ENV=production but no env vars
+ * in the build environment). The R6 probe in `actions.ts` calls
+ * `signStudentToken("__probe__")` BEFORE any DB write, so a misconfigured
+ * production fails on the FIRST request — not at boot, but before any
+ * data corruption can occur. That's the closest we can get to fail-fast
+ * without breaking the Next.js build phase.
+ */
+let cachedSecret: string | null = null;
+
 function getSecret(): string {
-  const secret = process.env.STUDENT_TOKEN_SECRET;
-  if (secret && secret.length >= 32) return secret;
+  if (cachedSecret !== null) return cachedSecret;
+
+  const fromEnv = process.env.STUDENT_TOKEN_SECRET;
+  if (fromEnv && fromEnv.length >= 32) {
+    cachedSecret = fromEnv;
+    return cachedSecret;
+  }
 
   if (process.env.NODE_ENV === "production") {
     throw new Error(
@@ -50,7 +70,8 @@ function getSecret(): string {
     "[student-token] STUDENT_TOKEN_SECRET not set — using insecure dev default. " +
       "Set the env var before deploying.",
   );
-  return "dev-only-insecure-secret-do-not-use-in-production-______________";
+  cachedSecret = "dev-only-insecure-secret-do-not-use-in-production-______________";
+  return cachedSecret;
 }
 
 /**

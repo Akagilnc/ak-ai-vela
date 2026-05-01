@@ -2,15 +2,13 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema } from "@/lib/types";
 import { analyzeStudentVsAllSchools, classifySchools } from "@/lib/gap";
-import { verifyStudentToken } from "@/lib/auth/student-token";
+import { verifyStudentToken, STUDENT_COOKIE_NAME } from "@/lib/auth/student-token";
 import type { GapResult, GapSeverity, QuestionnaireAnswers } from "@/lib/types";
 import type { ClassifiedSchool } from "@/lib/gap";
 import type { School } from "@prisma/client";
 import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
-
-const STUDENT_COOKIE = "vela-student-token";
 
 export const metadata = {
   title: "差距分析 — Vela",
@@ -110,7 +108,7 @@ export default async function GapsPage({
   // is the only source. URL search-params are ignored for auth purposes.
   await searchParams; // Drain the promise (Next.js 15 contract).
   const cookieStore = await cookies();
-  const studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE)?.value);
+  const studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE_NAME)?.value);
 
   if (!studentId) {
     return <EmptyState reason="no-student" />;

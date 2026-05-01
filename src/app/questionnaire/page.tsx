@@ -26,6 +26,8 @@ export default function QuestionnairePage() {
   const { setStep, clearAll } = useQuestionnaire();
   const [draft, setDraft] = useState<DraftInfo | null>(null);
   const [checked, setChecked] = useState(false);
+  const [freshStartError, setFreshStartError] = useState<string | null>(null);
+  const [freshStarting, setFreshStarting] = useState(false);
 
   // Read localStorage on mount to decide whether to show "继续填写" vs
   // "开始填写". This MUST happen in an effect: localStorage isn't available
@@ -47,19 +49,24 @@ export default function QuestionnairePage() {
   };
 
   const handleFreshStart = async () => {
-    // True fresh start: reset client state AND clear the server-side
-    // HMAC cookie. Without clearing the cookie, the next submission
-    // would still resolve to the previous studentId — silent overwrite
-    // of the prior Student. (Adversarial R5 fix; cookie now lives on the
-    // server, so this server-action call is the only way to clear it.)
-    clearAll({ resetStudentId: true });
+    // True fresh start: clear the server-side HMAC cookie BEFORE clearing
+    // local state and navigating. If the server-action fails (network,
+    // rate-limit), block navigation and surface the error — Codex R1 PR
+    // review caught that swallowing this error left vela-student-token
+    // intact while the UI looked reset. A retry with the same childName
+    // would then silently update the prior Student row instead of creating
+    // a new one. Better: stay put, show the error, let the user retry.
+    if (freshStarting) return;
+    setFreshStartError(null);
+    setFreshStarting(true);
     try {
       await clearStudentSession();
     } catch {
-      // Non-fatal: if the cookie clear fails (network, etc.), the next
-      // submit still gets a childName mismatch check in actions.ts that
-      // will fall through to create a new Student.
+      setFreshStartError("无法重置会话，请检查网络后重试");
+      setFreshStarting(false);
+      return;
     }
+    clearAll({ resetStudentId: true });
     router.push("/questionnaire/step/1");
   };
 
@@ -95,23 +102,37 @@ export default function QuestionnairePage() {
               <button
                 type="button"
                 onClick={handleFreshStart}
-                className="min-h-[44px] px-4 py-2 text-sm text-vela-text-secondary border border-vela-border rounded-md hover:bg-vela-surface transition-colors"
+                disabled={freshStarting}
+                className="min-h-[44px] px-4 py-2 text-sm text-vela-text-secondary border border-vela-border rounded-md hover:bg-vela-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                重新开始
+                {freshStarting ? "正在重置…" : "重新开始"}
               </button>
             </div>
+            {freshStartError && (
+              <p className="text-sm text-vela-error" role="alert">
+                {freshStartError}
+              </p>
+            )}
           </div>
         )}
 
         {/* Start button (when no draft) */}
         {!draft && (
-          <button
-            type="button"
-            onClick={handleFreshStart}
-            className="min-h-[44px] px-8 py-3 text-base font-medium text-white bg-vela-primary rounded-md hover:bg-vela-primary-dark transition-colors"
-          >
-            开始填写
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleFreshStart}
+              disabled={freshStarting}
+              className="min-h-[44px] px-8 py-3 text-base font-medium text-white bg-vela-primary rounded-md hover:bg-vela-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {freshStarting ? "正在重置…" : "开始填写"}
+            </button>
+            {freshStartError && (
+              <p className="text-sm text-vela-error" role="alert">
+                {freshStartError}
+              </p>
+            )}
+          </>
         )}
 
         <div className="pt-2">

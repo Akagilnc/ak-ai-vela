@@ -5,10 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { questionnaireSchema, canonicalizeAnswers } from "@/lib/types";
 import type { QuestionnaireAnswers } from "@/lib/types";
 import { normalizeChineseGpa } from "@/lib/gap";
-import { signStudentToken, verifyStudentToken } from "@/lib/auth/student-token";
+import {
+  signStudentToken,
+  verifyStudentToken,
+  STUDENT_COOKIE_NAME,
+} from "@/lib/auth/student-token";
 import type { Prisma } from "@prisma/client";
 
-const STUDENT_COOKIE = "vela-student-token";
 const STUDENT_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 90; // 90 days
 
 export type SubmitResult = {
@@ -92,7 +95,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
   //    prior client-supplied param as IDOR. See lib/auth/student-token.ts.
   const cookieStore = await cookies();
   const trustedStudentId = verifyStudentToken(
-    cookieStore.get(STUDENT_COOKIE)?.value,
+    cookieStore.get(STUDENT_COOKIE_NAME)?.value,
   );
 
   // 5a. Validate the signing secret BEFORE any DB write. R6 finding (Codex):
@@ -184,7 +187,7 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
     //    JavaScript can't read it (defense against XSS-stealing the id);
     //    SameSite=Lax so it ships on top-level navigations to /complete.
     cookieStore.set({
-      name: STUDENT_COOKIE,
+      name: STUDENT_COOKIE_NAME,
       value: signStudentToken(resultStudentId),
       httpOnly: true,
       sameSite: "lax",
@@ -208,5 +211,5 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
  */
 export async function clearStudentSession(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(STUDENT_COOKIE);
+  cookieStore.delete(STUDENT_COOKIE_NAME);
 }
