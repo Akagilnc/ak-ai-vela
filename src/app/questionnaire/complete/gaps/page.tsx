@@ -108,7 +108,19 @@ export default async function GapsPage({
   // is the only source. URL search-params are ignored for auth purposes.
   await searchParams; // Drain the promise (Next.js 15 contract).
   const cookieStore = await cookies();
-  const studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE_NAME)?.value);
+
+  // R3 PR review (Codex P2): verifyStudentToken → getSecret() throws in
+  // production when STUDENT_TOKEN_SECRET is missing/invalid. Without this
+  // guard the page returned a 500 instead of the empty state — matching
+  // the graceful failure on the write path (actions.ts probe). Same class
+  // of issue, same shape of fix.
+  let studentId: string | null;
+  try {
+    studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE_NAME)?.value);
+  } catch (e) {
+    console.error("Gaps page blocked: token secret invalid:", e);
+    return <EmptyState reason="no-student" />;
+  }
 
   if (!studentId) {
     return <EmptyState reason="no-student" />;
