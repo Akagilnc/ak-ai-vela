@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { questionnaireSchema } from "@/lib/types";
 import { analyzeStudentVsAllSchools, classifySchools } from "@/lib/gap";
+import { verifyStudentToken, STUDENT_COOKIE_NAME } from "@/lib/auth/student-token";
 import type { GapResult, GapSeverity, QuestionnaireAnswers } from "@/lib/types";
 import type { ClassifiedSchool } from "@/lib/gap";
 import type { School } from "@prisma/client";
@@ -98,8 +100,27 @@ export default async function GapsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const studentId = typeof params.studentId === "string" ? params.studentId : null;
+  // Read-side IDOR fix (R6): trust ONLY the HMAC-signed cookie, not the URL.
+  // R5 closed write-IDOR via the cookie, but `?studentId=X` in this read path
+  // was still trusted, leaking any student's full GPA/SAT/ACT/childName to
+  // anyone with a leaked URL. All 3 R6 reviewers (pre-landing + Claude
+  // adversarial + Codex) converged on this. Now: cookie's verified studentId
+  // is the only source. URL search-params are ignored for auth purposes.
+  await searchParams; // Drain the promise (Next.js 15 contract).
+  const cookieStore = await cookies();
+
+  // R3 PR review (Codex P2): verifyStudentToken → getSecret() throws in
+  // production when STUDENT_TOKEN_SECRET is missing/invalid. Without this
+  // guard the page returned a 500 instead of the empty state — matching
+  // the graceful failure on the write path (actions.ts probe). Same class
+  // of issue, same shape of fix.
+  let studentId: string | null;
+  try {
+    studentId = verifyStudentToken(cookieStore.get(STUDENT_COOKIE_NAME)?.value);
+  } catch (e) {
+    console.error("Gaps page blocked: token secret invalid:", e);
+    return <EmptyState reason="no-student" />;
+  }
 
   if (!studentId) {
     return <EmptyState reason="no-student" />;

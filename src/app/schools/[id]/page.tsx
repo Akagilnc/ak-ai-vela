@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { RadarChart } from "./radar-chart";
+import { buildRadarDimensions } from "./radar-utils";
 
 type Params = Promise<{ id: string }>;
 
@@ -45,13 +46,12 @@ export default async function SchoolDetailPage({
     null
   );
 
-  const radarData = {
-    acceptance: school.radarAcceptance ?? 0,
-    international: school.radarInternational ?? 0,
-    sat: school.radarSAT ?? 0,
-    cost: school.radarCost ?? 0,
-    aid: school.radarAid ?? 0,
-  };
+  // Build radar dimensions dynamically. Skip SAT when the school is
+  // test-free / test-blind (policy) OR lacks SAT data (missing-data) —
+  // rendering null as 0 ("worst score") is visually misleading. The
+  // helper returns BOTH the dim list and a skip reason so the legend
+  // can show distinct copy: "SAT 非必须" vs "暂无 SAT 数据".
+  const { dims: radarDimensions, skipSatReason } = buildRadarDimensions(school);
 
   return (
     <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
@@ -192,13 +192,25 @@ export default async function SchoolDetailPage({
               <h2 className="text-xl font-semibold text-vela-heading font-display mb-4">
                 学校画像
               </h2>
-              <RadarChart data={radarData} />
+              <RadarChart dimensions={radarDimensions} />
               <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
-                <RadarLegendItem label="录取友好度" value={radarData.acceptance} />
-                <RadarLegendItem label="国际生友好度" value={radarData.international} />
-                <RadarLegendItem label="SAT 竞争力" value={radarData.sat} />
-                <RadarLegendItem label="费用可负担度" value={radarData.cost} />
-                <RadarLegendItem label="奖学金力度" value={radarData.aid} />
+                {radarDimensions.map((d) => (
+                  <RadarLegendItem
+                    key={d.label}
+                    label={d.legendLabel ?? d.label}
+                    value={d.value}
+                  />
+                ))}
+                {skipSatReason === "policy" && (
+                  <p className="text-xs text-vela-muted mt-1">
+                    该校 SAT 成绩非必须，雷达图不含 SAT 维度
+                  </p>
+                )}
+                {skipSatReason === "missing-data" && (
+                  <p className="text-xs text-vela-muted mt-1">
+                    暂无该校 SAT 分数数据，雷达图不含 SAT 维度
+                  </p>
+                )}
               </div>
             </div>
           </div>

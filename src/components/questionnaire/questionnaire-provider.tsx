@@ -14,6 +14,12 @@ import type { QuestionnaireDraft } from "@/lib/types";
 // --- Draft persistence ---
 
 const STORAGE_KEY = "vela-questionnaire-draft";
+// studentId persists in its own key, NOT inside the draft. This way
+// clearDraft() (called on every successful submit) doesn't wipe the
+// stable identity. Without this split, every re-submission creates a
+// duplicate Student row instead of upserting — defeating the whole
+// purpose of the findUnique({id}) migration.
+const STUDENT_ID_KEY = "vela-student-id";
 const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const DEBOUNCE_MS = 300;
 
@@ -72,6 +78,34 @@ export function clearDraft(): void {
   try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
 }
 
+// studentId persistence — separate key so clearDraft() doesn't touch it.
+function loadStudentId(): string | null {
+  if (typeof window === "undefined") return null;
+  try { return localStorage.getItem(STUDENT_ID_KEY); }
+  catch { return null; }
+}
+
+function saveStudentId(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STUDENT_ID_KEY, id);
+  } catch (e) {
+    // Mirror saveDraft's logging so the founder sees a signal when
+    // private/incognito mode (or quota) silently breaks studentId
+    // persistence — symptom would be duplicate Student rows on
+    // resubmit with no obvious cause.
+    if (e instanceof DOMException && e.name === "QuotaExceededError") {
+      console.warn("localStorage quota exceeded, studentId not saved");
+    }
+  }
+}
+
+function clearStudentId(): void {
+  if (typeof window === "undefined") return;
+  try { localStorage.removeItem(STUDENT_ID_KEY); }
+  catch { /* ignore */ }
+}
+
 export { loadDraft };
 
 // --- Reducer ---
@@ -86,17 +120,19 @@ type Action =
   | { type: "SET_FIELDS"; fields: Partial<QuestionnaireDraft> }
   | { type: "SET_STEP"; step: number }
   | { type: "RESTORE_DRAFT"; draft: DraftInfo }
-  | { type: "CLEAR" }
+  | { type: "CLEAR"; resetStudentId?: boolean }
   | { type: "SET_ARRAY_ITEM"; field: string; index: number; value: unknown }
   | { type: "ADD_ARRAY_ITEM"; field: string; value: unknown }
   | { type: "REMOVE_ARRAY_ITEM"; field: string; index: number }
-  | { type: "MARK_SAVED"; savedAt: string };
+  | { type: "MARK_SAVED"; savedAt: string }
+  | { type: "SET_STUDENT_ID"; studentId: string };
 
 type State = {
   data: QuestionnaireDraft;
   currentStep: number;
   isDirty: boolean;
   lastSavedAt: string | null;
+  studentId: string | null;
 };
 
 function reducer(state: State, action: Action): State {
@@ -126,17 +162,31 @@ function reducer(state: State, action: Action): State {
       return { ...state, currentStep: action.step, isDirty: true };
     case "RESTORE_DRAFT":
       return {
+        ...state,
         data: action.draft.data,
         currentStep: action.draft.currentStep,
         isDirty: false,
         lastSavedAt: action.draft.savedAt,
+        // studentId restored separately via loadStudentId() — keep current
       };
     case "CLEAR":
+      // Two clear modes:
+      //   - resetStudentId: false (default for post-submit cleanup) — keeps
+      //     studentId so an edit-and-resubmit on the same device updates
+      //     the same Student row instead of creating a duplicate.
+      //   - resetStudentId: true (for "重新开始" button) — clears studentId
+      //     too, so the next submission creates a brand-new Student.
+      //     Without this branch, the fresh-start UX silently overwrites the
+      //     previous Student's profile with the new form — Codex flagged
+      //     this as a drift bug introduced by R1's CLEAR-preserves-studentId
+      //     change.
       return {
+        ...state,
         data: { schemaVersion: 1 },
         currentStep: 1,
         isDirty: false,
         lastSavedAt: null,
+        ...(action.resetStudentId ? { studentId: null } : {}),
       };
     case "SET_ARRAY_ITEM": {
       const arr = [...((state.data[action.field as keyof QuestionnaireDraft] as unknown[]) || [])];
@@ -155,6 +205,8 @@ function reducer(state: State, action: Action): State {
     }
     case "MARK_SAVED":
       return { ...state, isDirty: false, lastSavedAt: action.savedAt };
+    case "SET_STUDENT_ID":
+      return { ...state, studentId: action.studentId };
     default:
       return state;
   }
@@ -166,13 +218,23 @@ type QuestionnaireContextType = {
   data: QuestionnaireDraft;
   currentStep: number;
   lastSavedAt: string | null;
+  studentId: string | null;
+  setStudentId: (id: string) => void;
   setField: (field: string, value: unknown) => void;
   setFields: (fields: Partial<QuestionnaireDraft>) => void;
   setStep: (step: number) => void;
   setArrayItem: (field: string, index: number, value: unknown) => void;
   addArrayItem: (field: string, value: unknown) => void;
   removeArrayItem: (field: string, index: number) => void;
-  clearAll: () => void;
+  /**
+   * Reset draft state.
+   * - `{ resetStudentId: true }` → also wipes studentId + its localStorage key.
+   *   Use for "重新开始" / fresh-start UX where the next submit must create
+   *   a new Student row.
+   * - default (`{ resetStudentId: false }`) → keeps studentId so a
+   *   submission-cleanup followed by re-edit + resubmit upserts the same row.
+   */
+  clearAll: (options?: { resetStudentId?: boolean }) => void;
   // `overrides.currentStep` lets callers persist a forward-looking step
   // number before dispatching the corresponding setStep, so a navigation
   // flush writes the draft at the target step instead of the stale one.
@@ -197,6 +259,7 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     currentStep: 1,
     isDirty: false,
     lastSavedAt: null,
+    studentId: null,
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -209,11 +272,17 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     stateRef.current = state;
   });
 
-  // Restore draft from localStorage on mount
+  // Restore draft + studentId from localStorage on mount.
+  // studentId lives in its own key so a `clearDraft` (post-submit)
+  // doesn't wipe the student's stable identity — see STUDENT_ID_KEY.
   useEffect(() => {
     const saved = loadDraft();
     if (saved) {
       dispatch({ type: "RESTORE_DRAFT", draft: saved });
+    }
+    const sid = loadStudentId();
+    if (sid) {
+      dispatch({ type: "SET_STUDENT_ID", studentId: sid });
     }
   }, []);
 
@@ -293,9 +362,21 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "REMOVE_ARRAY_ITEM", field, index });
   }, []);
 
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback((options?: { resetStudentId?: boolean }) => {
     clearDraft();
-    dispatch({ type: "CLEAR" });
+    if (options?.resetStudentId) {
+      clearStudentId();
+    }
+    dispatch({ type: "CLEAR", resetStudentId: options?.resetStudentId });
+  }, []);
+
+  // Persist studentId to its own localStorage key so subsequent
+  // submissions (re-edit + resubmit) hit the upsert path with the
+  // same studentId and update the existing Student row instead of
+  // creating duplicates.
+  const setStudentId = useCallback((id: string) => {
+    dispatch({ type: "SET_STUDENT_ID", studentId: id });
+    saveStudentId(id);
   }, []);
 
   return (
@@ -304,6 +385,8 @@ export function QuestionnaireProvider({ children }: { children: ReactNode }) {
         data: state.data,
         currentStep: state.currentStep,
         lastSavedAt: state.lastSavedAt,
+        studentId: state.studentId,
+        setStudentId,
         setField,
         setFields,
         setStep,

@@ -42,7 +42,7 @@ export default async function SchoolsPage({
   const states = allStates.map((s) => s.state);
 
   return (
-    <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="flex-1 py-8 pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))] sm:pl-[max(24px,env(safe-area-inset-left))] sm:pr-[max(24px,env(safe-area-inset-right))] lg:pl-[max(32px,env(safe-area-inset-left))] lg:pr-[max(32px,env(safe-area-inset-right))]">
       <div className="max-w-[1200px] mx-auto">
         <div className="mb-8">
           <Link

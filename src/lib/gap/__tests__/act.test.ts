@@ -69,6 +69,26 @@ describe("actDimension.compute — test-free school", () => {
     expect(result.severity).toBe("no-data");
     expect(result.action).toContain("非必须");
   });
+
+  // Codex R3 cross-system finding: parallel to sat.test.ts. Radar skips
+  // SAT for both "free" and "blind"; gap dim must do the same to stay
+  // consistent across the school detail page and the gap report.
+  it("test-blind school → no-data with 非必须 copy (mirrors test-free)", () => {
+    const result = actDimension.compute(
+      makeAnswers(),
+      makeSchool({ testPolicy: "blind", act25th: null, act75th: null }),
+    );
+    expect(result.severity).toBe("no-data");
+    expect(result.action).toContain("非必须");
+  });
+
+  it("test-blind school with populated scores → still no-data", () => {
+    const result = actDimension.compute(
+      makeAnswers({ actScore: 32 }),
+      makeSchool({ testPolicy: "blind", act25th: 28, act75th: 33 }),
+    );
+    expect(result.severity).toBe("no-data");
+  });
 });
 
 describe("actDimension.compute — severity", () => {

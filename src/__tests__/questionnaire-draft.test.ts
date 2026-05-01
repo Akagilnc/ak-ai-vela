@@ -156,4 +156,18 @@ describe("questionnaire draft persistence", () => {
     );
     expect(loadDraft()).toBeNull();
   });
+
+  // Regression fence for cross-model review R1: studentId lives in its
+  // own localStorage key (vela-student-id) so re-submissions hit the
+  // upsert path. If clearDraft starts wiping it, every re-submit creates
+  // a duplicate Student row again — exactly the bug R1 fixed.
+  it("clearDraft does NOT remove the studentId key", () => {
+    localStorageMock.setItem(STORAGE_KEY, "draft-data");
+    localStorageMock.setItem("vela-student-id", "stable-cuid-abc");
+
+    clearDraft();
+
+    expect(localStorageMock.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorageMock.getItem("vela-student-id")).toBe("stable-cuid-abc");
+  });
 });

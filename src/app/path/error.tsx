@@ -8,7 +8,7 @@
 import Link from "next/link";
 
 export default function PathError({
-  error: _error,
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -96,6 +96,26 @@ export default function PathError({
               返回当月卡片
             </Link>
           </div>
+          {process.env.NODE_ENV !== "production" && (
+            <pre
+              style={{
+                marginTop: 16,
+                padding: 12,
+                background: "#F5F0E1",
+                borderRadius: 8,
+                fontSize: 11,
+                color: "#6B6560",
+                textAlign: "left",
+                maxWidth: 400,
+                overflow: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {error.message}
+              {error.stack && `\n\n${error.stack}`}
+            </pre>
+          )}
         </main>
       </div>
     </div>

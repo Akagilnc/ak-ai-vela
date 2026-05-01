@@ -6,7 +6,7 @@
 //   - green:     actScore ≥ act75th
 //   - yellow:    act25th ≤ actScore < act75th
 //   - red:       actScore < act25th
-//   - no-data:   student/school missing, or testPolicy === "free"
+//   - no-data:   student/school missing, or testPolicy === "free" | "blind"
 
 import type { School } from "@prisma/client";
 import type { GapResult, QuestionnaireAnswers } from "@/lib/types";
@@ -53,8 +53,9 @@ export const actDimension: Dimension = {
     const act25th = school.act25th;
     const act75th = school.act75th;
 
-    // Test-free school: ACT scores are irrelevant.
-    if (school.testPolicy === "free") {
+    // Test-free or test-blind school: ACT scores are irrelevant.
+    // Mirror sat.ts and radar-utils.ts (Codex R3 cross-system finding).
+    if (school.testPolicy === "free" || school.testPolicy === "blind") {
       return buildNoData(school, "test-free", actScore);
     }
 

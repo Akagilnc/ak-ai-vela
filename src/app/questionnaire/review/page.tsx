@@ -74,7 +74,7 @@ const EXPERIENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ReviewPage() {
-  const { data, flushSave, clearAll } = useQuestionnaire();
+  const { data, flushSave, clearAll, setStudentId } = useQuestionnaire();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -174,12 +174,22 @@ export default function ReviewPage() {
 
     startTransition(async () => {
       try {
+        // Server reads HMAC-signed cookie for studentId trust — the
+        // client no longer passes it as a function arg. Adversarial R5
+        // closed this IDOR by moving the trust boundary server-side.
         const result: SubmitResult = await submitQuestionnaire(payload);
         if (result.success) {
           const childName = data.childName || "";
-          const studentId = result.studentId || "";
+          const nextStudentId = result.studentId ?? "";
+          // Mirror studentId in client state for UI display continuity
+          // (e.g., "your existing student" hint). The cookie is the only
+          // path that reaches the server — this localStorage copy is
+          // display-only and untrusted.
+          if (nextStudentId) {
+            setStudentId(nextStudentId);
+          }
           clearAll();
-          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}&studentId=${encodeURIComponent(studentId)}`);
+          router.push(`/questionnaire/complete?name=${encodeURIComponent(childName)}&studentId=${encodeURIComponent(nextStudentId)}`);
         } else {
           setSubmitError(result.error || "提交失败");
           setIsSubmitting(false);

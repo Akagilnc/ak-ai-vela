@@ -5,7 +5,7 @@
 //   - green:     satScore ≥ sat75th
 //   - yellow:    sat25th ≤ satScore < sat75th
 //   - red:       satScore < sat25th
-//   - no-data:   student/school missing, or testPolicy === "free"
+//   - no-data:   student/school missing, or testPolicy === "free" | "blind"
 //
 // `normalized` is always null — SAT is a raw score, no normalization needed.
 
@@ -56,9 +56,11 @@ export const satDimension: Dimension = {
     const sat25th = school.sat25th;
     const sat75th = school.sat75th;
 
-    // Test-free school: SAT scores are irrelevant regardless of whether
-    // the student or school has data. Fires before any other check.
-    if (school.testPolicy === "free") {
+    // Test-free or test-blind school: SAT scores are irrelevant regardless
+    // of whether the student or school has data. Fires before any other
+    // check. Mirrors the radar-utils.ts skip predicate — both must treat
+    // "free" and "blind" the same way (Codex R3 cross-system finding).
+    if (school.testPolicy === "free" || school.testPolicy === "blind") {
       return buildNoData(school, "test-free", satScore);
     }
 

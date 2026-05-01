@@ -2,34 +2,37 @@
 
 import { SIZE, CENTER, RADIUS, polarToCartesian, getAngles } from "./radar-utils";
 
-const LABELS = ["录取", "国际生", "SAT", "费用", "奖学金"];
 const LEVELS = 4;
 
 function clamp(v: number): number {
   return Math.max(0, Math.min(100, v));
 }
 
-export function RadarChart({
-  data,
-}: {
-  data: {
-    acceptance: number;
-    international: number;
-    sat: number;
-    cost: number;
-    aid: number;
-  };
-}) {
-  const angles = getAngles();
-  const values = [
-    clamp(data.acceptance),
-    clamp(data.international),
-    clamp(data.sat),
-    clamp(data.cost),
-    clamp(data.aid),
-  ];
+export interface RadarDimension {
+  /** Short label shown on the radar axis. */
+  label: string;
+  /**
+   * Longer label shown in the legend (e.g. "录取友好度" vs axis "录取").
+   * Defaults to `label` when omitted. Defined alongside the dim value
+   * so adding a new dim doesn't require updating a separate label-mapping
+   * ladder elsewhere.
+   */
+  legendLabel?: string;
+  value: number;
+}
 
-  // Grid circles
+export function RadarChart({
+  dimensions,
+}: {
+  dimensions: RadarDimension[];
+}) {
+  const sides = dimensions.length;
+  if (sides < 3) return null; // need at least 3 points for a polygon
+
+  const angles = getAngles(sides);
+  const values = dimensions.map((d) => clamp(d.value));
+
+  // Grid polygons
   const gridPaths = Array.from({ length: LEVELS }, (_, level) => {
     const r = (RADIUS / LEVELS) * (level + 1);
     const points = angles.map((a) => polarToCartesian(a, r));
@@ -110,7 +113,7 @@ export function RadarChart({
           className="text-[9px] fill-vela-text-secondary"
           style={{ fontFamily: "var(--font-sans)" }}
         >
-          {LABELS[i]}
+          {dimensions[i].label}
         </text>
       ))}
     </svg>
