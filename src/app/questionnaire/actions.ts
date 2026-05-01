@@ -88,7 +88,23 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
 
   const data = result.data;
 
-  // 5. Server-side studentId trust boundary.
+  // 5. Validate the signing secret BEFORE anything that touches it.
+  //    R6 (Codex): pre-fix, signStudentToken() was called only AFTER
+  //    prisma.$transaction committed → bad-secret retries created duplicate
+  //    Student rows. R7 (Codex): the probe was AFTER verifyStudentToken,
+  //    so a returning user with a cookie + missing secret in prod hit
+  //    `getSecret()` inside verify() and threw uncaught BEFORE the probe
+  //    guard fired. Fix: probe first; cookie verification only runs after
+  //    we know the secret is good. Both throw paths now return the same
+  //    graceful "服务暂时不可用" response.
+  try {
+    signStudentToken("__probe__");
+  } catch (e) {
+    console.error("Questionnaire submission blocked: token secret invalid:", e);
+    return { success: false, error: "服务暂时不可用，请稍后重试" };
+  }
+
+  // 6. Server-side studentId trust boundary.
   //    Read the HMAC-signed cookie set on prior submit. The client never
   //    sees or sends raw studentId — so a leaked /complete?studentId=X URL
   //    is not a write capability. Adversarial review (R5) flagged the
@@ -97,20 +113,6 @@ export async function submitQuestionnaire(rawJson: string): Promise<SubmitResult
   const trustedStudentId = verifyStudentToken(
     cookieStore.get(STUDENT_COOKIE_NAME)?.value,
   );
-
-  // 5a. Validate the signing secret BEFORE any DB write. R6 finding (Codex):
-  //     pre-fix, signStudentToken() was only called AFTER prisma.$transaction
-  //     committed Student + QuestionnaireResult. If the secret was missing or
-  //     misconfigured in prod (signStudentToken throws), the DB rows were
-  //     already committed but the cookie was never set → the client retried
-  //     and created duplicates on every attempt. Fail fast: do a dry sign of
-  //     a probe value so the env-var check fires before we touch the DB.
-  try {
-    signStudentToken("__probe__");
-  } catch (e) {
-    console.error("Questionnaire submission blocked: token secret invalid:", e);
-    return { success: false, error: "服务暂时不可用，请稍后重试" };
-  }
 
   try {
     // 6–7. Upsert Student + create QuestionnaireResult atomically.
