@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-05-01 · `fix/polish-sprint-p2` @ `512577d` (v0.9.0.0, polish sprint + IDOR closure, PR pending)
+**Last updated:** 2026-05-01 · `fix/polish-sprint-p2` @ `3ee658d` (v0.9.0.0, PR #34 open, 3 bot-review rounds complete)
 
 ## Product Direction
 
@@ -136,9 +136,9 @@ The system speaks Chinese by default.
 ## Active branch / PR / review state
 
 - **Current branch:** `fix/polish-sprint-p2`
-- **HEAD:** `512577d` (v0.9.0.0, PR pending creation)
+- **HEAD:** `3ee658d` (v0.9.0.0, PR #34 open at https://github.com/Akagilnc/ak-ai-vela/pull/34)
 - **Version:** `0.9.0.0`
-- **Branch summary (7 commits, +1055 / -137 LOC across 25 files, 753 tests passing):**
+- **Branch summary (10 commits, +1169 / -161 LOC across 27 files, 753 tests passing):**
   Polish sprint covering 6 deferred items (radar dimension skip-reason,
   `/path` dev-mode error display, `/schools` landscape safe-area, gap
   recommendation school-name fallback, `Student.name` → stable studentId,
@@ -146,8 +146,30 @@ The system speaks Chinese by default.
   review trail that surfaced and closed both write-side and read-side IDOR
   on the questionnaire flow. Net new file: `src/lib/auth/student-token.ts`
   (HMAC-signed studentId cookie, `timingSafeEqual` constant-time compare,
-  fail-fast `STUDENT_TOKEN_SECRET` probe in production). New env var
-  `STUDENT_TOKEN_SECRET` (≥32 chars, generate via `openssl rand -hex 32`).
+  fail-fast `STUDENT_TOKEN_SECRET` probe in production, lazy-cached secret
+  resolution). New env var `STUDENT_TOKEN_SECRET` (≥32 chars, generate via
+  `openssl rand -hex 32`).
+- **PR #34 bot review (3-round cap reached, 7 findings total, 6 fixed + 1
+  deferred with rationale):**
+  - R1 (`5de77a7`): Codex P2 — `handleFreshStart` swallowed
+    `clearStudentSession` errors; now blocks navigation + surfaces error.
+    Gemini Medium ×2 — `STUDENT_COOKIE_NAME` constant exported from
+    `student-token.ts` (single source); `getSecret()` lazy-cached.
+    Gemini High deferred with rationale: "non-atomic update via try-create
+    + P2002" pattern doesn't apply (no unique constraint on `Student.name`);
+    real concurrent-update race is documented in TODOS.md as Postgres-only
+    deploy gate.
+  - R2 (`0c195a5`): Codex P2 — `signStudentToken("__probe__")` hoisted
+    above `verifyStudentToken()` so a returning user with cookie + missing
+    prod secret gets graceful response, not uncaught throw. Gemini Medium —
+    `/schools` safe-area inset applied at `sm:` + `lg:` breakpoints
+    (16/24/32px tier), iPhone Pro Max landscape (~932px) now respects notch.
+  - R3 (`3ee658d`): Codex P2 — wrapped `verifyStudentToken()` on
+    `/questionnaire/complete/gaps` in try/catch, returns `EmptyState` on
+    throw. Symmetric to write-path fail-fast; consistent UX across read +
+    write boundaries.
+  - Copilot did not auto-fire and did not respond to manual
+    `gh api requested_reviewers POST` triggers across all 3 rounds.
 - **Open Issues:** #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+
   tracked for more months / additional stage).
 - **Previously open PR (now reflected in CHANGELOG / "Recently merged" once landed):**
@@ -224,25 +246,37 @@ The system speaks Chinese by default.
 ## Most recent real verification
 
 **2026-05-01** — Polish sprint + IDOR closure (v0.9.0.0), branch
-`fix/polish-sprint-p2` @ `512577d`, ready to ship:
+`fix/polish-sprint-p2` @ `3ee658d`, PR #34 open, 3-round bot-review cap reached:
 - `npm test`: 753 / 753 green (31 files, +20 net since v0.8.0.0). New
   coverage on `radar-utils` `buildRadarDimensions` (skip-reason branching),
   `student-token` round-trip integration via `questionnaire-actions`,
   block-shape walker per-item field validation (`route.steps[]`,
   `photo-row.photos[]`, `path-opts.opts[].locCards[]`), and the
   `clearStudentSession` server action.
-- 7 rounds of cross-model adversarial review: R1 (3 Claude subagents +
-  Gemini outside voice), R2 (regression fence + saveStudentId logging),
-  R3 (Codex caught 4 cross-section findings — including 1 R1-introduced
-  drift), R4 verification, R5 (Codex + Claude adversarial converged on
-  the write-side IDOR; closed with HMAC-signed cookie), R6 (3 reviewers
-  converged on read-side IDOR at `/complete/gaps`; closed with
-  cookie-only studentId read), R7 (Codex final clean PASS).
+- 7 rounds of LOCAL cross-model adversarial review pre-PR: R1 (3 Claude
+  subagents + Gemini outside voice), R2 (regression fence + saveStudentId
+  logging), R3 (Codex caught 4 cross-section findings — including 1
+  R1-introduced drift), R4 verification, R5 (Codex + Claude adversarial
+  converged on the write-side IDOR; closed with HMAC-signed cookie), R6
+  (3 reviewers converged on read-side IDOR at `/complete/gaps`; closed
+  with cookie-only studentId read), R7 (Codex final clean PASS).
+- 3 rounds of REMOTE bot review on PR #34 (cap per wiki): R1 (Codex P2 +
+  Gemini Medium ×2 fixed; Gemini High deferred — non-applicable pattern),
+  R2 (Codex P2 probe ordering + Gemini Medium responsive safe-area —
+  both fixed), R3 (Codex P2 read-path try/catch — fixed). Each round
+  trace: 4 + 2 + 1 findings, decreasing as expected. Each finding got a
+  per-comment inline reply with fix evidence (commit ref + diff context)
+  or deferred-with-rationale per wiki "reply to every inline comment"
+  rule. Copilot did not auto-fire on PR creation and did not respond to
+  manual `gh api requested_reviewers POST` triggers across all 3 rounds.
 - Trust boundary moved server-side: questionnaire write authorization is
   no longer "client claims studentId" but "server's HMAC verifies cookie".
   URL leakage of `?studentId=X` is now harmless. `STUDENT_TOKEN_SECRET`
-  required in prod (server refuses to boot without it); dev falls back
-  to a banner-warned constant.
+  required in prod (server refuses on first request via fail-fast probe;
+  not module-load throw because Next.js imports server modules during
+  `next build` data collection — that variant broke the build);
+  dev falls back to a banner-warned constant. Symmetric guards on both
+  read and write paths after R2/R3 bot review.
 - Cross-system consistency fix: `sat.ts` and `act.ts` gap dimensions now
   skip both `testPolicy === "free"` and `"blind"` (matched what the radar
   page already did, closing a R3 cross-section finding).
