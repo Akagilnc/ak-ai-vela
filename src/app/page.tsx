@@ -21,6 +21,12 @@ export default function Home() {
             特质测评
           </Link>
           <Link
+            href="/path"
+            className="px-6 py-3 border border-vela-border text-vela-text rounded-md font-medium hover:bg-vela-surface transition-colors"
+          >
+            月度路径
+          </Link>
+          <Link
             href="/questionnaire"
             className="px-6 py-3 border border-vela-border text-vela-text rounded-md font-medium hover:bg-vela-surface transition-colors"
           >
