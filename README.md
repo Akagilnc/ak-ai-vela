@@ -23,7 +23,7 @@ Built for a seed user (Kailing) with a child interested in pre-vet/animal scienc
 npm install
 npm run db:push        # Create database tables
 npm run db:seed        # Seed 26 pre-vet-relevant schools
-npm run dev            # Start dev server at http://localhost:3000
+npm run dev            # Start dev server at http://localhost:3300
 ```
 
 ## Scripts
