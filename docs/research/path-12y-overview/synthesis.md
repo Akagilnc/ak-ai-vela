@@ -39,9 +39,12 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
   - "There are no quotas or limits of any kind at any point in the admissions process."
   - "Please note that we do not have quotas or limits based on either citizenship or location of high school."
 - **URL**：https://college.harvard.edu/admissions/apply/international-applicants
-- **判决**：✅ [02][03a] 对（按 citizenship 切，no automatic domestic pool）；❌ [04] 错（"美高生避开国际池"是 misrepresentation）
+- **判决**：✅ [02][03a] 对（**Harvard 不按 citizenship 也不按 high-school location 设 quota；美高不自动 domestic**）；❌ [04] 错（"美高生避开国际池"是 misrepresentation）
 - **Princeton 同样原文**："We review all applications in the same manner, regardless of citizenship or country of residence."（https://admission.princeton.edu/apply/international-students）
-- **mockup v3 用**：池切分按 citizenship 不按学校所在地；no quotas
+- **mockup v3 精确措辞（R4 修正 paraphrase 偏移）**：
+  - ✅ 可用："**Harvard / Princeton / Yale 三所顶校官方说 same pool, no quotas, regardless of citizenship or secondary school**" — 直接 quote 原文
+  - ❌ 不要写："按 citizenship 切池" — 这是 paraphrase 偏移，原文是 same pool **regardless of** citizenship，不是 split by citizenship
+  - ✅ 可用："**美高不自动进 domestic 池；学校所在地不是 admission factor**"（NACAC PDF page 3：High school attended considerable importance 仅 1.6%）
 
 ### 冲突 4：IECA Professional 门槛 — ✅ 两版都对，不矛盾
 
@@ -50,8 +53,8 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
   - "Three years of experience in educational placement counseling or admissions, including a minimum of one year of independent educational consulting."
   - "A minimum number of evaluative campus visits during the previous five years within each specialty area: K-12 Boarding/Day Schools: **25 visits**; College: **50 visits**"
 - **URL**：https://www.iecaonline.com/about-ieca/join/
-- **判决**：✅ [02] 版（硕士 + 3 年 + 1 年独立执业 + 校访 + 不接 placement 佣金）和 ✅ [03a] 版（5 年内 50 次 evaluative campus visits）都对。两版是**同一标准的不同 facet**，不是冲突
-- **mockup v3 用**：完整门槛（硕士学位 / 3 年经验 + 1 年独立执业 / college 顾问 5 年内 50 次校访 / 不接 placement 佣金）
+- **判决**：✅ [02] 版（硕士 **OR equivalent training+experience** + 3 年 + 1 年独立执业 + 校访 + 不接 placement 佣金）和 ✅ [03a] 版（5 年内 50 次 evaluative campus visits）都对。两版是**同一标准的不同 facet**，不是冲突
+- **mockup v3 用**：完整门槛 = "**硕士 OR 同等 training+experience**" + 3 年经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits / K-12 顾问 25 次 + 推荐人 + 不接 placement 佣金 — **注意"硕士 OR experience"是 OR 不是 AND**（R4 Codex 抓到的 paraphrase 偏移）
 - **IECA "不接 placement 佣金" 原文**："An IECA member does not accept any compensation from educational institutions for placement of a child."
 - **URL**：https://www.iecaonline.com/about-ieca/principles-of-good-practice/
 
@@ -59,20 +62,74 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ## 🎯 Tier A — WebFetch verified（直接进 mockup v3 文案）
 
-### A1. NACAC 2023 admission factors — ✅ 完全验证
+### A1. NACAC 2023 admission factors — ✅ 完全验证（Source: SOCA 2023 PowerPoint PDF, page 2-4）
 
-颠覆性数字：
+**Primary source（实际持有数字的官方文档）**：
+- NACAC SOCA 2023 PowerPoint PDF：https://resources.finalsite.net/images/v1707774516/shorelineschoolsorg/yucdy4l209jbazfracqh/SOCAAdmissionFactorsPowerpointNACAC.pdf
+- NACAC dashboard 入口：https://www.nacacnet.org/factors-in-the-admission-decision/
+- NACAC 资源主页：https://www.nacacnet.org/resources/soca-2023-factors-in-the-admission-decision/（只有 fact sheet link，inline 不显示数字）
 
-| 因素 | 列"considerable importance"的大学百分比 |
-|---|---|
-| **Grades in college prep courses** | **76.8%** |
-| **Grades in all courses** | **74.1%** |
-| **Strength of curriculum** | **63.8%** |
-| **SAT/ACT admission test scores** | **4.9%** |
+**Page 2: Fall 2023 完整 admission factor 表**（N=185 所四年制大学，每行 4 列百分比 = considerable / moderate / limited / no importance）
 
-- **URL**：https://www.nacacnet.org/resources/soca-2023-factors-in-the-admission-decision/
-- **N**：NACAC 调查的 185 所四年制大学
-- **mockup v3 用**：成绩 + 课程强度 = admission 核心；**SAT/ACT 在 considerable importance 里只有 4.9%，跟成绩比差一个数量级**。这是反"SAT 焦虑营销"的核弹级 evidence。
+| Factor | Considerable | Moderate | Limited | No |
+|---|---|---|---|---|
+| High school grades in college prep courses | **76.8** | 15.1 | 4.9 | 3.2 |
+| Total high school grades (all courses) | **74.1** | 18.9 | 5.4 | 1.6 |
+| Strength of high school curriculum | **63.8** | 22.7 | 10.3 | 3.2 |
+| Positive character attributes | 28.3 | 37.5 | 18.5 | 15.8 |
+| Essay or writing sample | 18.9 | 37.3 | 26.5 | 17.3 |
+| Student's interest in attending | 15.7 | 27.6 | 25.4 | 31.4 |
+| Counselor recommendation | 11.9 | 40.0 | 27.6 | 20.5 |
+| Teacher recommendation | 10.8 | 40.5 | 28.1 | 20.5 |
+| Extracurricular activities | 6.5 | 44.3 | 30.8 | 18.4 |
+| High school class rank | 5.5 | 22.4 | 43.2 | 29.0 |
+| **Admission test scores (ACT, SAT)** | **4.9** | 25.4 | 38.9 | 30.8 |
+| Portfolio | 4.9 | 10.8 | 24.3 | 60.0 |
+| Interview | 4.3 | 8.6 | 32.4 | 54.6 |
+| Work | 2.2 | 30.8 | 40.0 | 27.0 |
+| State graduation exam scores | 1.6 | 6.5 | 18.4 | 73.5 |
+| **Subject test scores (AP, IB)** | **1.1** | 22.2 | 25.9 | 50.8 |
+
+**Page 3: Fall 2023 student characteristic 表**（N=180-185）
+
+| Characteristic | Considerable | Moderate | Limited | No |
+|---|---|---|---|---|
+| First-generation status | 7.0 | 9.7 | 28.1 | 55.1 |
+| State or country of residence | 7.0 | 9.7 | 28.1 | 55.1 |
+| Gender | 2.8 | 9.4 | 12.8 | 75.0 |
+| **High school attended** | **1.6** | 17.8 | 34.1 | 46.5 |
+| **Ability to pay** | **1.6** | 7.6 | 13.0 | 77.8 |
+| **Alumni relations** | **0.5** | 3.8 | 30.3 | 65.4 |
+
+**Page 4: 11 年 trend — SAT/ACT considerable importance 历史崩跌**
+
+| Factor | 2013 | 2014 | 2016 | 2017 | 2018 | 2023 |
+|---|---|---|---|---|---|---|
+| High school grades in college prep courses | 82% | 79% | 77% | 71% | 73% | **77%** |
+| Strength of high school curriculum | 64 | 60 | 52 | 51 | 62 | **64** |
+| **Admission test scores (ACT, SAT)** | **58** | **56** | **54** | **52** | **46** | **5** |
+| Subject test scores (AP, IB) | 8 | 7 | 7 | 4 | 6 | **1** |
+| Extracurricular activities | 10 | 6 | 8 | 4 | 6 | **7** |
+
+**SAT/ACT considerable importance 11 年从 58% 跌到 5%**。同期 grades 维持在 71-82%，curriculum 维持在 51-64%。
+
+**Page 5: SAT/ACT 政策 trends 2017-2021**
+- "Required": **72% → 11%**（4 年）
+- "Considered but Not Required": 8% → 56%
+- "Neither Required nor Recommended": 4% → 19%
+
+**Page 6-8: Test submission rates 2017-2021**
+- ACT submission: 58% → 31%（整体）
+- SAT submission: 46% → 24%（整体）
+- 即使在 require test 的学校：ACT 60% → 50%；SAT 46% → 27%（2021 COVID 影响 + test-optional 扩散）
+
+**mockup v3 用**：
+- **反 SAT 焦虑核弹**：SAT/ACT considerable importance 11 年 58% → 5%（PDF page 4），成绩 + 课程强度才是 admission 核心
+- **反"美高 vs 国际学校"焦虑核弹**：High school attended considerable importance 只有 **1.6%**（PDF page 3）— 大学不在意你读哪所中学
+- **反"AP/IB 谁更好"焦虑**：AP/IB Subject test considerable importance 只有 **1.1%**（PDF page 2）— 比 SAT 还低
+- **反"活动堆量"**：Extracurricular activities 6.5% / Interview 4.3% / Work 2.2%
+- **反"legacy / 关系户"**：Alumni relations 0.5%
+- **反"need-aware 不发钱"**：Ability to pay 仅 1.6% considerable
 
 ### A2. Princeton 2027-28 testing 恢复 — ✅ 完全验证
 
@@ -213,7 +270,7 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 | **NACAC 2023 数据**：grades 76.8% / 全成绩 74.1% / 课程强度 63.8% / SAT 4.9% considerable importance | ✅ NACAC 官方 verified |
 | 顶校 ED/EA 11/1-11/15；ED II/RD 1/1-1/15 | [01][02][03a] |
 | **Harvard REA 11/1, RD 1/1**；要求 SAT/ACT | ✅ Harvard 官方 verified |
-| **Andover 2/1**；其他寄宿 **1/15**；释放 **3/10**；回复 **4/10** | ✅ Andover 官方 + 多家共识 |
+| **Andover 2/1**（✅ official）；其他寄宿 **1/15**（✅ Exeter / Deerfield official + 三家共识）；释放 **3/10**（⚠️ Deerfield 主页只 verify "Financial aid awards are sent on March 10"，admission decision 3/10 是 [01][02][03a] 三家共识但非 Deerfield 主页 verify）；回复 **4/10**（✅ Deerfield official） | 混合 verified / multi-source |
 | **Princeton 2027-28 起恢复 SAT/ACT** | ✅ Princeton 官方 verified |
 | SAT/ACT 主窗口：junior spring 到 senior fall（3-6 月密集）| [01][02][03a][04] 四家共识 |
 | 推荐信主要来自 junior/senior 核心学科老师 | [01][02][03a] 三家 + Yale/Stanford/Harvard 官方 |
@@ -305,23 +362,33 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ### 反 SAT 焦虑（最强）
 
-1. ✅ **NACAC 2023：SAT/ACT 在 considerable importance 里只有 4.9%**，vs grades 76.8% / 课程强度 63.8% — 差一个数量级
-2. ⚠️ **Sean Logan（Andover 现任 college counseling director）公开表述**：顶校招生官把申请分"桶"，"标化分数高得离谱"并不在任何能产生显著差异的桶里（[02] 引 WBUR News 2013-12-26）— **业内权威 + 当事人 + 反 SAT 焦虑的具体来源**
-3. ✅ **Princeton 2027-28 起恢复 SAT/ACT**（即 fall 2028 入学起；当前对 fall 2026/2027 仍 test-optional）— testing 政策按年变，**不是稳定的**
+1. ✅ **NACAC 11 年 trend (PDF page 4)：SAT/ACT considerable importance 从 2013 年 58% 跌到 2023 年 5%**（中间点：2018=46%；2017=52%；2016=54%；2014=56%）— **11 年崩跌 11.6 倍**。同期 grades 维持 71-82%，curriculum 维持 51-64%
+2. ✅ **NACAC 2023 (PDF page 2)**：SAT/ACT considerable = 4.9%，vs grades college prep = **76.8%** / strength of curriculum = **63.8%** — 差一个数量级
+3. ✅ **NACAC test policy trend (PDF page 5)**：SAT/ACT Required 从 2017 年 72% 跌到 2021 年 11%（"Considered but Not Required" 从 8% 涨到 56%）
+4. ✅ **NACAC submission rate (PDF page 6-8)**：即使在 require test 学校，2021 年 ACT submission 50% / SAT submission 27% — test-optional 时代实际 submission 自愿
+5. ⚠️ **Sean Logan（Andover 现任 college counseling director）公开表述**：顶校招生官把申请分"桶"，"标化分数高得离谱"并不在任何能产生显著差异的桶里（[02] 引 WBUR News 2013-12-26）— **业内权威 + 当事人**
+6. ✅ **Princeton 2027-28 起恢复 SAT/ACT**（即 fall 2028 入学起；当前对 fall 2026/2027 仍 test-optional）— testing 政策按年变，**不是稳定的**
 
 ### 反 admission "国别配额 / 美高跳板" 焦虑
 
-4. ✅ **Harvard 官方**："There are no quotas or limits of any kind at any point in the admissions process."
-5. ✅ **Harvard 官方**："All students are considered in the same pool for all places in the incoming class, regardless of citizenship or the secondary school they attend."
-6. ✅ **Princeton 官方**："We review all applications in the same manner, regardless of citizenship or country of residence."
-7. ✅ **Yale 官方**："All applicants, regardless of nationality, citizenship, or country of origin, are considered through the same whole-person admissions process."
+7. ✅ **Harvard 官方**："There are no quotas or limits of any kind at any point in the admissions process."
+8. ✅ **Harvard 官方**："All students are considered in the same pool for all places in the incoming class, regardless of citizenship or the secondary school they attend."
+9. ✅ **Princeton 官方**："We review all applications in the same manner, regardless of citizenship or country of residence."
+10. ✅ **Yale 官方**："All applicants, regardless of nationality, citizenship, or country of origin, are considered through the same whole-person admissions process."
+11. ✅ **NACAC 2023 (PDF page 3) 核弹数字**：**"High school attended" considerable importance = 1.6%** — 大学不在意你读哪所中学，含义是美高 vs 国际学校 vs 公立国际部对 admission outcome 的统计影响微乎其微
 
-**含义**：[04] Gemini "美高生避开中国国际生池" 的营销话术与 Harvard / Princeton / Yale 三所顶校官方表述**直接对立**。
+**含义**：[04] Gemini "美高生避开中国国际生池" 的营销话术与 Harvard / Princeton / Yale 三所顶校官方表述 + NACAC 全行业数据**全部直接对立**。
+
+**精确措辞 nuance（R4 修正）**：
+- 三所顶校官方说 "**same pool, no quotas, regardless of citizenship or secondary school**" — **不是"按 citizenship 切池"**
+- 即"申请池不按 citizenship 切，也不按学校所在地切" — 简洁表述：**学校 / 国籍 / 居住地都不会让申请池切分**
 
 ### 反"AP/IB 谁更好" + "活动堆量" 焦虑
 
-8. ✅ **Stanford 官方**："We do not have a preference for a specific curriculum (A-Level, IB, AP, National, etc.)."
-9. ✅ **Yale 官方 admission 标准**："The single most important document in your application is your high school transcript" + "We look for students who have consistently taken a broad range of challenging courses in high school and have done well." — **transcript + course rigor 是核心，不是体系**
+12. ✅ **Stanford 官方**："We do not have a preference for a specific curriculum (A-Level, IB, AP, National, etc.)."
+13. ✅ **Yale 官方 admission 标准**："The single most important document in your application is your high school transcript" + "We look for students who have consistently taken a broad range of challenging courses in high school and have done well." — **transcript + course rigor 是核心，不是体系**
+14. ✅ **NACAC 2023 (PDF page 2) 核弹数字**：**Subject test scores (AP, IB) considerable importance 仅 1.1%** — 比 SAT/ACT 4.9% 还低。"修一堆 AP" 或 "拿 IB diploma" 本身不是 admission 决定因素
+15. ✅ **NACAC 2023 (PDF page 2)**：Extracurricular activities considerable importance 仅 **6.5%** / Interview **4.3%** / Work **2.2%** / Class rank **5.5%** — 这些都是 considerable，不是 moderate/limited/no
 10. ⚠️ **Common App 10 项 activities 上限不是必填满**（[02][03a] 引 Common App）+ Harvard / MIT 明确说"quality over quantity" — 反"活动堆量"
 
 ### 反"低龄签长约 / 名校夏校" 焦虑
@@ -341,25 +408,27 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 ### 识别真顾问 vs 中介销售
 
 19. ✅ **IECA 官方**："An IECA member does not accept any compensation from educational institutions for placement of a child." — **ethical 红线**
-20. ✅ **IECA Professional 完整门槛**：硕士 + 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits + 不接学校 placement 佣金
+20. ✅ **IECA Professional 完整门槛**：**硕士学位 OR 同等 training+experience**（注意是 OR 不是 AND，R4 修正）+ 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits（K-12 顾问 25 次）+ 推荐人 + 不接学校 placement 佣金
 21. ✅ **IECA 全美 2,800+ Professional 注册顾问**（官方主页数字）
+22. ✅ **NACAC 2023 (PDF page 3) 配套核弹**：**"Alumni relations" considerable importance = 0.5%** — 招生官几乎不看校友关系，"找内部关系 / legacy connection" 不影响 admission outcome
 
 ### 中国 context 特定 fact
 
-22. ⚠️ **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生必须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾（[02] 引 College Board）
-23. ⚠️ **中国学生在美国国际生总量中占比仍约 23%**（[02] 引 IIE Open Doors 2025）— 2024/25 中国 265,919 (-4%) / 印度 363,019 (+10%) 已超中国成最大生源国
-24. ⚠️ **国际学校只录持外国护照学生**（部分学校 — 中国教育部纯外籍子女学校规定）
+23. ⚠️ **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生必须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾（[02] 引 College Board）
+24. ⚠️ **中国学生在美国国际生总量中占比仍约 23%**（[02] 引 IIE Open Doors 2025）— 2024/25 中国 265,919 (-4%) / 印度 363,019 (+10%) 已超中国成最大生源国
+25. ⚠️ **国际学校只录持外国护照学生**（部分学校 — 中国教育部纯外籍子女学校规定）
 
 ### Need-blind for International 完整清单
 
-25. **9 所（2025 年公认）**：Harvard / Yale / Princeton / MIT（✅ same-pool 间接 verified）+ Amherst / Bowdoin（Class 2028 起）/ Dartmouth（Class 2026 起）/ Brown（Class 2029 起）/ Notre Dame（⚠️ [02] 单家完整名单）
-26. ⚠️ **Need-aware ≠ 不发钱 nuance**（[02]）：need-aware 只是把援助申请者池单独考虑；完全自费就读 = 与 need-blind 等同对待 — **中国家庭最容易被中介话术误导的点**
+26. **9 所（2025 年公认）**：Harvard / Yale / Princeton / MIT（✅ same-pool 间接 verified）+ Amherst / Bowdoin（Class 2028 起）/ Dartmouth（Class 2026 起）/ Brown（Class 2029 起）/ Notre Dame（⚠️ [02] 单家完整名单）
+27. ⚠️ **Need-aware ≠ 不发钱 nuance**（[02]）：need-aware 只是把援助申请者池单独考虑；完全自费就读 = 与 need-blind 等同对待 — **中国家庭最容易被中介话术误导的点**
+28. ✅ **NACAC 2023 (PDF page 3) 配套**：**"Ability to pay" considerable importance = 1.6%** — 大学普遍不把 ability to pay 列为 admission factor
 
 ### 申请池 + 申请季硬节点
 
-27. ✅ **Andover 申请截止 2/1**（其他顶级寄宿 1/15；释放 3/10；回复 4/10）
-28. ✅ **Harvard REA 11/1，RD 1/1**
-29. ⚠️ **Open Doors 2025**：2024/25 国际生总量 1,177,766（+5%）；本科生段 +4%；STEM 占比 57%（[02] 引 IIE）
+29. ✅ **Andover 申请截止 2/1**（✅ verified）；其他顶级寄宿 **1/15**（Exeter / Deerfield ✅ verified + 三家共识 Choate / Lawrenceville / Hotchkiss）；**回复截止 4/10**（✅ Deerfield verified）；**admission decision release 3/10**（⚠️ 三家共识但 Deerfield 主页只 verified "financial aid awards 3/10"，admission release 3/10 未在 Deerfield 主页找到 verbatim quote）
+30. ✅ **Harvard REA 11/1，RD 1/1**
+31. ⚠️ **Open Doors 2025**：2024/25 国际生总量 1,177,766（+5%）；本科生段 +4%；STEM 占比 57%（[02] 引 IIE）
 
 ### 13 项行业不公开 / 无标准化研究
 
@@ -395,7 +464,7 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 - "You are not required to take the TOEFL, IELTS, Duolingo or PTE Academic if English is your native language or if you have spent at least three years at a secondary school where English is the primary language of instruction."
 - "We review all applications in the same manner, regardless of citizenship or country of residence."
 
-### Yale（yale.edu/what-yale-looks-for）
+### Yale（admissions.yale.edu/what-yale-looks-for）
 - "The single most important document in your application is your high school transcript, which tells us a great deal about your academic drive and performance over time."
 - "We look for students who have consistently taken a broad range of challenging courses in high school and have done well."
 - "Your high school teachers can provide extremely helpful information in their evaluations... it is important to ask for recommendations from teachers who know you well."
