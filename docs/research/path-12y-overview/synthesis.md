@@ -279,8 +279,8 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 | Claim | 来源 |
 |---|---|
-| **Harvard：池切分按 citizenship 不按学校所在地，no quotas** | ✅ Harvard 官方 verified |
-| **Princeton：同样按 citizenship 切池** | ✅ Princeton 官方 verified |
+| **Harvard：same pool, no quotas, regardless of citizenship or secondary school they attend** | ✅ Harvard 官方 verified |
+| **Princeton：review all applications in the same manner, regardless of citizenship or country of residence** | ✅ Princeton 官方 verified |
 | Yale / Princeton 对国际生 need-blind + meet full need | [01][02][03a] |
 | Need-blind for international 9 所（2025）：Harvard / Yale / Princeton / MIT / Amherst / Bowdoin / Dartmouth / Brown / Notre Dame | [02] 完整列表 |
 | Need-aware ≠ 不发钱：完全自费等同 need-blind | [02] 单家 nuance |
@@ -301,7 +301,7 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 | Claim | 来源 |
 |---|---|
-| **IECA Professional 门槛**：硕士 + 3 年经验（含 1 年独立执业）+ college 顾问 5 年 50 校访 + 不接 placement 佣金 | ✅ IECA 官方 verified |
+| **IECA Professional 门槛**：硕士学位 **OR** 同等 training+experience（注意是 OR 不是 AND）+ 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits（K-12 顾问 25 次）+ 推荐人 + 不接学校 placement 佣金 | ✅ IECA 官方 verified |
 | **IECA 2,800+ 成员** | ✅ IECA 官方 verified |
 | IECA Principles：禁止 ghostwriting / 不接学校佣金 | ✅ IECA 官方 partial verified + [01][02][03a] |
 | 顾问真正高价值阶段 = G10 末-G12 春 | [01][02][03a] 三家 + [04] |
@@ -364,8 +364,8 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 1. ✅ **NACAC 11 年 trend (PDF page 4)：SAT/ACT considerable importance 从 2013 年 58% 跌到 2023 年 5%**（中间点：2018=46%；2017=52%；2016=54%；2014=56%）— **11 年崩跌 11.6 倍**。同期 grades 维持 71-82%，curriculum 维持 51-64%
 2. ✅ **NACAC 2023 (PDF page 2)**：SAT/ACT considerable = 4.9%，vs grades college prep = **76.8%** / strength of curriculum = **63.8%** — 差一个数量级
-3. ✅ **NACAC test policy trend (PDF page 5)**：SAT/ACT Required 从 2017 年 72% 跌到 2021 年 11%（"Considered but Not Required" 从 8% 涨到 56%）
-4. ✅ **NACAC submission rate (PDF page 6-8)**：即使在 require test 学校，2021 年 ACT submission 50% / SAT submission 27% — test-optional 时代实际 submission 自愿
+3. ⚠️ **NACAC test policy trend (PDF page 5)**：SAT/ACT Required 从 2017 年 72% 跌到 2021 年 11%（"Considered but Not Required" 从 8% 涨到 56%）— **数据在 PDF chart image 里，本轮 Read PDF 拿到的是 chart annotation 而非 verbatim text quote；使用时 mockup v3 建议二次确认**
+4. ⚠️ **NACAC submission rate (PDF page 6-8)**：即使在 require test 学校，2021 年 ACT submission 50% / SAT submission 27% — test-optional 时代实际 submission 自愿 — **同样来自 PDF chart annotation，非 verbatim text**
 5. ⚠️ **Sean Logan（Andover 现任 college counseling director）公开表述**：顶校招生官把申请分"桶"，"标化分数高得离谱"并不在任何能产生显著差异的桶里（[02] 引 WBUR News 2013-12-26）— **业内权威 + 当事人**
 6. ✅ **Princeton 2027-28 起恢复 SAT/ACT**（即 fall 2028 入学起；当前对 fall 2026/2027 仍 test-optional）— testing 政策按年变，**不是稳定的**
 
@@ -389,46 +389,46 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 13. ✅ **Yale 官方 admission 标准**："The single most important document in your application is your high school transcript" + "We look for students who have consistently taken a broad range of challenging courses in high school and have done well." — **transcript + course rigor 是核心，不是体系**
 14. ✅ **NACAC 2023 (PDF page 2) 核弹数字**：**Subject test scores (AP, IB) considerable importance 仅 1.1%** — 比 SAT/ACT 4.9% 还低。"修一堆 AP" 或 "拿 IB diploma" 本身不是 admission 决定因素
 15. ✅ **NACAC 2023 (PDF page 2)**：Extracurricular activities considerable importance 仅 **6.5%** / Interview **4.3%** / Work **2.2%** / Class rank **5.5%** — 这些都是 considerable，不是 moderate/limited/no
-10. ⚠️ **Common App 10 项 activities 上限不是必填满**（[02][03a] 引 Common App）+ Harvard / MIT 明确说"quality over quantity" — 反"活动堆量"
+16. ⚠️ **Common App 10 项 activities 上限不是必填满**（[02][03a] 引 Common App）+ Harvard / MIT 明确说"quality over quantity" — 反"活动堆量"
 
 ### 反"低龄签长约 / 名校夏校" 焦虑
 
-11. ⚠️ **5 年长期顾问合约无独立研究支持其边际回报**（[02][03a][04] 三家共识）；[02] 明说："长合约主要服务于中介机构的现金流可预测性"
-12. ⚠️ **顾问真正高价值阶段 = G10 末-G12 春（约 2 年）**（[01][02][03a] 三家共识 + 引 Deerfield + Andover 原文）— **反"低龄包装合同"最强证据**
-13. ⚠️ **付费高端"名校夏校" admission signal 接近零**（[02] 详引）— 只有 RSI / TASP / SSP / PROMYS 等接受率 1-5% 的高度筛选项目才有 admission 信号价值
-14. ⚠️ **国际游学 / 海外义工**几乎无招生官公开承认权重（[02][04]）
+17. ⚠️ **5 年长期顾问合约无独立研究支持其边际回报**（[02][03a][04] 三家共识）；[02] 明说："长合约主要服务于中介机构的现金流可预测性"
+18. ⚠️ **顾问真正高价值阶段 = G10 末-G12 春（约 2 年）**（[01][02][03a] 三家共识 + 引 Deerfield + Andover 原文）— **反"低龄包装合同"最强证据**
+19. ⚠️ **付费高端"名校夏校" admission signal 接近零**（[02] 详引）— 只有 RSI / TASP / SSP / PROMYS 等接受率 1-5% 的高度筛选项目才有 admission 信号价值
+20. ⚠️ **国际游学 / 海外义工**几乎无招生官公开承认权重（[02][04]）
 
 ### 反"低龄 SAT / 早期专项化 / 完美履历" 焦虑
 
-15. ⚠️ **AAP 临床报告**：青春期前避免单一运动专项化；multi-sport 参与有利长期表现（[01][03a]）
-16. ⚠️ **Madeline Levine（The Price of Privilege）**：过早成就驱动抚养与儿童期焦虑/抑郁正相关（[02][04]）
-17. ⚠️ **CDC/AASM 睡眠**：6-12 岁需 9-12 小时；13-18 岁 8-10 小时（[01][03a]）— 反"占用睡眠刷题"
-18. ✅ **NAEYC 官方**："Play is essential for all children, birth through age 8" + "Play promotes joyful learning that fosters self-regulation, language, cognitive and social competencies" — 反"低龄 application-building"
+21. ⚠️ **AAP 临床报告**：青春期前避免单一运动专项化；multi-sport 参与有利长期表现（[01][03a]）
+22. ⚠️ **Madeline Levine（The Price of Privilege）**：过早成就驱动抚养与儿童期焦虑/抑郁正相关（[02][04]）
+23. ⚠️ **CDC/AASM 睡眠**：6-12 岁需 9-12 小时；13-18 岁 8-10 小时（[01][03a]）— 反"占用睡眠刷题"
+24. ✅ **NAEYC 官方**："Play is essential for all children, birth through age 8" + "Play promotes joyful learning that fosters self-regulation, language, cognitive and social competencies" — 反"低龄 application-building"
 
 ### 识别真顾问 vs 中介销售
 
-19. ✅ **IECA 官方**："An IECA member does not accept any compensation from educational institutions for placement of a child." — **ethical 红线**
-20. ✅ **IECA Professional 完整门槛**：**硕士学位 OR 同等 training+experience**（注意是 OR 不是 AND，R4 修正）+ 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits（K-12 顾问 25 次）+ 推荐人 + 不接学校 placement 佣金
-21. ✅ **IECA 全美 2,800+ Professional 注册顾问**（官方主页数字）
-22. ✅ **NACAC 2023 (PDF page 3) 配套核弹**：**"Alumni relations" considerable importance = 0.5%** — 招生官几乎不看校友关系，"找内部关系 / legacy connection" 不影响 admission outcome
+25. ✅ **IECA 官方**："An IECA member does not accept any compensation from educational institutions for placement of a child." — **ethical 红线**
+26. ✅ **IECA Professional 完整门槛**：**硕士学位 OR 同等 training+experience**（注意是 OR 不是 AND，R4 修正）+ 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits（K-12 顾问 25 次）+ 推荐人 + 不接学校 placement 佣金
+27. ✅ **IECA 全美 2,800+ Professional 注册顾问**（官方主页数字）
+28. ✅ **NACAC 2023 (PDF page 3) 配套核弹**：**"Alumni relations" considerable importance = 0.5%** — 招生官几乎不看校友关系，"找内部关系 / legacy connection" 不影响 admission outcome
 
 ### 中国 context 特定 fact
 
-23. ⚠️ **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生必须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾（[02] 引 College Board）
-24. ⚠️ **中国学生在美国国际生总量中占比仍约 23%**（[02] 引 IIE Open Doors 2025）— 2024/25 中国 265,919 (-4%) / 印度 363,019 (+10%) 已超中国成最大生源国
-25. ⚠️ **国际学校只录持外国护照学生**（部分学校 — 中国教育部纯外籍子女学校规定）
+29. ⚠️ **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生必须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾（[02] 引 College Board）
+30. ⚠️ **中国学生在美国国际生总量中占比仍约 23%**（[02] 引 IIE Open Doors 2025）— 2024/25 中国 265,919 (-4%) / 印度 363,019 (+10%) 已超中国成最大生源国
+31. ⚠️ **国际学校只录持外国护照学生**（部分学校 — 中国教育部纯外籍子女学校规定）
 
 ### Need-blind for International 完整清单
 
-26. **9 所（2025 年公认）**：Harvard / Yale / Princeton / MIT（✅ same-pool 间接 verified）+ Amherst / Bowdoin（Class 2028 起）/ Dartmouth（Class 2026 起）/ Brown（Class 2029 起）/ Notre Dame（⚠️ [02] 单家完整名单）
-27. ⚠️ **Need-aware ≠ 不发钱 nuance**（[02]）：need-aware 只是把援助申请者池单独考虑；完全自费就读 = 与 need-blind 等同对待 — **中国家庭最容易被中介话术误导的点**
-28. ✅ **NACAC 2023 (PDF page 3) 配套**：**"Ability to pay" considerable importance = 1.6%** — 大学普遍不把 ability to pay 列为 admission factor
+32. **9 所（2025 年公认）**：Harvard / Yale / Princeton / MIT（✅ same-pool 间接 verified）+ Amherst / Bowdoin（Class 2028 起）/ Dartmouth（Class 2026 起）/ Brown（Class 2029 起）/ Notre Dame（⚠️ [02] 单家完整名单）
+33. ⚠️ **Need-aware ≠ 不发钱 nuance**（[02]）：need-aware 只是把援助申请者池单独考虑；完全自费就读 = 与 need-blind 等同对待 — **中国家庭最容易被中介话术误导的点**
+34. ✅ **NACAC 2023 (PDF page 3) 配套**：**"Ability to pay" considerable importance = 1.6%** — 大学普遍不把 ability to pay 列为 admission factor
 
 ### 申请池 + 申请季硬节点
 
-29. ✅ **Andover 申请截止 2/1**（✅ verified）；其他顶级寄宿 **1/15**（Exeter / Deerfield ✅ verified + 三家共识 Choate / Lawrenceville / Hotchkiss）；**回复截止 4/10**（✅ Deerfield verified）；**admission decision release 3/10**（⚠️ 三家共识但 Deerfield 主页只 verified "financial aid awards 3/10"，admission release 3/10 未在 Deerfield 主页找到 verbatim quote）
-30. ✅ **Harvard REA 11/1，RD 1/1**
-31. ⚠️ **Open Doors 2025**：2024/25 国际生总量 1,177,766（+5%）；本科生段 +4%；STEM 占比 57%（[02] 引 IIE）
+35. ✅ **Andover 申请截止 2/1**（✅ verified）；其他顶级寄宿 **1/15**（Exeter / Deerfield ✅ verified + 三家共识 Choate / Lawrenceville / Hotchkiss）；**回复截止 4/10**（✅ Deerfield verified）；**admission decision release 3/10**（⚠️ 三家共识但 Deerfield 主页只 verified "financial aid awards 3/10"，admission release 3/10 未在 Deerfield 主页找到 verbatim quote）
+36. ✅ **Harvard REA 11/1，RD 1/1**
+37. ⚠️ **Open Doors 2025**：2024/25 国际生总量 1,177,766（+5%）；本科生段 +4%；STEM 占比 57%（[02] 引 IIE）
 
 ### 13 项行业不公开 / 无标准化研究
 
