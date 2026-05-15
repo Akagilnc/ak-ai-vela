@@ -586,10 +586,16 @@ Considerable importance percentages（185 所四年制大学）：
 ## 修订记录
 
 - 2026-05-15 R0：synthesis-raw.md self-audit
-- 2026-05-15 R1：cross-model review（codex + claude opus + gemini 1+1+1）
-- 2026-05-15 R2：3 个 R1-introduced bug 修复
-- 2026-05-15 R3：stale conflict count 修复 → 收敛
-- 2026-05-15 WebFetch：4 个家间冲突全部解决 + 6 条 Tier A claim verified
+- 2026-05-15 R1：cross-model review（codex + claude opus + gemini 1+1+1），10 finding
+- 2026-05-15 R2：3 个 R1-introduced bug 修复（cross-review，3 finding）
+- 2026-05-15 R3：stale conflict count 修复（1 finding）
+- 2026-05-15 WebFetch：4 个家间冲突全部解决 + Tier A claim verified
 - 2026-05-15 synthesis.md 出（本文件）
+- 2026-05-15 R4：synthesis.md 首轮 cross-review（4 finding：申请池 framing + IECA OR vs AND + NACAC URL + 3/10 一致性）+ PDF page 2/3/4/5/6/7/8 完整数据加入
+- 2026-05-15 R5：R4 paraphrase 修复传播漏失（codex DRIFT-STOP / 3 finding：line 282/283/304 paraphrase 残留 + Page 5-8 标记 + 编号断裂）
+- 2026-05-15 R6：R5 marker propagation + phrase 残留（2 finding：Page 5-8 ⚠️ 没传到 A1 + L384 "申请池切分" 词面）
+- 2026-05-15 R7：**3/3 concur APPROVE** — synthesis.md 收敛（0 P0/P1，1 P2 修订记录已补）
+
+**Wiki v3 default 正向终止：达成**（codex + claude opus + gemini 三家 R7 都 APPROVE）。
 
 下一步：基于本文件做 mockup v3。
