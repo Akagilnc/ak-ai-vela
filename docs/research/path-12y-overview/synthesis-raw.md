@@ -10,7 +10,19 @@
 - **⭐ 低置信**：单家独说 / 无 source / 各家冲突
 - **🔴 高风险**：单家给了具体数字但没 source，且其他家明确说"这类数字不公开"
 
-> **⚠️ ⭐ 等级是 raw 初筛标记**：在 audit 过程中发现本文件多处把"2 家共识 + 强官方 source"标成了 ⭐⭐⭐（按严格定义应是 ⭐⭐）。这种误差在 raw matrix 阶段保留，**最终置信等级以 `synthesis.md` 中 WebFetch 核验后的结果为准**。Raw 文件的 ⭐ 仅用于决定核验优先级，不是终极判决。Audit 主要修正的是 **claim 归属和具体数字**（哪条 claim 在哪份 report 出现 / 04 与三家对立等方向性差异），而非 ⭐ 等级的精确度。
+> **⚠️ ⭐ 等级演化**：本文件经过两轮 audit：
+> - **第一轮（self-audit）**：发现并修正 E1-E11 归属错误，但 ⭐ 等级偏松未实际降级（仅加 disclaimer）
+> - **第二轮（cross-model review，v3 1+1+1：codex + Claude opus + Gemini）**：3/3 concur ⭐ 等级仍偏松，已实际降级多处 2 家共识 ⭐⭐⭐ → ⭐⭐
+>
+> **本文件仍是 raw 初筛**。最终置信等级以 `synthesis.md` 中 WebFetch 核验后的结果为准。
+
+> **🚨 6 个未解决的家间冲突**（mockup v3 前必须 WebFetch 解决）：
+> 1. Andover 申请截止：[01][03a][04] 2/1 vs [02] 1/15
+> 2. Harvard 当前 SAT/ACT 政策：[01][03b] "当前要求" vs [02] "Class of 2030 前 test-optional"
+> 3. Open Doors 2025 国际生方向：[02] +5% 增长 vs [04] -7% 下降
+> 4. IECA Professional 门槛数字：[02] 版 vs [03a] 版不一致
+> 5. 美高 = domestic 池：[02][03a] 反对 vs [04] 主张（[01] 未表态）
+> 6. AP/IB/A-Level 顶校偏好：[01][02][03a] 三家说没偏好 vs [04] 暗示 AP 有"特殊战略意义"
 
 **报告别名：**
 - `[01]` = ChatGPT 5.5 Pro Desktop（无 URL，inline citation marker）
@@ -42,15 +54,18 @@
 
 | Claim | 来源 | 置信 | 待核验 source |
 |---|---|---|---|
-| Common App **8/1 开放新一轮申请**；Coalition 8/15 开放 | [01][02] | ⭐⭐⭐ | commonapp.org |
+| Common App **8/1 开放新一轮申请** | [01][02] 两家 | ⭐⭐ | commonapp.org |
+| Coalition 8/15 开放 | [01] 单家（[02] 不提 Coalition — cross-review verified） | ⭐ | commonapp.org |
 | 顶校 ED/EA 集中在 **11/1-11/15**；ED II / RD 多在 **1/1-1/15** | [01][02][03a] 三家共识，[01][02] 引 Common App Requirements Grid + Harvard 官网，[03a] 引 Common App | ⭐⭐⭐ | commonapp.org Requirements Grid |
-| NACAC 标准：**10/15 不应早于最早 deadline**；**5/1 是最早统一答复日** | [02][03a] | ⭐⭐⭐ | nacacnet.org |
-| Andover 申请截止 **2/1**（区别于其他寄宿）；Exeter/Choate/Deerfield/Lawrenceville/Hotchkiss **1/15** | [01][03a] 明确分开列出 Andover 单独 2/1；[02][04] 笼统说"大多数 1/15"未单列 Andover | ⭐⭐⭐ | andover.edu/admission, exeter.edu, deerfield.edu, lawrenceville.org, hotchkiss.org |
+| NACAC 标准：**10/15 不应早于最早 deadline**；**5/1 是最早统一答复日** | [03a] 单家明确 10/15+5/1；[02] 只列 5/1 不列 10/15（cross-review verified） | ⭐⭐ | nacacnet.org |
+| **Andover 申请截止日期 — 家间实质冲突**：[01][03a][04] 明确说 **2/1**；[02] section 三第一条**明确把 Andover 也归入 1/15**（与 Exeter 并列）— 这是实质冲突不是表述差异，mockup v3 之前必须 WebFetch andover.edu 解决 | [01][03a][04] vs [02] | 🚨 **家间冲突未解决** | **andover.edu/admission（必核）** |
+| 其他顶级寄宿：Exeter/Choate/Deerfield/Lawrenceville/Hotchkiss **1/15** | [01][02][03a][04] | ⭐⭐⭐ | exeter.edu, deerfield.edu, lawrenceville.org, hotchkiss.org |
 | 寄宿美高决定释放：**3/10 前后**；回复截止 **4/10** | [01][02][03a] | ⭐⭐⭐ | 同上 |
 | SAT/ACT 主要 testing window：**junior spring 到 senior fall**（密集备考 3-6 个月） | [01][02][03a][04] 四家共识，[04] 多处批"早开始"焦虑营销 | ⭐⭐⭐ | College Board SAT dates, NACAC junior/senior checklist |
-| **顶校 testing policy 回潮趋势**：Dartmouth 已恢复（Class of 2029）；Harvard / Yale / Brown 已恢复或宣布恢复；Princeton 宣布 **2027-28 周期起恢复** | [01][02] 都覆盖 testing 回潮，[01] 详列 Harvard/Dartmouth/UC；[02] 详列 Dartmouth/Yale/Brown/Harvard Class of 2029；[03b] 单独点 Princeton 2027-28 | ⭐⭐⭐ | college.harvard.edu, admissions.yale.edu, princeton.edu, admissions.dartmouth.edu, brown.edu/admission |
+| **顶校 testing policy 回潮趋势**：Dartmouth 已恢复（Class of 2029）；Yale / Brown 已恢复或宣布恢复；Princeton 宣布 **2027-28 周期起恢复** | [01][02][03b] 三家共识趋势 | ⭐⭐⭐ | admissions.dartmouth.edu, princeton.edu, brown.edu/admission |
+| **Harvard 当前 SAT/ACT 政策 — 家间冲突**：[01] 明确说"Harvard 要求 SAT 或 ACT"；[03b] 也说"Harvard 当前要求"；但 [02] line 18 引 Crimson 说"Harvard 在 **Class of 2030 之前继续保持 test-optional**" — 实质冲突 | [01][03b] vs [02] | 🚨 **家间冲突未解决** | **college.harvard.edu/admissions（必核）** |
 | MIT 明确要求 SAT/ACT；Yale test-flexible（ACT/SAT/AP/IB） | [03b] | ⭐⭐ | mitadmissions.org, admissions.yale.edu |
-| Harvard 当前要求 SAT/ACT；无法接触时可用 AP/IB/A-Level | [01][03b] | ⭐⭐⭐ | college.harvard.edu admissions |
+| Harvard：无法接触 SAT/ACT 时可用 AP/IB/A-Level/国家毕业考替代 | [01][03b] | ⭐⭐ | college.harvard.edu admissions |
 
 ### Elastic / 营销建构（多家共识警示）
 
@@ -62,6 +77,8 @@
 | **国际游学 / 海外义工**几乎无招生官公开承认权重 | [02][04] | ⭐⭐ |
 | **Common App 允许填 10 项 activities，不是必填满**；Harvard / MIT 明说看质量不看数量 | [02][03a] | ⭐⭐⭐ |
 | **过早 specialization / "兴趣堆量"**：钢琴+小提琴+网球+击剑+机器人+辩论+编程 每样 1-2 年后弃掉，留下疲惫不是 spike | [02][04] | ⭐⭐ |
+| **Sean Logan 招生分桶引言**（Andover 现任 college counseling director）：顶校招生官把申请分"桶"，"标化分数高得离谱"并不在任何能产生显著差异的桶里 | [02] line 281 引 WBUR News 2013-12-26 | ⭐⭐ |
+| **FERPA waiver**：Common App 强烈建议学生勾选"放弃查看推荐信权"以增加推荐信公信力 | [02] line 53 | ⭐⭐ |
 
 **待核验 source：**
 - Common App activities section guidance → commonapp.org
@@ -74,11 +91,11 @@
 
 | Claim | 来源 | 置信 | 待核验 source |
 |---|---|---|---|
-| NACAC 2023 admission factors：**college prep grades / 总成绩 / 课程强度** 列最重要；SAT/ACT "considerable importance" 显著下降 | [03a] 明确引 NACAC 2023 | ⭐⭐⭐ | nacacnet.org State of College Admission 2023 |
-| Yale: transcript = "**single most important document**" | [03a] | ⭐⭐⭐ | admissions.yale.edu what yale looks for |
-| Harvard: 最强申请者 = 在本校可获得范围内修读最有挑战性课程 | [03a] | ⭐⭐⭐ | college.harvard.edu |
-| 推荐信主要来自**最近的核心学科老师**（junior/senior year）| [02][03a] | ⭐⭐⭐ | admissions.yale.edu recommendation letters |
-| Stanford 看 **grades 9-12**；Yale 看完整 transcript | [03a] | ⭐⭐⭐ | admission.stanford.edu, admissions.yale.edu |
+| NACAC 2023 admission factors：**college prep grades / 总成绩 / 课程强度** 列最重要；SAT/ACT "considerable importance" 显著下降 | [01][03a] 都引 NACAC 2023（[01] section 0 + section 1 "76.8% 受访大学列 considerable importance / overall 74.1% / 课程强度 63.8%"，[03a] 引同源）| ⭐⭐ | nacacnet.org State of College Admission 2023 |
+| Yale: transcript = "**single most important document**" | [03a] 单家 + 引 Yale 官网 | ⭐⭐ | admissions.yale.edu what yale looks for |
+| Harvard: 最强申请者 = 在本校可获得范围内修读最有挑战性课程 | [01][03a] 都引 Harvard 官网 | ⭐⭐ | college.harvard.edu |
+| 推荐信主要来自**最近的核心学科老师**（junior/senior year）| [01][02][03a] 三家共识；[01] 引 Stanford "G11/G12 老师 / G10 老师只有课程足够 advanced 时才可考虑" + Harvard "两个不同学科了解学生的老师" | ⭐⭐⭐ | admissions.yale.edu recommendation letters |
+| Stanford 看 **grades 9-12**；Yale 看完整 transcript | [01][03a] | ⭐⭐ | admission.stanford.edu, admissions.yale.edu |
 | 推荐信"老师需要认识学生 **12-18 个月以上**"才能写强推 | [02] 单家 | ⭐ | 无 institutional source，可能 derived from practice |
 
 ---
@@ -95,9 +112,9 @@
 ### 🚨 维度内的家间对立
 | Claim | [01] | [02] | [03a] | [04] |
 |---|---|---|---|---|
-| **美高 = 自动 domestic 池**（中国生申美本自动避开国际池）| ❌ 反对 | ❌ 反对（section 三明确："美高路径**不会自动**把孩子从'国际生池'切换到'美国本土池'——录取池切分是按公民身份/居住国，不是学校所在地"）| ❌ 反对（引 Harvard "regardless of citizenship"）| ✅ 主张（section 3："美高中国学生... 大部分大学会将其档案直接划入'就读于美国本土高中的申请池'... 巧妙且合法地避开了... 中国大陆国际生申请池"）|
+| **美高 = 自动 domestic 池**（中国生申美本自动避开国际池）| — **未明确表态**（cross-review verified：[01] 只讲美国护照 vs 中国护照 citizenship 差异，未单独针对"美高中国生 vs 国内中国生"做 pool 论述）| ❌ 反对（section 三明确："美高路径**不会自动**把孩子从'国际生池'切换到'美国本土池'——录取池切分是按公民身份/居住国，不是学校所在地"）| ❌ 反对（引 Harvard "regardless of citizenship"）| ✅ 主张（section 3："美高中国学生... 大部分大学会将其档案直接划入'就读于美国本土高中的申请池'... 巧妙且合法地避开了... 中国大陆国际生申请池"）|
 
-**[04] 与其他三家直接对立**。这是 mockup v3 必须 surface 的核心争议点，**不能简单偏向任何一方而不标注证据来源**。三家明确说"按 citizenship 切分"，但都没给"美高生中国籍 vs 国内国际学校生中国籍"在 admission rate 上的对比数据，所以**真相的真相也未完全解决**：池切分是按 citizenship，但 school context / counselor / teacher recommendation 质量差异可能间接影响 admission outcome。
+**[04] 与 [02][03a] 两家明确对立**（[01] 在这点未表态）。这是 mockup v3 必须 surface 的核心争议点，**不能简单偏向任何一方而不标注证据来源**。[02][03a] 明确说"按 citizenship 切分"，但都没给"美高生中国籍 vs 国内国际学校生中国籍"在 admission rate 上的对比数据，所以**真相的真相也未完全解决**：池切分是按 citizenship，但 school context / counselor / teacher recommendation 质量差异可能间接影响 admission outcome。
 
 ### 待核验 source
 - Deerfield college advising 页面：`deerfield.edu` 找 "college counseling"
@@ -108,8 +125,8 @@
 | Claim | 来源 | 置信 |
 |---|---|---|
 | 国际学校只录持外国护照学生（部分学校）| [02][04] | ⭐⭐ |
-| Andover 接受率约 13% / Exeter 约 13% / 等具体接受率数字 | [01][04] | ⭐ 各家数字略有出入，需核 boardingschoolreview.com 或学校自报 |
-| Vericant / InitialView 第三方预审是顶尖美高对大中华区申请者的常规要求 | [02][04] | ⭐⭐ |
+| ~~Andover 接受率约 13% / Exeter 约 13%~~ | ❌ **3/3 cross-review concur：4 份原始 report 全部 grep 不到 13% 这个数字。删除（之前是 raw matrix 瞎编）** | — |
+| Vericant / InitialView 第三方预审是顶尖美高对大中华区申请者的常规要求 | [01][04]（cross-review verified：[02] 不提 Vericant/InitialView）| ⭐⭐ |
 
 ---
 
@@ -143,7 +160,8 @@
 | Princeton: 母语非英语 + 学校非英语授课 → 须 TOEFL/IELTS/DET/PTE；**3 年以上英语授课可豁免** | [03a] | ⭐⭐ |
 | Yale: 所有非英文材料须 **certified translation** | [01][03a] | ⭐⭐⭐ |
 | Need-blind for international 完整名单（2025）：Harvard / Yale / Princeton / MIT / Amherst / Bowdoin / Dartmouth / Brown / Notre Dame = 9 所 | [02] 给完整列表；[01] 提 Yale "少数 need-blind 学校之一"；[03a] 提 Princeton/Yale | ⭐⭐⭐ |
-| Open Doors 2025：中国留美生 265,919 人（-4%）；印度 363,019 (+10%) 首次超中国成最大生源国 | [02] 详引；[04] 也提"美国大学在2024/2025学年接待近117万名国际学生 / 新入学国际生总数实际下降了7%" | ⭐⭐ |
+| **Need-aware ≠ 不发钱 nuance**：need-aware 只是把援助申请者池单独考虑；家庭如完全自费，则与 need-blind 等同对待 | [02] section 5.4 | ⭐⭐ |
+| **Open Doors 2025 数据 — 家间冲突**：[02] 引 IIE Open Doors 2025 详细数字：中国 265,919 (-4%) / 印度 363,019 (+10%) / 国际本科生 **同比增长 5%**；[04] 给"美国大学共接待近117万 / **新入学国际生总数下降 7%**"（cross-review verified：两家给的是不同的方向 — [02] 说本科段增长，[04] 说新入学下降）| 🚨 **家间冲突或度量不同** | nafsa.org, opendoorsdata.org |
 | Harvard Class of 2028 整体录取率 **3.59%**（54,008 申/1,937 录） | [02] 引 The Harvard Crimson 2024-03-29 | ⭐⭐ |
 
 ### 高风险（单家具体数字 + 无可核 source）
@@ -151,7 +169,7 @@
 |---|---|---|
 | 🔴 "顶尖常春藤对中国籍非美高申请者**有效录取率 1.5%**" | [04] section 4 | 🔴 [02] section 5.5 明确说"中国籍配额的具体数字没有任何顶校公开过... 按'无定论'处理"|
 | 🔴 "NYU 单一学年新注册中国学生曾高达 **1481 人**" | [04] section 4 | 🔴 单家无 source |
-| 🔴 "国别配额是否真实存在" | [02] 明确列入"我们不知道" | — |
+| 🔴 "国别配额是否真实存在" | [02] 明确列入"我们不知道"（cross-review verified：[01] 未提"配额"概念，之前 raw matrix 标 [01][02] 是错的，已修正为仅 [02]）| — |
 | 🔴 "中国家庭年收入 **17.1%** 用于教育；低收入家庭 **56.8%**；收入弹性系数 **0.306**" | [04] section 6 | 🔴 单家无 source |
 | 🔴 "Andover 国际生 TOEFL 参考线 ≥ 100 / IELTS ≥ 7.5 / Duolingo ≥ 135"| [02] 引 Andover 官网 admissions FAQ 2024-25 | ⭐⭐ 二家但只 [02] 明确数字 |
 
@@ -167,10 +185,19 @@
 
 | Claim | 来源 | 置信 |
 |---|---|---|
-| 学校体系本质问题 = 能否提供"**连续 G9-G12 学术表现 + 可信教师评价 + 英文工作能力 + 清楚 school context**" | [03a] | ⭐⭐⭐（基于大学端公开标准推断）|
+| 学校体系本质问题 = 能否提供"**连续 G9-G12 学术表现 + 可信教师评价 + 英文工作能力 + 清楚 school context**" | [03a] | ⭐⭐（基于大学端公开标准推断 / 单家 + 强 source）|
 | 公立路径**主要风险不在难度，在转轨成本**（英文学术写作 / 英文推荐信 / G9 transcript 取回） | [03a] | ⭐⭐ |
 | NACAC 提醒：很多文化里 9 年级属 middle school，但大学仍要 9 年级成绩 | [03a] | ⭐⭐ |
 | **三体系无标准化对照录取率研究** — 中介声称的"我们国际学校 X% 进藤校"几乎都是分母选择性问题 | [02] 明确说 | ⭐⭐ |
+| **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾 | [02] section 4.1 引 College Board | ⭐⭐ |
+| **Digital SAT 转轨时间**：2023/3 起国际考场全面机考；2024/3 起美国本土也全面机考 | [02] section 4.1 | ⭐⭐ |
+
+### 走读私校分支（[01] 独家详述，synthesis-raw 之前漏掉）
+| Claim | 来源 | 置信 |
+|---|---|---|
+| Horace Mann 2026-27 cycle：申请 2025/8/4 开放；9/10 面试开始；10/15 保证面试截止；11/15 application + financial aid；1/15 完整材料 | [01] section 3.2 | ⭐⭐ |
+| Trinity NYC：**不发 visa/I-20**；国际学生必须随父母迁居并读到 G12；所有申请者必须具英语读写说能力 | [01] | ⭐⭐ |
+| 走读私校多数不能为国际学生签发 I-20，家庭须解决居住和签证身份 | [01] | ⭐⭐ |
 
 ---
 
@@ -179,15 +206,15 @@
 ### 共识：发展为主，不是 application-building
 | Claim | 来源 | 置信 |
 |---|---|---|
-| NAEYC: **play is essential for all children, birth through age 8** | [03a] | ⭐⭐⭐ |
-| NAEYC: play 促进 self-regulation / language / cognitive / social competencies | [03a] | ⭐⭐⭐ |
-| Harvard 儿童发展中心: 执行功能与自我调节 = 脑内空管系统 | [03a] | ⭐⭐⭐ |
-| AAP: recess 对社会情绪 / 身体 / 认知发展是必要休息 | [01][03a] | ⭐⭐⭐ |
-| AAP: 睡眠指导建议夜间屏幕至少在睡前 **1 小时** 关闭；CDC/AASM 6-12 岁需 **9-12 小时**，13-18 岁 **8-10 小时** | [01][03a] | ⭐⭐⭐ |
+| NAEYC: **play is essential for all children, birth through age 8** | [03a] 单家 + 强 source（NAEYC DAP statement）| ⭐⭐ |
+| NAEYC: play 促进 self-regulation / language / cognitive / social competencies | [03a] | ⭐⭐ |
+| Harvard 儿童发展中心: 执行功能与自我调节 = 脑内空管系统 | [03a] 单家 + 引 developingchild.harvard.edu | ⭐⭐ |
+| AAP: recess 对社会情绪 / 身体 / 认知发展是必要休息 | [01][03a] 都引 AAP | ⭐⭐ |
+| AAP: 睡眠指导建议夜间屏幕至少在睡前 **1 小时** 关闭；CDC/AASM 6-12 岁需 **9-12 小时**，13-18 岁 **8-10 小时** | [01][03a] | ⭐⭐ |
 | **元分析：家长介入作业与成绩总体呈弱负相关**（middle school 文献里 "help with homework" 是明显例外）| [03a] | ⭐⭐ 一手研究，待核作者 |
-| AAP: 青春期前避免**单一运动专项化**；multi-sport 参与有利长期表现 | [01][03a] 都引 AAP 临床报告 | ⭐⭐⭐ |
+| AAP: 青春期前避免**单一运动专项化**；multi-sport 参与有利长期表现 | [01][03a] 都引 AAP 临床报告（[02] 未提此条 — cross-review verified） | ⭐⭐ |
 | Piaget concrete operational：约 7-11 岁 — 对具体问题逻辑推理上升 | [01][02][03a][04] 四家共识 | ⭐⭐⭐ |
-| Erikson Identity vs Role Confusion 12-18 岁：青春期 = 身份认同关键期 | [02][04] | ⭐⭐⭐ |
+| Erikson Identity vs Role Confusion 12-18 岁：青春期 = 身份认同关键期 | [02][04] | ⭐⭐ |
 | Steinberg Age of Opportunity：青春期 = 大脑可塑性第二高峰窗口，从约 10 岁延伸到约 25 岁 | [02] 详引 (p.22) | ⭐⭐ |
 | Madeline Levine: 过早成就驱动抚养与儿童期焦虑/抑郁正相关 | [02][04] 都引 The Price of Privilege | ⭐⭐ |
 
@@ -203,14 +230,15 @@
 
 | Claim | 来源 | 置信 |
 |---|---|---|
-| **IECA Professional 门槛（[02] 版）**：硕士学位 + 3 年专业经验（其中至少 1 年独立顾问执业）+ 推荐人 + 定期校访 + 不接学校 placement 佣金 | [02] 引 iecaonline.com | ⭐⭐⭐ |
+| **IECA Professional 门槛（[02] 版）**：硕士学位 + 3 年专业经验（其中至少 1 年独立顾问执业）+ 推荐人 + 定期校访 + 不接学校 placement 佣金 | [02] 引 iecaonline.com（单家但强 source） | ⭐⭐ |
 | **IECA Professional 门槛（[03a] 版）**：至少 3 年咨询经验 + 已与大量学生工作过 + college 顾问要在过去 **5 年内完成至少 50 次 evaluative campus visits** | [03a] | ⭐⭐ |
-| IECA 现有 **2,800+ Professional 注册顾问** | [02] 引 iecaonline.com 官方数字 | ⭐⭐ |
+| ⚠️ **两版门槛数字不一致** — mockup v3 前必须 WebFetch iecaonline.com 解决 | — | 🚨 待核 |
+| IECA 现有 **2,800+ Professional 注册顾问** | [02] 引 iecaonline.com 官方数字（单家）| ⭐⭐ |
 | IECA Principles of Good Practice：**禁止 ghostwriting**；不接学校 placement 佣金 | [01][02][03a] 三家共识 | ⭐⭐⭐ |
-| AICEP CEP 认证：通常 2-5 年从业经验 + 通过考试 | [02][03a] | ⭐⭐⭐ |
-| HECA 平行 IECA 的同类协会，标准类似 | [01][02] | ⭐⭐ |
+| AICEP CEP 认证：通常 2-5 年从业经验 + 通过考试 | [02][03a] 两家 | ⭐⭐ |
+| HECA 平行 IECA 的同类协会，标准类似 | [01][02] 两家 | ⭐⭐ |
 | **顾问真正高价值阶段 = G10 末-G12 春（约 2 年）** | [01][02][03a] 三家共识；[04] 提"放手式指导 Hands-off approach" | ⭐⭐⭐ |
-| EducationUSA: 提供 accurate / comprehensive / current 信息；**不背书排名**；至少免费一般性介绍 | [03a] | ⭐⭐⭐ |
+| EducationUSA: 提供 accurate / comprehensive / current 信息；**不背书排名**；至少免费一般性介绍 | [03a] 单家 + 强 source（educationusa.state.gov）| ⭐⭐ |
 | **美国本土顾问 vs 国内中介**没有 outcome study 证明哪类更好 | [03a] 明确承认 | ⭐⭐ |
 | **靠谱顾问识别红线**：不保证录取；不代写文书；以 fit 为核心；尊重学生主体性 | [01] 引 IECA/HECA；[02] 用 IECA 伦理框架；[03a] 用 NACAC SPGP | ⭐⭐⭐ |
 
@@ -246,8 +274,8 @@
 |---|---|---|---|---|
 | "低龄越早越好" 没有证据支持 | ✅ | ✅ | ✅ | ✅（用"病态焦虑营销"措辞）|
 | 活动数量不重要，质量 + 持续度 + 真实性才是 | ✅ | ✅ | ✅ | ⚠️（提"伪人设"但没明确数量 vs 质量）|
-| SAT/ACT 不是今天最重要的东西（成绩 + 课程强度更重要）| ✅ | ✅ | ✅ | ❌ **反对**（认为标化"饱和"，言下 SAT/ACT 仍重要 + 是"敲门砖"）|
-| 美高 ≠ 自动 domestic 池 | ✅ | ✅ | ✅ | ❌ **反对**（主张美高生避开国际池）|
+| SAT/ACT 在 admission factor 里重要性下降（成绩 + 课程强度更重要）| ✅ | ✅ | ✅ | ⚠️ **语境不同但结论部分一致**（cross-review concur：[04] 说"标化是敲门砖"+"分数饱和失去区分度"，与三家"标化重要性下降"是异曲同工 — 不是反对而是 framing 不同）|
+| 美高 ≠ 自动 domestic 池 | — 未明确表态 | ✅ | ✅ | ❌ **反对**（主张美高生避开国际池 — 这条 [04] 确实直接对立 [02][03a]）|
 | 5 年长顾问合约无独立研究支持 | ✅（限"美高 5 年合同"语境）| ✅ | ✅ | ✅ |
 | 付费高端夏校 admission signal 弱 | ⚠️（提"不必要的高端夏校"）| ✅（详引 RSI/TASP 例外）| ⚠️ | ✅ |
 | 早期单一运动专项化有害（AAP 临床报告）| ✅ | — | ✅ | — |
@@ -260,7 +288,7 @@
 [02] 列了 9 项 "我们不知道"，[03a]/[03b] 也明确说类似几类，[01] section 13 也承认证据薄弱处：
 
 1. 中国籍学生在各顶校国际生池的**具体录取率**（[02] [03a] 都明确）
-2. **国别"配额"** 是否真实存在（[02] [01] 都列）
+2. **国别"配额"** 是否真实存在（仅 [02] 列；cross-review verified [01] 未提此概念）
 3. 5 年合约 vs 短期合约的 **admission outcome 差距**（[02][03a]）
 4. AP vs IB 在顶校录取率上的**实际差距**（[02] 仅 self-selection 数据）
 5. **低龄 SAT 备考与最终分数**的关系（[02]）
@@ -301,37 +329,53 @@
 ### Tier C — 标 🔴 不进 product
 - 04 Gemini 所有具体百分比数字（1.5% 录取率 / 17.1% 收入占比 / 56.8% / NYU 饱和等）
 - 各家未给 source 的 admission rate 数字
+- ~~Andover/Exeter 13% 接受率~~ —— 已删（cross-review 3/3 concur：原始 4 份 report 全部没有 13% 这个数字，是 raw matrix 瞎编）
+
+### Tier D — Cross-review meta-finding（保留作为 process learning）
+- Cross-model review v3 1+1+1（codex / claude opus / gemini）的 single-source 发现里：
+  - **3/3 concur 发现** 高度可信（如 13% 是瞎编）
+  - **2/3 concur 发现** 可信（如 [04] SAT 立场被夸大、Andover 2/1 是实质冲突）
+  - **1/3 single-source 发现** 必须 grep verify — 实测 Gemini 的 4 个 single-source 发现里只有 1 个对，1 个混淆，2 个 hallucination
+- 这条本身是 cross-model review 流程的 process learning：**不能盲采纳 single-source finding**
 
 ---
 
-## 状态总结
+## 状态总结（cross-review 修正后）
 
-| 维度 | 高置信 claim 数 | 中置信 | 低置信 / 高风险 |
+| 维度 | 高置信 ⭐⭐⭐ | 中置信 ⭐⭐ | 低置信 / 高风险 / 冲突 |
 |---|---|---|---|
 | 阶段切分 | 2 | 1 | 1 |
-| 硬节点 | ~10 | ~2 | — |
-| Admission factors | 5 | — | 1 |
-| 美高分支 | 4（+ 1 家间对立标记）| 2 | 2 |
-| 课程体系 | 3 | 1 | 2 |
-| 国际生身份 | 10 | 1 | 4 🔴 |
-| 学校体系 | 1 | 3 | — |
-| G1-G6 发展 | 9 | 2 | — |
-| 顾问 | 7 | 3 | — |
+| 硬节点 | ~6 | ~6 | 2 家间冲突未解决 🚨 |
+| Admission factors | 1 | 4 | 1 |
+| 美高分支 | 4（+ 1 家间对立标记）| 2 | 1 实质对立 + 1 已删瞎编 |
+| 课程体系 | 2 | 2 | 2 |
+| 国际生身份 | 6 | 3 | 4 🔴 + 1 家间冲突 |
+| 学校体系 | — | 6 | — |
+| G1-G6 发展 | 2 | 7 | — |
+| 顾问 | 3 | 5 | 1 家间冲突 🚨 |
 | 预算 | 2 | — | 2 🔴 |
-| **合计** | **~53** | **~15** | **~12** |
+| **合计** | **~28** | **~36** | **~12 + 6 家间冲突** |
 
-下一动作：把 Tier A 的 ~15-20 条 claim 逐条 WebFetch 核验 → 写进 `synthesis.md`。
+⭐⭐⭐ 数从第一轮的 53 降到 28（实际反映 cross-review concordance）。下一动作：把所有 ⭐⭐⭐ 级 + 6 个家间冲突的 source URL 逐条 WebFetch 核验 → 写进 `synthesis.md`。
 
 ---
 
-## 🚨 04 Gemini 与其他三家的方向性偏差汇总
+## 🚨 04 Gemini 与其他三家的方向性偏差汇总（cross-review 修正后）
 
-Audit 发现 [04] 在三个核心点上跟 [01][02][03a] 直接对立，且其立场支持产品后续被中介话术裹挟的风险：
+经 cross-model review（codex + claude opus + gemini concordance）修正后，[04] 与其他三家的对立**比之前 audit 时弱**，但仍有实质冲突：
 
-1. **美高 = 自动 domestic 池**（[04] ✅ vs 其他三家 ❌）
-2. **SAT/ACT 重要性**（[04] 实际主张标化仍是核心"敲门砖" vs 其他三家说重要性下降）
-3. **具体国别录取率 / 大学池饱和度 / 中国家庭教育支出比例 等数字**（[04] 给具体数字 vs [02] 明确说这些数字顶校不公布或市场上是虚构）
+1. **美高 = 自动 domestic 池**（[04] ✅ 主张 vs [02][03a] ❌ 反对；[01] 未表态）— **仍是实质对立**
+2. ~~**SAT/ACT 重要性**~~ — cross-review 修正：[04] 立场是"标化分数饱和失去区分度但仍是敲门槛"，与三家"重要性下降"**异曲同工**，不构成实质对立
+3. **具体国别录取率 / 大学池饱和度 / 中国家庭教育支出比例等数字**（[04] 给具体数字 vs [02] 明确说这些数字顶校不公布或市场上是虚构）— **仍是实质对立**
 
-**处理原则：** 在 synthesis.md 和 mockup v3 里，[04] 的独家数字 / 与三家对立 claim **一律标 🔴 不直接进 product 文案**；但 [04] 在中国 context 叙事、return-to-US 差异表达、伪需求识别等表述层面的内容可参考。
+**处理原则：** 在 synthesis.md 和 mockup v3 里，[04] 的独家数字 / 与 [02][03a] 对立 claim **一律标 🔴 不直接进 product 文案**；但 [04] 在中国 context 叙事、return-to-US 差异表达、伪需求识别等表述层面的内容可参考。
 
-Audit 修正记录见 git commit。
+## 🚨 新发现的家间冲突（cross-review surface 后）
+
+Cross-review 还发现 **synthesis-raw.md 之前没 surface 的两个家间冲突**：
+
+4. **Andover 申请截止日期**：[01][03a][04] 说 **2/1**；[02] section 三明确把 Andover 也归入 **1/15** — 实质冲突。**mockup v3 前必须 WebFetch andover.edu 解决**
+5. **Harvard 当前 SAT/ACT 政策**：[01][03b] 说"当前要求"；[02] 引 Crimson 说"**Class of 2030 之前继续保持 test-optional**" — 实质冲突。**mockup v3 前必须 WebFetch college.harvard.edu 解决**
+6. **Open Doors 2025 国际生方向**：[02] 引 IIE 说"国际本科生同比增长 5%"；[04] 说"新入学国际生总数下降 7%" — 度量不同或冲突。**mockup v3 前必须 WebFetch opendoorsdata.org 解决**
+
+Audit + cross-review 修正记录见 git commit。
