@@ -301,15 +301,69 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ## Mockup v3 用得上的"核弹级 evidence"
 
-7 个最有冲击力的 verified 数据点，可直接进首屏 / 反共识章节：
+最有冲击力的 verified / source 强的数据点，按主题分类。每条标 ✅ verified / ⚠️ 多源未独立 fetch。
 
-1. **NACAC 2023：SAT/ACT 在 considerable importance 里只有 4.9%**，vs grades 76.8% / 课程强度 63.8% — 差一个数量级。**反 SAT 焦虑营销最强武器**
-2. **Harvard：no quotas of any kind at any point in the admissions process** — 反"国别配额"传言
-3. **Harvard：same pool regardless of citizenship or secondary school they attend** — 反"美高生避开中国池"营销话术
-4. **Yale：transcript = single most important document** — admission factor 最权威官方表述
-5. **Stanford：no preference for a specific curriculum (A-Level, IB, AP, National, etc.)** — 反"AP/IB 谁更好"焦虑
-6. **IECA "不接学校 placement 佣金" 是 ethical 红线** — 识别真顾问 vs 中介销售
-7. **Princeton 2027-28 起恢复 SAT/ACT** — testing 政策不是稳定的，需要按年核
+### 反 SAT 焦虑（最强）
+
+1. ✅ **NACAC 2023：SAT/ACT 在 considerable importance 里只有 4.9%**，vs grades 76.8% / 课程强度 63.8% — 差一个数量级
+2. ⚠️ **Sean Logan（Andover 现任 college counseling director）公开表述**：顶校招生官把申请分"桶"，"标化分数高得离谱"并不在任何能产生显著差异的桶里（[02] 引 WBUR News 2013-12-26）— **业内权威 + 当事人 + 反 SAT 焦虑的具体来源**
+3. ✅ **Princeton 2027-28 起恢复 SAT/ACT**（即 fall 2028 入学起；当前对 fall 2026/2027 仍 test-optional）— testing 政策按年变，**不是稳定的**
+
+### 反 admission "国别配额 / 美高跳板" 焦虑
+
+4. ✅ **Harvard 官方**："There are no quotas or limits of any kind at any point in the admissions process."
+5. ✅ **Harvard 官方**："All students are considered in the same pool for all places in the incoming class, regardless of citizenship or the secondary school they attend."
+6. ✅ **Princeton 官方**："We review all applications in the same manner, regardless of citizenship or country of residence."
+7. ✅ **Yale 官方**："All applicants, regardless of nationality, citizenship, or country of origin, are considered through the same whole-person admissions process."
+
+**含义**：[04] Gemini "美高生避开中国国际生池" 的营销话术与 Harvard / Princeton / Yale 三所顶校官方表述**直接对立**。
+
+### 反"AP/IB 谁更好" + "活动堆量" 焦虑
+
+8. ✅ **Stanford 官方**："We do not have a preference for a specific curriculum (A-Level, IB, AP, National, etc.)."
+9. ✅ **Yale 官方 admission 标准**："The single most important document in your application is your high school transcript" + "We look for students who have consistently taken a broad range of challenging courses in high school and have done well." — **transcript + course rigor 是核心，不是体系**
+10. ⚠️ **Common App 10 项 activities 上限不是必填满**（[02][03a] 引 Common App）+ Harvard / MIT 明确说"quality over quantity" — 反"活动堆量"
+
+### 反"低龄签长约 / 名校夏校" 焦虑
+
+11. ⚠️ **5 年长期顾问合约无独立研究支持其边际回报**（[02][03a][04] 三家共识）；[02] 明说："长合约主要服务于中介机构的现金流可预测性"
+12. ⚠️ **顾问真正高价值阶段 = G10 末-G12 春（约 2 年）**（[01][02][03a] 三家共识 + 引 Deerfield + Andover 原文）— **反"低龄包装合同"最强证据**
+13. ⚠️ **付费高端"名校夏校" admission signal 接近零**（[02] 详引）— 只有 RSI / TASP / SSP / PROMYS 等接受率 1-5% 的高度筛选项目才有 admission 信号价值
+14. ⚠️ **国际游学 / 海外义工**几乎无招生官公开承认权重（[02][04]）
+
+### 反"低龄 SAT / 早期专项化 / 完美履历" 焦虑
+
+15. ⚠️ **AAP 临床报告**：青春期前避免单一运动专项化；multi-sport 参与有利长期表现（[01][03a]）
+16. ⚠️ **Madeline Levine（The Price of Privilege）**：过早成就驱动抚养与儿童期焦虑/抑郁正相关（[02][04]）
+17. ⚠️ **CDC/AASM 睡眠**：6-12 岁需 9-12 小时；13-18 岁 8-10 小时（[01][03a]）— 反"占用睡眠刷题"
+18. ✅ **NAEYC 官方**："Play is essential for all children, birth through age 8" + "Play promotes joyful learning that fosters self-regulation, language, cognitive and social competencies" — 反"低龄 application-building"
+
+### 识别真顾问 vs 中介销售
+
+19. ✅ **IECA 官方**："An IECA member does not accept any compensation from educational institutions for placement of a child." — **ethical 红线**
+20. ✅ **IECA Professional 完整门槛**：硕士 + 3 年专业经验（含 1 年独立执业）+ college 顾问 5 年内 50 次 evaluative campus visits + 不接学校 placement 佣金
+21. ✅ **IECA 全美 2,800+ Professional 注册顾问**（官方主页数字）
+
+### 中国 context 特定 fact
+
+22. ⚠️ **中国大陆 SAT 考点仅向就读中国教育部认证的国际学校的学生开放**；其他学生必须出境到香港 / 澳门 / 新加坡 / 韩国 / 日本 / 台湾（[02] 引 College Board）
+23. ⚠️ **中国学生在美国国际生总量中占比仍约 23%**（[02] 引 IIE Open Doors 2025）— 2024/25 中国 265,919 (-4%) / 印度 363,019 (+10%) 已超中国成最大生源国
+24. ⚠️ **国际学校只录持外国护照学生**（部分学校 — 中国教育部纯外籍子女学校规定）
+
+### Need-blind for International 完整清单
+
+25. **9 所（2025 年公认）**：Harvard / Yale / Princeton / MIT（✅ same-pool 间接 verified）+ Amherst / Bowdoin（Class 2028 起）/ Dartmouth（Class 2026 起）/ Brown（Class 2029 起）/ Notre Dame（⚠️ [02] 单家完整名单）
+26. ⚠️ **Need-aware ≠ 不发钱 nuance**（[02]）：need-aware 只是把援助申请者池单独考虑；完全自费就读 = 与 need-blind 等同对待 — **中国家庭最容易被中介话术误导的点**
+
+### 申请池 + 申请季硬节点
+
+27. ✅ **Andover 申请截止 2/1**（其他顶级寄宿 1/15；释放 3/10；回复 4/10）
+28. ✅ **Harvard REA 11/1，RD 1/1**
+29. ⚠️ **Open Doors 2025**：2024/25 国际生总量 1,177,766（+5%）；本科生段 +4%；STEM 占比 57%（[02] 引 IIE）
+
+### 13 项行业不公开 / 无标准化研究
+
+见 §"⚠️ 数据空白"部分。Mockup v3 应**主动告诉用户什么不知道** — [02] 明说"诚实标'不知道'比假装有数据更负责"，这本身就是产品信任感来源。
 
 ---
 
