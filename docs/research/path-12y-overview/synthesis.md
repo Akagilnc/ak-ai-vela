@@ -306,6 +306,128 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ---
 
+## 附录 A：所有 WebFetch verbatim quote（完整持久化）
+
+按 source 整理，所有原文摘录保留：
+
+### Andover（andover.edu/admission）
+- "2/1/2027 application deadline"
+
+### Harvard（college.harvard.edu/admissions/apply）
+- 必交项目："SAT or ACT (with or without writing)"
+- 可选："Optional: AP or other examination results"
+- "November 1 - Restrictive Early Action application deadline"
+- "January 1 - Regular Decision application deadline"
+
+### Harvard International（college.harvard.edu/admissions/apply/international-applicants）
+- "Our admissions and financial aid processes are the same for all applicants - regardless of nationality or citizenship."
+- "All students are considered in the same pool for all places in the incoming class, regardless of citizenship or the secondary school they attend."
+- "There are no quotas or limits of any kind at any point in the admissions process."
+- "Please note that we do not have quotas or limits based on either citizenship or location of high school."
+- "We have foreign citizens applying from American high schools and American citizens applying from high schools around the world. When we refer to 'international admissions,' we are generally referring to applicants who apply from schools outside the United States..."
+
+### Princeton（admission.princeton.edu/apply/standardized-testing）
+- "For first-year and transfer applicants seeking to enroll in fall 2026 or fall 2027, Princeton remains test optional."
+- "Princeton will return to requiring standardized testing for undergraduate admission beginning with the 2027-28 admission cycle."
+
+### Princeton International（admission.princeton.edu/apply/international-students）
+- "You are not required to take the TOEFL, IELTS, Duolingo or PTE Academic if English is your native language or if you have spent at least three years at a secondary school where English is the primary language of instruction."
+- "We review all applications in the same manner, regardless of citizenship or country of residence."
+
+### Yale（yale.edu/what-yale-looks-for）
+- "The single most important document in your application is your high school transcript, which tells us a great deal about your academic drive and performance over time."
+- "We look for students who have consistently taken a broad range of challenging courses in high school and have done well."
+- "Your high school teachers can provide extremely helpful information in their evaluations... it is important to ask for recommendations from teachers who know you well."
+- "Request letters of recommendation from two teachers who know you well."
+- **Yale 推荐信 nuance**：Yale 官方**没**说 junior/senior 或核心学科 — 只说"two teachers who know you well"。R1 / R2 audit 里"推荐信主要来自最近核心学科老师"这条是 [01][02][03a] paraphrase / 引 Stanford / 引 Harvard，**不是 Yale 原文**
+
+### Yale International（yale.edu/international）
+- "Non-native English-speakers who have not taken at least two years of secondary education where English is the medium of instruction are required to submit results"
+- "If any of your documents...are in a language other than English, they must be accompanied by a certified translation. We are not able to accept any documents that you have translated yourself."
+- "All applicants, regardless of nationality, citizenship, or country of origin, are considered through the same whole-person admissions process."
+
+### Stanford International（admission.stanford.edu/apply/international/index.html）
+- "We do not have a preference for a specific curriculum (A-Level, IB, AP, National, etc.)."
+- "You should complete the necessary coursework to apply to a university program for a bachelor's degree in your home country."
+- "To learn more about our selection process and the recommended high school curriculum, please see our suggestions for Academic Preparation."
+
+### Exeter（exeter.edu/admissions）
+- "Jan. 15 | Application materials due"
+
+### Deerfield（deerfield.edu/admission）
+- "Our priority application deadline for September enrollment is January 15."
+- "Financial aid awards are sent on March 10." （注意：**这是 financial aid 数据，不是 admission decision** — [01][02][03a] 引用"3/10 admission release"未在 Deerfield 主页 verify，可能是行业惯例或子页内容）
+- "Admission opportunities for late candidates...is limited by the number of spaces available after April 10."
+- "Get great advice from College Advising"（Year 2 = sophomore year）— 这与 [01][03a] 引"college counseling not in earnest until junior year"**有出入**，[01][03a] 引的可能是 Deerfield college counseling 子页表述
+
+### NACAC 2023（nacacnet.org/resources/soca-2023-factors-in-the-admission-decision/）
+Considerable importance percentages（185 所四年制大学）：
+- Grades in college prep courses: **76.8%**
+- Grades in all courses: **74.1%**
+- Strength of curriculum: **63.8%**
+- SAT/ACT admission test scores: **4.9%**
+
+### IECA（iecaonline.com）
+- 主页："IECA has more than 2,800 skilled, ethical members ready to guide you through the process of finding, applying to, and selecting a right-fit college, school, or program."
+
+### IECA Professional 门槛（iecaonline.com/about-ieca/join/）
+- "A master's degree or higher in a relevant field, or a combination of training and experience that demonstrates a mastery of the profession."
+- "Three years of experience in educational placement counseling or admissions, including a minimum of one year of independent educational consulting."
+- "A minimum number of evaluative campus visits during the previous five years within each specialty area (only specialties you choose for yourself apply): K-12 Boarding/Day Schools: 25 visits; College: 50 visits"
+
+### IECA Principles of Good Practice（iecaonline.com/about-ieca/principles-of-good-practice/）
+- "An IECA member does not accept any compensation from educational institutions for placement of a child."
+- 完整 POGP 在 https://link.iecaonline.com/POGP — 本轮未 fetch
+
+### NAEYC DAP（via WebSearch snippet，naeyc.org/resources/position-statements/dap/principles）
+- "Play is essential for all children, birth through age 8."
+- "Play promotes joyful learning that fosters self-regulation, language, cognitive and social competencies as well as content knowledge across disciplines."
+- "Play (including self-directed, guided, solitary, parallel, social, cooperative, onlooker, object, fantasy, physical, constructive, and games with rules) is the central teaching practice that facilitates young children's development and learning."
+- "All young children need daily, sustained opportunities for play, both indoors and outdoors."
+
+---
+
+## 附录 B：未 fetch 成功的 URL 清单 + retry candidate
+
+**避免 mockup v3 时重复踩坑** — 这些 URL 在 2026-05-15 本轮 fetch 失败：
+
+### 404 Not Found
+- https://www.iecaonline.com/quick-links/parents-students-of-all-ages/how-to-find-a-consultant/
+- https://www.andover.edu/about/college-counseling
+- https://www.commonapp.org/apply/requirements-grid
+- https://www.commonapp.org/blog/how-write-common-app-essay
+- https://admission.princeton.edu/apply/academic-preparation
+- https://admission.princeton.edu/how-apply/preparing-college
+- https://admissions.yale.edu/international-students（注意：去掉 "-students" 后缀变成 yale.edu/international 后可访问）
+- https://www.nacacnet.org/research/
+
+### 403 Forbidden（anti-bot）
+- https://www.naeyc.org/resources/position-statements/dap/principles
+- https://www.naeyc.org/resources/position-statements/dap/statement-position
+
+### Landing page / image-only / 没具体数字
+- https://www.commonapp.org/apply
+- https://www.commonapp.org/apply/first-year-students/
+- https://opendoorsdata.org/annual-release/
+- https://www.healthychildren.org/English/healthy-living/sleep/Pages/healthy-sleep-habits-how-many-hours-does-your-child-need.aspx
+
+### Retry candidate（WebSearch 找到的更深 URL）
+- **Common App FERPA PDF**：https://www.commonapp.org/static/6b218bf3ae0ff06d86c9cf59938efbc9/Resource_FY_FERPA_ENG_2025.06.25_0.pdf
+- **Common App What's New 25-26 PDF**：https://www.commonapp.org/files/Whats-New-25-26.pdf
+- **Common App FERPA Q&A**：https://appsupport.commonapp.org/s/article/What-is-the-FERPA-Waiver
+- **NAEYC DAP statement PDF**：https://www.naeyc.org/sites/default/files/globally-shared/downloads/PDFs/resources/position-statements/dap-statement_0.pdf
+- **Open Doors international students 子页**：https://opendoorsdata.org/annual-release/international-students/
+- **IECA POGP 完整文档**：https://link.iecaonline.com/POGP
+
+### Mockup v3 用到具体 quote 时优先 fetch
+1. Common App FERPA PDF（搞清楚 FERPA waiver 的官方表述）
+2. Open Doors international-students 子页（拿中国 / 印度具体数字）
+3. NAEYC DAP statement PDF（拿完整 position statement）
+4. Choate / Lawrenceville / Hotchkiss admission 主页（确认 1/15）
+5. AAP 官方 sleep / sports specialization policy（不是 healthychildren.org）
+
+---
+
 ## 修订记录
 
 - 2026-05-15 R0：synthesis-raw.md self-audit
