@@ -351,14 +351,14 @@
 | Admission factors | 1 | 4 | 1 |
 | 美高分支 | 4（+ 1 家间对立标记）| 2 | 1 实质对立 + 1 已删瞎编 |
 | 课程体系 | 2 | 2 | 2 |
-| 国际生身份 | 6 | 3 | 4 🔴 + 1 家间冲突 |
+| 国际生身份 | 6 | 3 | 4 🔴 + 0 家间冲突（R2 删除 Open Doors 伪冲突）|
 | 学校体系 | — | 6 | — |
 | G1-G6 发展 | 2 | 7 | — |
 | 顾问 | 3 | 5 | 1 家间冲突 🚨 |
 | 预算 | 2 | — | 2 🔴 |
-| **合计** | **~28** | **~36** | **~12 + 6 家间冲突** |
+| **合计** | **~28** | **~36** | **~12 + 4 家间冲突**（R2 修正后）|
 
-⭐⭐⭐ 数从第一轮的 53 降到 28（实际反映 cross-review concordance）。下一动作：把所有 ⭐⭐⭐ 级 + 6 个家间冲突的 source URL 逐条 WebFetch 核验 → 写进 `synthesis.md`。
+⭐⭐⭐ 数从第一轮的 53 降到 28（实际反映 cross-review concordance）。R2 把家间冲突从 R1 的 6 个缩减到 4 个（删除 2 个伪冲突：Open Doors 度量差 + AP/IB 论域差）。下一动作：把所有 ⭐⭐⭐ 级 + **4 个**家间冲突的 source URL 逐条 WebFetch 核验 → 写进 `synthesis.md`。
 
 ---
 
@@ -374,12 +374,15 @@
 
 ## 🚨 R1 surface 的家间冲突（经 R2 修正后保留的）
 
-Cross-review R1 surface 的 6 个冲突里，R2 验证后**只有 2 个是真实质冲突**（4-6 已删，见文件顶部 R2 修正说明）：
+Cross-review R1 surface 的 6 个候选冲突里，R2 验证后**保留 4 个真实质冲突 + 删除 2 个伪冲突**：
 
-4. **Andover 申请截止日期**：[01][03a] 明确说 **2/1**；[02] 把 Andover 归入 **1/15**；[04] 笼统说"大多数 1/15"未单列 — 实质冲突在 [01][03a] vs [02][04]。**mockup v3 前必须 WebFetch andover.edu 解决**
-5. **Harvard 当前 SAT/ACT 政策**：[01][03b] 说"当前要求"；[02] 引 Crimson 说"**Class of 2030 之前继续保持 test-optional**" — 实质冲突。**mockup v3 前必须 WebFetch college.harvard.edu 解决**
+保留 4 个待 WebFetch 解决（与文件顶部一致）：
+- **Andover 申请截止日期**：[01][03a] 明确说 **2/1** vs [02] 把 Andover 归入 **1/15** / [04] 笼统"大多数 1/15"
+- **Harvard 当前 SAT/ACT 政策**：[01][03b] 说"当前要求" vs [02] 引 Crimson 说"**Class of 2030 之前继续保持 test-optional**"
+- **IECA Professional 门槛数字**：[02] 版（硕士 + 3 年 + 1 年独立执业 + 校访）vs [03a] 版（3 年 + 5 年内 50 次 evaluative campus visits）不一致
+- **美高 = domestic 池**：[02][03a] 反对 vs [04] 主张（[01] 未表态）
 
-**R2 删除的两条**：
+**R2 删除的 2 个伪冲突**：
 - ~~Open Doors 2025 方向~~（[02] 整体存量 +5% vs [04] 新入学增量 -7% 是度量口径不同，不是冲突）
 - ~~AP/IB/A-Level 顶校偏好~~（[04] 明确限定"对于美籍学生"，论域是 return-to-US 不是顶校偏好）
 
