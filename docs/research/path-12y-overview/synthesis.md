@@ -108,45 +108,78 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ---
 
-## 🟡 Tier B — 多家共识 / 单家强 source，本轮未独立 fetch
+## 🟡 Tier B — 多家共识，WebFetch 第二轮后状态
 
 ### B1. 顶级寄宿美高其他截止日
 
 - **来源**：[01][02][03a][04] 四家共识 1/15（Exeter / Choate / Deerfield / Lawrenceville / Hotchkiss）
-- **释放**：3/10；回复 4/10（[01][02][03a]）
-- **状态**：未独立 WebFetch verify（Andover 已 verify 单独 2/1，其他 5 校 1/15 可信但本轮没 fetch 各校官网）
-- **mockup v3 用前建议**：fetch 一次每校 admission 页确认当前 cycle deadline
+- **WebFetch 状态**：
+  - ✅ **Exeter 1/15 verified**（exeter.edu/admissions："Jan. 15 | Application materials due"）
+  - ✅ **Deerfield 1/15 verified**（deerfield.edu/admission："Our priority application deadline for September enrollment is January 15"）
+  - ⚠️ Choate / Lawrenceville / Hotchkiss 未独立 fetch
+- **释放 3/10 + 回复 4/10**：
+  - ⚠️ Deerfield 主页只 verify 了 "Financial aid awards are sent on March 10" 和 "after April 10" 这两个 partial 数据
+  - 多家共识"3/10 admission release"未独立 verify
 
 ### B2. NACAC 10/15 + 5/1
 
 - **来源**：[03a] 单家明确（[02] 只列 5/1）
-- **状态**：未 WebFetch verify
-- **NACAC SPGP 原文**：https://www.nacacnet.org/research/ 可能要 fetch SPGP 子页
+- **状态**：未 WebFetch verify（NACAC SPGP 子页未 fetch）
 
-### B3. Common App ED/EA/RD 时间窗
+### B3. Common App ED/EA/RD 时间窗 + 8/1 开放 + 10 项 activities + FERPA waiver
 
-- **[01][02][03a] 三家共识**：ED/EA 11/1-11/15；ED II / RD 1/1-1/15
-- **Common App 8/1 开放**：[01][02] 两家
-- **状态**：本轮 fetch 主页拿不到具体时间表
-- **mockup v3 用前建议**：fetch https://www.commonapp.org/apply/requirements-grid
+- **[01][02][03a] 三家共识**：ED/EA 11/1-11/15；ED II / RD 1/1-1/15；8/1 开放；10 项 activities；FERPA waiver
+- **WebFetch 状态**：requirements-grid URL 404；first-year-students 主页没具体数字
+- **WebSearch 状态**：found relevant URLs but no specific quotes
+- **mockup v3 用前建议**：fetch https://www.commonapp.org/static/6b218bf3ae0ff06d86c9cf59938efbc9/Resource_FY_FERPA_ENG_2025.06.25_0.pdf 或 https://appsupport.commonapp.org/s/article/What-is-the-FERPA-Waiver
 
 ### B4. AP / IB / A-Level 顶校并列接受
 
 - **[01][02][03a] 三家共识** + 引 Stanford / Princeton / Yale 官方话术
-- **Princeton 官方原文**（[02] 转引）："Whenever you can, challenge yourself with the most rigorous courses possible..."
-- **状态**：原始官方表述需 fetch admission.princeton.edu/apply/academic-preparation 或 admission.stanford.edu
+- ✅ **Stanford verified**："We do not have a preference for a specific curriculum (A-Level, IB, AP, National, etc.)"（admission.stanford.edu/apply/international）
+- ⚠️ Princeton "strongest curriculum available to you" — [02] 转引 PrepScholar，WebSearch 0 results，可能是 paraphrase
 
 ### B5. Yale 国际生英语 2 年要求 + certified translation
 
 - **[01][03a] 两家共识**
-- **状态**：本轮 fetch admissions.yale.edu/international-students 404
-- **mockup v3 用前建议**：retry Yale 不同 URL
+- ✅ **Verified**（yale.edu/international）：
+  - "Non-native English-speakers who have not taken at least two years of secondary education where English is the medium of instruction are required to submit results"
+  - "If any of your documents...are in a language other than English, they must be accompanied by a certified translation. We are not able to accept any documents that you have translated yourself."
+  - "All applicants, regardless of nationality, citizenship, or country of origin, are considered through the same whole-person admissions process."
 
 ### B6. 顶级寄宿 college counseling junior year 启动
 
 - **[01][03a] 两家共识** + 引 Deerfield + Andover 原文
-- **状态**：本轮 fetch andover.edu/about/college-counseling 404
-- **mockup v3 用前建议**：retry Andover / Deerfield college counseling 页面
+- **WebFetch 状态**：andover.edu/about/college-counseling 404；deerfield.edu/admission 主页没此 phrasing；WebSearch "not in earnest" 0 results
+- **判断**：[01][03a] 引用的 "not in earnest until junior year" 可能是 paraphrase 而非 verbatim quote。**Mockup v3 用前必须 retry college-specific URL，否则降权使用**
+
+### B7. NAEYC play essential for birth-age 8
+
+- **[03a] 单家** + NAEYC 官方 framework
+- ✅ **Verified via WebSearch snippet**（naeyc.org/resources/position-statements/dap/principles）：
+  - "Play is essential for all children, birth through age 8"
+  - "Play promotes joyful learning that fosters self-regulation, language, cognitive and social competencies as well as content knowledge across disciplines"
+  - "Play is the central teaching practice that facilitates young children's development and learning"
+- ⚠️ statement-position 主页 403，但 principles 子页内容通过 search snippet verified
+
+### B8. AAP 睡眠 / sports specialization
+
+- **[01][03a] 共识**：6-12 岁 9-12 小时睡眠；13-18 岁 8-10 小时；青春期前避免单一运动专项化
+- **WebFetch 状态**：healthychildren.org 数据在 image，text 没拿到；AAP 主页未 fetch
+- **mockup v3 用前建议**：fetch AAP 官方 policy statements（不是 healthychildren.org 二级页）
+
+### B9. Open Doors 2025 国际生数字
+
+- **[02] 详引** + [04] 部分提
+- **WebFetch 状态**：opendoorsdata.org annual-release landing page 没具体数字
+- **mockup v3 用前建议**：fetch https://opendoorsdata.org/annual-release/international-students/
+
+### B10. Need-blind for international 9 所完整列表
+
+- **[02] 单家给完整列表**（Harvard / Yale / Princeton / MIT / Amherst / Bowdoin / Dartmouth / Brown / Notre Dame）
+- ✅ Harvard / Yale / Princeton / MIT 通过 same-pool quotes 间接 verified
+- ⚠️ Amherst / Bowdoin / Dartmouth / Brown / Notre Dame 未独立 fetch
+- **mockup v3 用前建议**：fetch 各校 financial-aid international 页面 confirm
 
 ---
 
@@ -261,13 +294,15 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ## Mockup v3 用得上的"核弹级 evidence"
 
-5 个最有冲击力的 verified 数据点，可直接进首屏 / 反共识章节：
+7 个最有冲击力的 verified 数据点，可直接进首屏 / 反共识章节：
 
 1. **NACAC 2023：SAT/ACT 在 considerable importance 里只有 4.9%**，vs grades 76.8% / 课程强度 63.8% — 差一个数量级。**反 SAT 焦虑营销最强武器**
 2. **Harvard：no quotas of any kind at any point in the admissions process** — 反"国别配额"传言
 3. **Harvard：same pool regardless of citizenship or secondary school they attend** — 反"美高生避开中国池"营销话术
-4. **IECA "不接学校 placement 佣金" 是 ethical 红线** — 识别真顾问 vs 中介销售
-5. **Princeton 2027-28 起恢复 SAT/ACT** — testing 政策不是稳定的，需要按年核
+4. **Yale：transcript = single most important document** — admission factor 最权威官方表述
+5. **Stanford：no preference for a specific curriculum (A-Level, IB, AP, National, etc.)** — 反"AP/IB 谁更好"焦虑
+6. **IECA "不接学校 placement 佣金" 是 ethical 红线** — 识别真顾问 vs 中介销售
+7. **Princeton 2027-28 起恢复 SAT/ACT** — testing 政策不是稳定的，需要按年核
 
 ---
 
