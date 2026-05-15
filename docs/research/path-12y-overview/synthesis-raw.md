@@ -16,13 +16,15 @@
 >
 > **本文件仍是 raw 初筛**。最终置信等级以 `synthesis.md` 中 WebFetch 核验后的结果为准。
 
-> **🚨 6 个未解决的家间冲突**（mockup v3 前必须 WebFetch 解决）：
-> 1. Andover 申请截止：[01][03a][04] 2/1 vs [02] 1/15
+> **🚨 4 个未解决的家间冲突**（mockup v3 前必须 WebFetch 解决，cross-review R2 修正后）：
+> 1. Andover 申请截止：[01][03a] 明确 2/1 vs [02][04] 笼统说"大多数 1/15"（不单列 Andover）— R2 修正：[04] 实际不属"明确 2/1"组，跟 [02] 一致
 > 2. Harvard 当前 SAT/ACT 政策：[01][03b] "当前要求" vs [02] "Class of 2030 前 test-optional"
-> 3. Open Doors 2025 国际生方向：[02] +5% 增长 vs [04] -7% 下降
-> 4. IECA Professional 门槛数字：[02] 版 vs [03a] 版不一致
-> 5. 美高 = domestic 池：[02][03a] 反对 vs [04] 主张（[01] 未表态）
-> 6. AP/IB/A-Level 顶校偏好：[01][02][03a] 三家说没偏好 vs [04] 暗示 AP 有"特殊战略意义"
+> 3. IECA Professional 门槛数字：[02] 版 vs [03a] 版不一致
+> 4. 美高 = domestic 池：[02][03a] 反对 vs [04] 主张（[01] 未表态）
+>
+> **R2 删除的两个伪冲突**：
+> - ~~Open Doors 2025 国际生方向~~：[02] 整体 +5% vs [04] 新入学 -7% — R2 grep verified [02] 整体 +5% / 国际本科生 +4%，[04] 是新入学新生增量。**两家是不同度量口径，不是实质冲突**
+> - ~~AP/IB/A-Level 顶校偏好~~：[04] 明确限定"**对于美籍学生而言**"AP 有战略意义（[04] section 2 line 53），论域是 return-to-US 不是顶校偏好层面。**论域不同非实质对立**（R2 Codex 触发 target drift，Claude Opus 触发类别 drift）
 
 **报告别名：**
 - `[01]` = ChatGPT 5.5 Pro Desktop（无 URL，inline citation marker）
@@ -58,8 +60,8 @@
 | Coalition 8/15 开放 | [01] 单家（[02] 不提 Coalition — cross-review verified） | ⭐ | commonapp.org |
 | 顶校 ED/EA 集中在 **11/1-11/15**；ED II / RD 多在 **1/1-1/15** | [01][02][03a] 三家共识，[01][02] 引 Common App Requirements Grid + Harvard 官网，[03a] 引 Common App | ⭐⭐⭐ | commonapp.org Requirements Grid |
 | NACAC 标准：**10/15 不应早于最早 deadline**；**5/1 是最早统一答复日** | [03a] 单家明确 10/15+5/1；[02] 只列 5/1 不列 10/15（cross-review verified） | ⭐⭐ | nacacnet.org |
-| **Andover 申请截止日期 — 家间实质冲突**：[01][03a][04] 明确说 **2/1**；[02] section 三第一条**明确把 Andover 也归入 1/15**（与 Exeter 并列）— 这是实质冲突不是表述差异，mockup v3 之前必须 WebFetch andover.edu 解决 | [01][03a][04] vs [02] | 🚨 **家间冲突未解决** | **andover.edu/admission（必核）** |
-| 其他顶级寄宿：Exeter/Choate/Deerfield/Lawrenceville/Hotchkiss **1/15** | [01][02][03a][04] | ⭐⭐⭐ | exeter.edu, deerfield.edu, lawrenceville.org, hotchkiss.org |
+| **Andover 申请截止日期 — 家间实质冲突**：[01][03a] 明确说 **2/1**；[02] section 三第一条**明确把 Andover 也归入 1/15**（与 Exeter 并列）；[04] line 59 笼统说"1月15日是绝大多数顶尖美高"未单列 Andover — 实质冲突在 [01][03a] vs [02][04]，**R2 修正：[04] 不属"明确 2/1"组**，mockup v3 之前必须 WebFetch andover.edu 解决 | [01][03a] vs [02][04] | 🚨 **家间冲突未解决** | **andover.edu/admission（必核）** |
+| 其他顶级寄宿：Exeter/Choate/Deerfield/Lawrenceville/Hotchkiss **1/15** | [01][02][03a]；[04] 笼统说"大多数 1/15" | ⭐⭐⭐ | exeter.edu, deerfield.edu, lawrenceville.org, hotchkiss.org |
 | 寄宿美高决定释放：**3/10 前后**；回复截止 **4/10** | [01][02][03a] | ⭐⭐⭐ | 同上 |
 | SAT/ACT 主要 testing window：**junior spring 到 senior fall**（密集备考 3-6 个月） | [01][02][03a][04] 四家共识，[04] 多处批"早开始"焦虑营销 | ⭐⭐⭐ | College Board SAT dates, NACAC junior/senior checklist |
 | **顶校 testing policy 回潮趋势**：Dartmouth 已恢复（Class of 2029）；Yale / Brown 已恢复或宣布恢复；Princeton 宣布 **2027-28 周期起恢复** | [01][02][03b] 三家共识趋势 | ⭐⭐⭐ | admissions.dartmouth.edu, princeton.edu, brown.edu/admission |
@@ -161,7 +163,7 @@
 | Yale: 所有非英文材料须 **certified translation** | [01][03a] | ⭐⭐⭐ |
 | Need-blind for international 完整名单（2025）：Harvard / Yale / Princeton / MIT / Amherst / Bowdoin / Dartmouth / Brown / Notre Dame = 9 所 | [02] 给完整列表；[01] 提 Yale "少数 need-blind 学校之一"；[03a] 提 Princeton/Yale | ⭐⭐⭐ |
 | **Need-aware ≠ 不发钱 nuance**：need-aware 只是把援助申请者池单独考虑；家庭如完全自费，则与 need-blind 等同对待 | [02] section 5.4 | ⭐⭐ |
-| **Open Doors 2025 数据 — 家间冲突**：[02] 引 IIE Open Doors 2025 详细数字：中国 265,919 (-4%) / 印度 363,019 (+10%) / 国际本科生 **同比增长 5%**；[04] 给"美国大学共接待近117万 / **新入学国际生总数下降 7%**"（cross-review verified：两家给的是不同的方向 — [02] 说本科段增长，[04] 说新入学下降）| 🚨 **家间冲突或度量不同** | nafsa.org, opendoorsdata.org |
+| **Open Doors 2025 数据 — 度量口径不同非实质冲突**（R2 修正）：[02] 引 IIE 2025 详细数字：1,177,766 整体国际生 **同比增长 5%** / 国际本科生 **同比增长 4%** / 中国 265,919 (-4%) / 印度 363,019 (+10%)；[04] 给"美国大学接待近117万 / **新入学国际生总数下降 7%**"。**R2 grep verified [02] 整体存量 +5% vs [04] 新入学增量 -7% 是不同度量口径，两数可同时成立** | [02] +5%/+4% 存量 + [04] -7% 新入学增量 | ⭐⭐（不算冲突）| nafsa.org, opendoorsdata.org（如需 mockup 引用具体数字仍建议核验当时口径） |
 | Harvard Class of 2028 整体录取率 **3.59%**（54,008 申/1,937 录） | [02] 引 The Harvard Crimson 2024-03-29 | ⭐⭐ |
 
 ### 高风险（单家具体数字 + 无可核 source）
@@ -311,7 +313,7 @@
 约 15-20 条 ⭐⭐⭐ 共识 claim，逐条做 1 次 WebFetch 确认 source 在那里：
 1. NACAC 4 段框架 + 2023 admission factors
 2. Common App ED/EA/RD 时间窗
-3. 顶级美高 deadline（Andover 2/1 / 其他 1/15 / 3/10 释放）
+3. 顶级美高 deadline（**Andover 2/1 vs 1/15 家间冲突待 WebFetch andover.edu** / 其他 1/15 / 3/10 释放）
 4. 顶校 testing policy 现状（Princeton 2027-28 恢复 / MIT 要求 / Yale flexible / Harvard 要求）
 5. 顶校国际生英语要求（Yale 2 年 / Princeton 3 年豁免 / certified translation）
 6. AP/IB/A-Level 并列被接受（Stanford / Princeton 引用）
@@ -334,7 +336,7 @@
 ### Tier D — Cross-review meta-finding（保留作为 process learning）
 - Cross-model review v3 1+1+1（codex / claude opus / gemini）的 single-source 发现里：
   - **3/3 concur 发现** 高度可信（如 13% 是瞎编）
-  - **2/3 concur 发现** 可信（如 [04] SAT 立场被夸大、Andover 2/1 是实质冲突）
+  - **2/3 concur 发现** 可信（如 R1 [04] SAT 立场被夸大、R2 AP/IB 第 6 冲突被夸大）
   - **1/3 single-source 发现** 必须 grep verify — 实测 Gemini 的 4 个 single-source 发现里只有 1 个对，1 个混淆，2 个 hallucination
 - 这条本身是 cross-model review 流程的 process learning：**不能盲采纳 single-source finding**
 
@@ -370,12 +372,15 @@
 
 **处理原则：** 在 synthesis.md 和 mockup v3 里，[04] 的独家数字 / 与 [02][03a] 对立 claim **一律标 🔴 不直接进 product 文案**；但 [04] 在中国 context 叙事、return-to-US 差异表达、伪需求识别等表述层面的内容可参考。
 
-## 🚨 新发现的家间冲突（cross-review surface 后）
+## 🚨 R1 surface 的家间冲突（经 R2 修正后保留的）
 
-Cross-review 还发现 **synthesis-raw.md 之前没 surface 的两个家间冲突**：
+Cross-review R1 surface 的 6 个冲突里，R2 验证后**只有 2 个是真实质冲突**（4-6 已删，见文件顶部 R2 修正说明）：
 
-4. **Andover 申请截止日期**：[01][03a][04] 说 **2/1**；[02] section 三明确把 Andover 也归入 **1/15** — 实质冲突。**mockup v3 前必须 WebFetch andover.edu 解决**
+4. **Andover 申请截止日期**：[01][03a] 明确说 **2/1**；[02] 把 Andover 归入 **1/15**；[04] 笼统说"大多数 1/15"未单列 — 实质冲突在 [01][03a] vs [02][04]。**mockup v3 前必须 WebFetch andover.edu 解决**
 5. **Harvard 当前 SAT/ACT 政策**：[01][03b] 说"当前要求"；[02] 引 Crimson 说"**Class of 2030 之前继续保持 test-optional**" — 实质冲突。**mockup v3 前必须 WebFetch college.harvard.edu 解决**
-6. **Open Doors 2025 国际生方向**：[02] 引 IIE 说"国际本科生同比增长 5%"；[04] 说"新入学国际生总数下降 7%" — 度量不同或冲突。**mockup v3 前必须 WebFetch opendoorsdata.org 解决**
 
-Audit + cross-review 修正记录见 git commit。
+**R2 删除的两条**：
+- ~~Open Doors 2025 方向~~（[02] 整体存量 +5% vs [04] 新入学增量 -7% 是度量口径不同，不是冲突）
+- ~~AP/IB/A-Level 顶校偏好~~（[04] 明确限定"对于美籍学生"，论域是 return-to-US 不是顶校偏好）
+
+Audit + R1 + R2 修正记录见 git commit。
