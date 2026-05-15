@@ -170,9 +170,16 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 ### B9. Open Doors 2025 国际生数字
 
-- **[02] 详引** + [04] 部分提
+- **[02] 引 IIE Open Doors 2025**（2025-11-17 发布，opendoorsdata.org）具体数字：
+  - 2024/25 学年美国高校共招收 **1,177,766** 名国际生，同比 **+5%**（历史新高）
+  - **印度 363,019** 人（**+10%**）首次超中国成最大生源国
+  - **中国 265,919** 人（**-4%**），连续多年下滑
+  - **STEM 占比 57%**；数学和计算机科学 26% 是最大单一专业领域；工程 18% 次之
+  - 国际本科生 2024/25 新增长 **+4%** 至 357,231 人（疫情后首次本科段显著回升）
+- **[04] 数据**：section 4："美国大学在2024/2025学年接待了近117万名国际学生" + "新入学的国际生总数实际下降了7%"
+- **R2 verdict**：[02] 整体存量 +5% / 本科 +4% vs [04] 新入学 -7% 是不同度量口径，不是冲突
 - **WebFetch 状态**：opendoorsdata.org annual-release landing page 没具体数字
-- **mockup v3 用前建议**：fetch https://opendoorsdata.org/annual-release/international-students/
+- **mockup v3 用前建议**：fetch https://opendoorsdata.org/annual-release/international-students/ 确认 2024/25 具体数字 (IIE 报告原版)
 
 ### B10. Need-blind for international 9 所完整列表
 
@@ -378,6 +385,31 @@ Considerable importance percentages（185 所四年制大学）：
 ### IECA Principles of Good Practice（iecaonline.com/about-ieca/principles-of-good-practice/）
 - "An IECA member does not accept any compensation from educational institutions for placement of a child."
 - 完整 POGP 在 https://link.iecaonline.com/POGP — 本轮未 fetch
+
+### Open Doors 2025（[02] 引 IIE，⚠️ 未独立 fetch verify）
+- "2024/25 学年美国高校共招收 1,177,766 名国际生，同比增长 5%——历史新高"（IIE Open Doors 2025 Annual Release, 2025-11-17 发布, opendoorsdata.org）
+- "印度首次在 2023/24 取代中国成为最大生源国，并在 2024/25 继续领先：印度 363,019 人 (+10%)；中国 265,919 人 (–4%)"
+- "STEM 占比 57%；数学和计算机科学 (26%) 是国际生最大单一专业领域，工程 (18%) 次之"
+- "国际本科生 2024/25 年新增长 4% 至 357,231 人——这是疫情后第一次本科段显著回升"
+
+### Harvard Class of 2028（[02] 引 The Harvard Crimson 2024-03-29，⚠️ 未独立 fetch verify）
+- "Harvard Class of 2028 整体录取率 **3.59%**：54,008 申请 / 1,937 录取"
+- "Class of 2028 的国际生占比报道在 15–18% 区间"
+- "EA (Early Action) Class of 2028 录取率 8.7%（692/7,921）；RD 录取率约 2.7%"
+- "Class of 2029：Harvard 录取率回升趋势停止，整体 3.63%；REA 9.2%；RD 约 2.8%"
+- "Class of 2028 国际生的国别分布：加拿大、英国、中国是三大主要来源国"
+
+### Need-blind for International 9 所完整名单（[02] 单家，部分通过 same-pool 间接 verified）
+2025 年公认名单：
+- Harvard University（✅ 同 pool 原文 verified）
+- Yale University（✅ 同 pool 原文 verified）
+- Princeton University（✅ 同 pool 原文 verified）
+- MIT（mitadmissions.org，未独立 fetch）
+- Amherst College（未独立 fetch）
+- Bowdoin College（自 Class of 2028 起；未独立 fetch）
+- Dartmouth College（自 Class of 2026 起；未独立 fetch）
+- Brown University（自 Class of 2029 / 2025 秋入学起；未独立 fetch）
+- University of Notre Dame（未独立 fetch）
 
 ### NAEYC DAP（via WebSearch snippet，naeyc.org/resources/position-statements/dap/principles）
 - "Play is essential for all children, birth through age 8."
