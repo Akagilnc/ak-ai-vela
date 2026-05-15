@@ -1,7 +1,7 @@
 # Synthesis — 中国家庭走美本路线 G1-G12 核验后内容源
 
 **状态：** Final evidence base for mockup v3
-**Cross-review：** R1 → R2 → R3 收敛（codex + claude opus + gemini 1+1+1），10 → 3 → 1 finding 衰减
+**Cross-review：** R1 → R6 收敛（codex + claude opus + gemini 1+1+1 并行），finding 数 10 → 3 → 1 → 4 → 3 → 2 → 0（R6 修复后 self-verify pass）
 **WebFetch 核验：** 2026-05-15
 
 **与 synthesis-raw.md 关系：** synthesis-raw 是 4-way matrix 草稿 + R1-R3 修正。这份是 WebFetch 反向核验后的最终判决。
@@ -113,12 +113,12 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 **SAT/ACT considerable importance 11 年从 58% 跌到 5%**。同期 grades 维持在 71-82%，curriculum 维持在 51-64%。
 
-**Page 5: SAT/ACT 政策 trends 2017-2021**
+**⚠️ Page 5: SAT/ACT 政策 trends 2017-2021**（**chart image，非 verbatim text quote**；本轮 Read PDF 拿到的是 chart annotation；mockup v3 使用前建议二次确认）
 - "Required": **72% → 11%**（4 年）
 - "Considered but Not Required": 8% → 56%
 - "Neither Required nor Recommended": 4% → 19%
 
-**Page 6-8: Test submission rates 2017-2021**
+**⚠️ Page 6-8: Test submission rates 2017-2021**（**chart image，非 verbatim text quote**；同 Page 5 警示）
 - ACT submission: 58% → 31%（整体）
 - SAT submission: 46% → 24%（整体）
 - 即使在 require test 的学校：ACT 60% → 50%；SAT 46% → 27%（2021 COVID 影响 + test-optional 扩散）
@@ -381,7 +381,7 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 **精确措辞 nuance（R4 修正）**：
 - 三所顶校官方说 "**same pool, no quotas, regardless of citizenship or secondary school**" — **不是"按 citizenship 切池"**
-- 即"申请池不按 citizenship 切，也不按学校所在地切" — 简洁表述：**学校 / 国籍 / 居住地都不会让申请池切分**
+- 简洁表述（直接用官方 framing）：**Harvard / Princeton / Yale 都说所有申请者通过相同流程审核，不论 citizenship 也不论 secondary school 所在地** — 不要 paraphrase 成"按...切池"或"申请池切分"
 
 ### 反"AP/IB 谁更好" + "活动堆量" 焦虑
 
