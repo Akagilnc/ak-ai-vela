@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { schools } from "../../../prisma/schools-data";
@@ -18,12 +19,9 @@ import { schools } from "../../../prisma/schools-data";
 // fork, and src/__tests__/helpers/test-db.ts reads it back so every test
 // file's PrismaClient points at the same DB this setup seeded.
 export default async function setup(): Promise<() => Promise<void>> {
-  const testDbFile = `vela-vitest-${randomUUID()}.db`;
-  const testDbDir = path.join(process.cwd(), "tmp");
-  const testDbPath = path.join(testDbDir, testDbFile);
-  const testDbUrl = `file:./tmp/${testDbFile}`;
+  const testDbPath = path.join(tmpdir(), `vela-vitest-${randomUUID()}.db`);
+  const testDbUrl = `file:${testDbPath}`;
   process.env.VELA_TEST_DB_URL = testDbUrl;
-  mkdirSync(testDbDir, { recursive: true });
 
   // Remove any leftover from a previous run (e.g. crashed suite). Fail fast
   // if we can't clean up — running against a stale DB would silently mask

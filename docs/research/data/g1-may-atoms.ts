@@ -20,11 +20,20 @@ export const PATH_CADENCE_ROLES = [
   "ANNUAL_RITUAL",
 ] as const;
 export const PATH_SETTINGS = ["OUTDOOR", "INDOOR", "EITHER"] as const;
+export const PATH_INTEREST_TAGS = [
+  "nature",
+  "culture",
+  "craft",
+  "foundation",
+  "birding",
+  "flower",
+] as const;
 
 export type PathScheduleKind = (typeof PATH_SCHEDULE_KINDS)[number];
 export type PathWindowType = (typeof PATH_WINDOW_TYPES)[number];
 export type PathCadenceRole = (typeof PATH_CADENCE_ROLES)[number];
 export type PathSetting = (typeof PATH_SETTINGS)[number];
+export type PathInterestTag = (typeof PATH_INTEREST_TAGS)[number];
 
 export interface PathAtomSeedRow {
   slug: string;
@@ -32,7 +41,7 @@ export interface PathAtomSeedRow {
   body: string;
   gradeFrom: number;
   gradeTo: number;
-  interests: string[];
+  interests: readonly PathInterestTag[];
   scheduleKind: PathScheduleKind;
   windowType: PathWindowType | null;
   cadenceRole: PathCadenceRole;
@@ -67,13 +76,13 @@ export interface G1MayAtomSeed {
   viewAtomLinks: PathCuratedViewAtomSeedRow[];
 }
 
-const NATURE_INTEREST = ["nature"];
-const FOUNDATION_INTEREST = ["foundation"];
-const NATURE_CULTURE_INTEREST = ["nature", "culture"];
-const CULTURE_INTEREST = ["culture"];
-const NATURE_CRAFT_INTEREST = ["nature", "craft"];
-const NATURE_BIRDING_INTEREST = ["nature", "birding"];
-const NATURE_FLOWER_INTEREST = ["nature", "flower"];
+const NATURE_INTEREST = ["nature"] as const;
+const FOUNDATION_INTEREST = ["foundation"] as const;
+const NATURE_CULTURE_INTEREST = ["nature", "culture"] as const;
+const CULTURE_INTEREST = ["culture"] as const;
+const NATURE_CRAFT_INTEREST = ["nature", "craft"] as const;
+const NATURE_BIRDING_INTEREST = ["nature", "birding"] as const;
+const NATURE_FLOWER_INTEREST = ["nature", "flower"] as const;
 
 const DONGTAN_MAIN_BODY = `**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
 
@@ -89,8 +98,6 @@ const DONGTAN_MAIN_BODY = `**为什么是这个时间窗**：春季鸟类迁徙�
 | \`[图：黑腹滨鹬群飞]\` | 黑腹滨鹬 | 繁殖羽时腹部明显黑色斑，群体活动 | 中 |
 | \`[图：红嘴鸥停水面]\` | 红嘴鸥 | 红色嘴、灰白身。常见种，5 月仍在尾声群 | 易（最普及）|
 
-_(Vela ship 时图片直接内嵌到卡里，家长不用自己去查。图源 Day 3 authoring 时确定：Wikipedia CC 或 iNaturalist CC 授权照片优先。)_
-
 不求 5 种全看到，能认出 1-2 种就是这一次的收获。
 
 **怎么做**（按顺序）：
@@ -102,7 +109,17 @@ _(Vela ship 时图片直接内嵌到卡里，家长不用自己去查。图源 D
 5. **拍摄指引**：现场拍 5-10 张照片 + 2-3 段 15 秒视频足够。回家不留全部——**家长 5 分钟挑出 1-2 张有鸟 + 1 段群体活动**的最好素材，放到一个命名文件夹（比如 \`2026-05-10 东滩\`）。其他删掉。长期下来这些素材就是 portfolio 的 raw material。
 6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。
 
-**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。自驾往返 2 小时 + 现场 30 分钟看不到鸟，小孩挫败感重。宁可 5/10 前去。`;
+**产出**：迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。
+
+**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。自驾往返 2 小时 + 现场 30 分钟看不到鸟，小孩挫败感重。宁可 5/10 前去。
+
+**Backup plan（看不到鸟 / 天气不行时的替代）**：
+
+G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。
+
+**重要心法**（backup 设计哲学）：**预设"失败友好" 的 2-3 个 backup**，家长敢带孩子出门。一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。这个基线比"每次都看到鸟"更重要。
+
+**心法**：自然有档期。错过这次等半年。这条经验她会记很久。`;
 
 const DONGPING_BACKUP_BODY =
   "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。";
@@ -124,20 +141,17 @@ const NEIGHBORHOOD_SPECIES_GUIDE = `**5 种家门口可见的初夏生物**（�
 | \`[图：玉带凤蝶飞行]\` | 玉带凤蝶（大黑黄蝴蝶） | 公园里，飞得高 | "大蝴蝶"—— 比菜粉蝶大 3 倍，她一眼能感觉出"不一样" |
 | \`[图：蚂蚁搬食物]\` | 家蚁 / 黑蚁 | 任何人行道砖缝 | 带她看 **蚁道**（一队蚂蚁搬东西的路线）—— 社会性昆虫第一印象 |
 | \`[图：西瓜虫蜷缩]\` | 西瓜虫（潮虫） | 花盆底 / 落叶下 / 石头下 | "会缩成球的小灰虫"—— G1 最爱的触碰互动 |
-| \`[图：麻雀群]\` | 树麻雀（家麻雀） | 家楼下、街角、任何树上 | 最熟悉的鸟。重点是让她意识到"这也是鸟"—— 不是只有东滩才有鸟 |
+| \`[图：麻雀群]\` | 树麻雀（家麻雀） | 家楼下、街角、任何树上 | 最熟悉的鸟。重点是让她意识到"这也是鸟"—— 不是只有东滩才有鸟 |`;
 
-_(Vela ship 时图片内嵌在卡里)_`;
-
-const NEIGHBORHOOD_PITFALLS_AND_SOURCES = `**避坑**：
+const NEIGHBORHOOD_PITFALLS_AND_HEART = `**避坑**：
 
 - **别用昆虫盒装回家**。G1 好奇心强 easily escalates 到 "抓"。教育重点是**观察在野外**，不是"带回家养死"。
 - **别用杀虫剂 / 驱蚊液喷她的观察对象**。她看蝴蝶不用喷。
 - **别强求"记住拉丁名"**。中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。
 
-**Sources**（Day 3 authoring 补全）：
+**心法**：自然不只在远方的保护区。家门口 50 米内就有完整的城市生态系统。这张卡的真正价值 = **让她每天下楼的路变成实地课堂**，门槛为 0，频次无限。长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。
 
-- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）
-- iNaturalist APP 里"上海" 区域的 top observed species list`;
+这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。东滩 / 自博是 monthly events，家门口生态是 daily baseline。`;
 
 export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
@@ -542,7 +556,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     title: "楼下鸟声",
     body: `**楼下鸟声**（5 分钟）：阳台静坐，听不同的鸟叫。麻雀的"喳喳" / 斑鸠的"咕咕" / 白头鹎清晨的歌声。她能分出 2 种就够。
 
-${NEIGHBORHOOD_PITFALLS_AND_SOURCES}`,
+${NEIGHBORHOOD_PITFALLS_AND_HEART}`,
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
