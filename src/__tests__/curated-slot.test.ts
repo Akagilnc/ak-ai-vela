@@ -17,7 +17,7 @@ function atom(overrides: Partial<SlotAtom> & { slug: string }): SlotAtom {
     slug: overrides.slug,
     interests: overrides.interests ?? [],
     frictionLevel: overrides.frictionLevel ?? 1,
-    cadenceRole: overrides.cadenceRole ?? "BASELINE",
+    cadenceRole: overrides.cadenceRole ?? "LIGHT_RECURRING",
     displayOrder: overrides.displayOrder ?? 1,
   };
 }
@@ -46,10 +46,10 @@ describe("selectSlot", () => {
   it("orders no-signal profiles by displayOrder and still keeps explore non-empty", () => {
     const result = selectSlot(
       [
-        atom({ slug: "third", displayOrder: 3 }),
-        atom({ slug: "first", displayOrder: 1 }),
-        atom({ slug: "second", displayOrder: 2 }),
-        atom({ slug: "fourth", displayOrder: 4 }),
+        atom({ slug: "third", frictionLevel: 2, displayOrder: 3 }),
+        atom({ slug: "first", frictionLevel: 0, displayOrder: 1 }),
+        atom({ slug: "second", frictionLevel: 3, displayOrder: 2 }),
+        atom({ slug: "fourth", frictionLevel: 1, displayOrder: 4 }),
       ],
       config,
       {},
@@ -113,6 +113,20 @@ describe("selectSlot", () => {
     expect(slugs(pair.explore)).toEqual(["second"]);
   });
 
+  it("keeps tight empty when a low ratio floors to zero", () => {
+    const result = selectSlot(
+      [
+        atom({ slug: "first", displayOrder: 1 }),
+        atom({ slug: "second", displayOrder: 2 }),
+        atom({ slug: "third", displayOrder: 3 }),
+      ],
+      { tightRatio: 1, frictionCeiling: 3 },
+    );
+
+    expect(result.tight).toEqual([]);
+    expect(slugs(result.explore)).toEqual(["first", "second", "third"]);
+  });
+
   it("does not drop or down-rank ANNUAL_RITUAL atoms merely for cadence", () => {
     const result = selectSlot(
       [
@@ -121,7 +135,11 @@ describe("selectSlot", () => {
           cadenceRole: "ANNUAL_RITUAL",
           displayOrder: 1,
         }),
-        atom({ slug: "ordinary-card", cadenceRole: "BASELINE", displayOrder: 2 }),
+        atom({
+          slug: "ordinary-card",
+          cadenceRole: "LIGHT_RECURRING",
+          displayOrder: 2,
+        }),
       ],
       config,
     );

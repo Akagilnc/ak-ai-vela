@@ -39,6 +39,7 @@ export function selectSlot(
   }
 
   const interestSignal = childProfile?.interests ?? [];
+  const hasInterestSignal = interestSignal.length > 0;
   const interestSet = new Set(interestSignal);
 
   const ranked = eligible
@@ -46,7 +47,7 @@ export function selectSlot(
       atom,
       index,
       matched:
-        interestSignal.length > 0 &&
+        hasInterestSignal &&
         atom.interests.some((interest) => interestSet.has(interest)),
     }))
     .sort((a, b) => {
@@ -60,18 +61,21 @@ export function selectSlot(
   const tightRanked = ranked.slice(0, tightQuota);
   const tightIndexes = new Set(tightRanked.map((item) => item.index));
 
-  const explore = ranked
-    .filter((item) => !tightIndexes.has(item.index))
-    .sort((a, b) => {
-      if (a.atom.frictionLevel !== b.atom.frictionLevel) {
-        return a.atom.frictionLevel - b.atom.frictionLevel;
-      }
-      if (a.atom.displayOrder !== b.atom.displayOrder) {
-        return a.atom.displayOrder - b.atom.displayOrder;
-      }
-      return a.index - b.index;
-    })
-    .map((item) => item.atom);
+  const remainingRanked = ranked.filter((item) => !tightIndexes.has(item.index));
+
+  const exploreRanked = hasInterestSignal
+    ? remainingRanked.sort((a, b) => {
+        if (a.atom.frictionLevel !== b.atom.frictionLevel) {
+          return a.atom.frictionLevel - b.atom.frictionLevel;
+        }
+        if (a.atom.displayOrder !== b.atom.displayOrder) {
+          return a.atom.displayOrder - b.atom.displayOrder;
+        }
+        return a.index - b.index;
+      })
+    : remainingRanked;
+
+  const explore = exploreRanked.map((item) => item.atom);
 
   return {
     tight: tightRanked.map((item) => item.atom),
