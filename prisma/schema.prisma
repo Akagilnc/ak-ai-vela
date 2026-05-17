@@ -143,6 +143,8 @@ model PathStage {
 
   goals     PathGoal[]
   decisions PathDecision[]
+  atoms     PathAtom[]
+  curatedViews PathCuratedView[]
 
   @@map("path_stages")
 }
@@ -195,6 +197,63 @@ model PathActivity {
 
   @@index([goalId, month])
   @@map("path_activities")
+}
+
+model PathAtom {
+  id           Int      @id @default(autoincrement())
+  slug         String   @unique
+  title        String
+  body         String
+  stageId      String
+  stage        PathStage @relation(fields: [stageId], references: [id])
+  gradeFrom    Int
+  gradeTo      Int
+  interests    Json
+  scheduleKind String
+  windowType   String?
+  cadenceRole  String
+  frictionLevel Int
+  setting      String
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  curatedViews PathCuratedViewAtom[]
+
+  @@index([stageId])
+  @@map("path_atoms")
+}
+
+model PathCuratedView {
+  id                     Int      @id @default(autoincrement())
+  slug                   String   @unique
+  title                  String
+  stageId                String
+  stage                  PathStage @relation(fields: [stageId], references: [id])
+  month                  Int?
+  leadLine               String?
+  whySpecial             String?
+  heart                  String?
+  output                 String?
+  serendipity            String?
+  defaultTightRatio      Int      @default(50)
+  frictionCeilingDefault Int      @default(3)
+  displayOrder           Int
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  atoms                  PathCuratedViewAtom[]
+
+  @@map("path_curated_views")
+}
+
+model PathCuratedViewAtom {
+  id            Int      @id @default(autoincrement())
+  curatedViewId Int
+  curatedView   PathCuratedView @relation(fields: [curatedViewId], references: [id])
+  atomId        Int
+  atom          PathAtom @relation(fields: [atomId], references: [id])
+
+  @@unique([curatedViewId, atomId])
+  @@map("path_curated_view_atoms")
 }
 
 model PathDecision {

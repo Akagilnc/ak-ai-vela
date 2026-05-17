@@ -5,6 +5,7 @@ import path from "path";
 import { schools } from "./schools-data";
 import { G1_MAY_SEED } from "../docs/research/data/g1-may-seed";
 import { G1_JUN_SEED } from "../docs/research/data/g1-jun-seed";
+import { G1_MAY_ATOM_SEED } from "../docs/research/data/g1-may-atoms";
 
 const url =
   process.env.DATABASE_URL ||
@@ -138,6 +139,78 @@ async function seedPathExplorer() {
   );
 }
 
+async function seedPathAtomExplorer() {
+  const seed = G1_MAY_ATOM_SEED;
+
+  console.log(
+    `Seeding Path Explorer atom model (G1 May, ${seed.atoms.length} atoms + ${seed.curatedViews.length} curated views)...`,
+  );
+
+  await prisma.$transaction(async (tx) => {
+    const stage = await tx.pathStage.findUnique({
+      where: { slug: seed.stageSlug },
+    });
+    if (!stage) {
+      throw new Error(
+        `Path atom seed requires PathStage "${seed.stageSlug}". Run old Path Explorer seeding first.`,
+      );
+    }
+
+    const atomIdBySlug = new Map<string, number>();
+    for (const atom of seed.atoms) {
+      const { interests, ...rest } = atom;
+      const jsonFields = {
+        interests: interests as unknown as Prisma.InputJsonValue,
+      };
+      const row = await tx.pathAtom.upsert({
+        where: { slug: rest.slug },
+        update: { ...rest, ...jsonFields, stageId: stage.id },
+        create: { ...rest, ...jsonFields, stageId: stage.id },
+      });
+      atomIdBySlug.set(row.slug, row.id);
+    }
+
+    const viewIdBySlug = new Map<string, number>();
+    for (const view of seed.curatedViews) {
+      const row = await tx.pathCuratedView.upsert({
+        where: { slug: view.slug },
+        update: { ...view, stageId: stage.id },
+        create: { ...view, stageId: stage.id },
+      });
+      viewIdBySlug.set(row.slug, row.id);
+    }
+
+    for (const link of seed.viewAtomLinks) {
+      const curatedViewId = viewIdBySlug.get(link.viewSlug);
+      const atomId = atomIdBySlug.get(link.atomSlug);
+      if (!curatedViewId) {
+        throw new Error(`PathCuratedView link references unknown view "${link.viewSlug}"`);
+      }
+      if (!atomId) {
+        throw new Error(`PathCuratedView link references unknown atom "${link.atomSlug}"`);
+      }
+
+      await tx.pathCuratedViewAtom.upsert({
+        where: {
+          curatedViewId_atomId: {
+            curatedViewId,
+            atomId,
+          },
+        },
+        update: {},
+        create: {
+          curatedViewId,
+          atomId,
+        },
+      });
+    }
+  });
+
+  console.log(
+    `Seeded Path Explorer atom model: ${seed.atoms.length} atoms, ${seed.curatedViews.length} curated views, ${seed.viewAtomLinks.length} memberships`,
+  );
+}
+
 async function resetAll() {
   console.log("RESETTING: clearing ALL data and re-seeding...");
 
@@ -169,6 +242,7 @@ async function main() {
   } else {
     await seedSchools();
     await seedPathExplorer();
+    await seedPathAtomExplorer();
   }
 }
 

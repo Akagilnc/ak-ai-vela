@@ -1,0 +1,121 @@
+"use client";
+
+// Error boundary for curated /path/seg/[slug] routes. Mirrors the old /path
+// boundary so stale links / Prisma hiccups keep the same Chinese recovery UI.
+
+import Link from "next/link";
+
+export default function PathCuratedSegmentError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div className="stage">
+      <div className="stage-inner">
+        <main
+          id="path-main"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "32px 22px",
+            textAlign: "center",
+            gap: 14,
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: "var(--zh)",
+              fontSize: 22,
+              fontWeight: 700,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            加载出了点问题
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--mute)",
+              margin: 0,
+              lineHeight: 1.6,
+              maxWidth: 320,
+            }}
+          >
+            稍后重试，或者回到当月卡片。
+          </p>
+          <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                appearance: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 44,
+                padding: "0 22px",
+                background: "var(--forest)",
+                color: "var(--cream)",
+                border: 0,
+                borderRadius: 12,
+                fontFamily: "var(--zh-sans)",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              重试
+            </button>
+            <Link
+              href="/path"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 44,
+                padding: "0 22px",
+                background: "var(--cream-2)",
+                color: "var(--ink-2)",
+                borderRadius: 12,
+                border: "1px solid var(--hair)",
+                fontFamily: "var(--zh-sans)",
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              返回当月卡片
+            </Link>
+          </div>
+          {process.env.NODE_ENV !== "production" && (
+            <pre
+              style={{
+                marginTop: 16,
+                padding: 12,
+                background: "#F5F0E1",
+                borderRadius: 8,
+                fontSize: 11,
+                color: "#6B6560",
+                textAlign: "left",
+                maxWidth: 400,
+                overflow: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {error.message}
+              {error.stack && `\n\n${error.stack}`}
+            </pre>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
