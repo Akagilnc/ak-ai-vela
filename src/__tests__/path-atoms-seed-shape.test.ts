@@ -40,6 +40,18 @@ function expectCopiedSnippet(target: string, snippet: string): void {
   expect(target, `${snippet} must be copied into atom body`).toContain(snippet);
 }
 
+function expectTaggedFromSource(
+  interestsBySlug: Map<string, readonly string[]>,
+  slug: string,
+  sourceRow: string,
+  expectedInterests: readonly string[],
+): void {
+  expect(SOURCE_MD, `${slug} source row`).toContain(sourceRow);
+  expect(interestsBySlug.get(slug), `${slug}.interests`).toEqual(
+    expectedInterests,
+  );
+}
+
 describe("G1 May atom seed", () => {
   it("exports the curated May atom pool and five curated views", () => {
     expect(G1_MAY_ATOM_SEED.stageSlug).toBe("g1-to-g3-foundation");
@@ -107,6 +119,7 @@ describe("G1 May atom seed", () => {
     expect(combined).not.toContain("图源 Day");
     expect(combined).not.toContain("CC 授权");
     expect(combined).not.toContain("**Sources**");
+    expect(combined).not.toContain("[图：");
   });
 
   it("keeps Dongtan rich parent prose in atom bodies instead of compressed notes", () => {
@@ -123,12 +136,24 @@ describe("G1 May atom seed", () => {
     }
 
     for (const snippet of [
+      "**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。",
       "**可能看到的候鸟（春末 5 月上中旬典型 5 种）**",
+      '黑白相间，嘴长且向上翘，像"反"过来的针',
+      "背黑、腹白、粉红色腿超长，远看像踩高跷",
+      '小型鸻鹬，眼周金黄色环。G1 可能看不清细节，但"小圆身" 好认',
+      "繁殖羽时腹部明显黑色斑，群体活动",
+      "红色嘴、灰白身。常见种，5 月仍在尾声群",
+      "不求 5 种全看到，能认出 1-2 种就是这一次的收获。",
       "**周一查**：[上海观鸟会 shwbs.org]",
+      "**有带队跟团**：带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。",
+      "**无带队自行去**：崇明东滩南六公路入口，[dongtan.cn](https://www.dongtan.cn) 查当日开放时间。",
+      "**现场**：**不求看到多少种**。能认出上面表里任意 1-2 种 + 看到一次\"一群飞起\"或\"一次进食\"，就已经值了。",
       "**拍摄指引**：现场拍 5-10 张照片 + 2-3 段 15 秒视频足够。",
+      "**回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。",
       "**产出**：迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
       "**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。",
       'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
+      '**重要心法**（backup 设计哲学）：**预设"失败友好" 的 2-3 个 backup**，家长敢带孩子出门。',
       '一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。',
       "**心法**：自然有档期。错过这次等半年。这条经验她会记很久。",
     ]) {
@@ -165,11 +190,19 @@ describe("G1 May atom seed", () => {
 
     for (const snippet of [
       "**5 种家门口可见的初夏生物**（带辨识特征）",
+      '小区花坛，任何开花植物 | "白色小蝴蝶"—— 她第一个认识的蝴蝶',
+      '公园里，飞得高 | "大蝴蝶"—— 比菜粉蝶大 3 倍，她一眼能感觉出"不一样"',
+      "任何人行道砖缝 | 带她看 **蚁道**（一队蚂蚁搬东西的路线）—— 社会性昆虫第一印象",
+      '花盆底 / 落叶下 / 石头下 | "会缩成球的小灰虫"—— G1 最爱的触碰互动',
+      '家楼下、街角、任何树上 | 最熟悉的鸟。重点是让她意识到"这也是鸟"—— 不是只有东滩才有鸟',
       "**蚁道观察**（15 分钟）",
       "**蝴蝶追踪**（20 分钟）",
       "**潮虫探险**（10 分钟）",
       "**楼下鸟声**（5 分钟）",
+      '**产出**：本子上的 "家门口生物 count"——一个月累积能记 10-20 种。',
       "**别用昆虫盒装回家**",
+      "**别用杀虫剂 / 驱蚊液喷她的观察对象**。",
+      "**别强求\"记住拉丁名\"**。",
       '长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。',
       "这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。",
     ]) {
@@ -182,28 +215,72 @@ describe("G1 May atom seed", () => {
       G1_MAY_ATOM_SEED.atoms.map((atom) => [atom.slug, atom.interests]),
     );
 
-    expect(SOURCE_MD).toContain("| 观察本记录 | G1-G12 | 跨兴趣底盘 |");
-    expect(interestsBySlug.get("g1-may-observation-notebook")).toEqual([
-      "foundation",
-    ]);
-    expect(SOURCE_MD).toContain(
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-observation-notebook",
+      "| 观察本记录 | G1-G12 | 跨兴趣底盘 |",
+      ["foundation"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-bowu-may-reading",
       "| 《博物》5 月号阅读 | G1-G12 | 自然+文化 |",
+      ["nature", "culture"],
     );
-    expect(interestsBySlug.get("g1-may-bowu-may-reading")).toEqual([
-      "nature",
-      "culture",
-    ]);
-    expect(SOURCE_MD).toContain("| 立夏·斗蛋 | G1-G6 | 文化 |");
-    expect(interestsBySlug.get("g1-may-lixia-egg-battle")).toEqual([
-      "culture",
-    ]);
-    expect(SOURCE_MD).toContain(
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-labor-dongtan-birding-day-trip",
+      "| 崇明东滩观鸟（日返） | G1-G6 | 自然（窄·观鸟） |",
+      ["nature", "birding"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-labor-suzhou-taihu-wetland",
+      "| 苏州太湖湿地公园 | G1-G3 | 自然（观鸟入门） |",
+      ["nature", "birding"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-lixia-egg-battle",
+      "| 立夏·斗蛋 | G1-G6 | 文化 |",
+      ["culture"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-lixia-weighing",
+      "| 立夏·秤人 | G1-G12 | 文化 |",
+      ["culture"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-lixia-green-bookmark",
       "| 立夏·采新绿书签 | G1-G12 | 自然+手作 |",
+      ["nature", "craft"],
     );
-    expect(interestsBySlug.get("g1-may-lixia-green-bookmark")).toEqual([
-      "nature",
-      "craft",
-    ]);
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-lixia-observation-note",
+      "| 立夏·观察本记录 | G1-G12 | 跨兴趣底盘 |",
+      ["foundation"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-lixia-solar-term-reading",
+      "| 立夏·节气阅读 | G1-G12 | 文化 |",
+      ["culture"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-dongtan-birding-main",
+      "| 东滩观鸟（主） | G1-G6（候鸟表难度列内置分档） | 自然·窄（纯观鸟） |",
+      ["nature", "birding"],
+    );
+    expectTaggedFromSource(
+      interestsBySlug,
+      "g1-may-chenshan-botanical-backup",
+      "| 辰山植物园（回程 backup） | G1-G3 | 自然·花 |",
+      ["nature", "flower"],
+    );
   });
 
   it("keeps every curated view usable and its prose verbatim from the source MD", () => {
