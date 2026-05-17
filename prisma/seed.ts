@@ -221,6 +221,9 @@ async function resetAll() {
   await prisma.pathInterest.deleteMany();
   await prisma.pathDecisionBranch.deleteMany();
   await prisma.pathDecision.deleteMany();
+  await prisma.pathCuratedViewAtom.deleteMany();
+  await prisma.pathCuratedView.deleteMany();
+  await prisma.pathAtom.deleteMany();
   await prisma.pathActivity.deleteMany();
   await prisma.pathGoal.deleteMany();
   await prisma.pathStage.deleteMany();
@@ -230,8 +233,11 @@ async function resetAll() {
   }
 
   await seedPathExplorer();
+  await seedPathAtomExplorer();
 
-  console.log(`Reset complete. Seeded ${schools.length} schools + Path Explorer`);
+  console.log(
+    `Reset complete. Seeded ${schools.length} schools + Path Explorer + atom model`,
+  );
 }
 
 async function main() {
