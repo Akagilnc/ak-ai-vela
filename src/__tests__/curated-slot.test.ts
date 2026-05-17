@@ -59,14 +59,24 @@ describe("selectSlot", () => {
     expect(slugs(result.explore)).toEqual(["third", "fourth"]);
   });
 
-  it("promotes interest matches into tight without excluding non-matches", () => {
+  it("promotes interest matches into tight and sorts explore by friction", () => {
     const profile: ChildProfile = { interests: ["animals"] };
 
     const result = selectSlot(
       [
-        atom({ slug: "weather", interests: ["weather"], displayOrder: 1 }),
+        atom({
+          slug: "weather",
+          interests: ["weather"],
+          frictionLevel: 3,
+          displayOrder: 1,
+        }),
         atom({ slug: "animal-care", interests: ["animals"], displayOrder: 4 }),
-        atom({ slug: "plants", interests: ["plants"], displayOrder: 2 }),
+        atom({
+          slug: "plants",
+          interests: ["plants"],
+          frictionLevel: 0,
+          displayOrder: 2,
+        }),
         atom({ slug: "animal-track", interests: ["animals"], displayOrder: 3 }),
       ],
       config,
@@ -74,7 +84,7 @@ describe("selectSlot", () => {
     );
 
     expect(slugs(result.tight)).toEqual(["animal-track", "animal-care"]);
-    expect(slugs(result.explore)).toEqual(["weather", "plants"]);
+    expect(slugs(result.explore)).toEqual(["plants", "weather"]);
   });
 
   it("splits a 50/50 ratio into the expected tight and explore counts", () => {
