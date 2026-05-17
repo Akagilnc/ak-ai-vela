@@ -1,8 +1,7 @@
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { tmpdir } from "node:os";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { schools } from "../../../prisma/schools-data";
@@ -19,9 +18,12 @@ import { schools } from "../../../prisma/schools-data";
 // fork, and src/__tests__/helpers/test-db.ts reads it back so every test
 // file's PrismaClient points at the same DB this setup seeded.
 export default async function setup(): Promise<() => Promise<void>> {
-  const testDbPath = path.join(tmpdir(), `vela-vitest-${randomUUID()}.db`);
-  const testDbUrl = `file:${testDbPath}`;
+  const testDbFile = `vela-vitest-${randomUUID()}.db`;
+  const testDbDir = path.join(process.cwd(), "tmp");
+  const testDbPath = path.join(testDbDir, testDbFile);
+  const testDbUrl = `file:./tmp/${testDbFile}`;
   process.env.VELA_TEST_DB_URL = testDbUrl;
+  mkdirSync(testDbDir, { recursive: true });
 
   // Remove any leftover from a previous run (e.g. crashed suite). Fail fast
   // if we can't clean up — running against a stale DB would silently mask
@@ -41,7 +43,10 @@ export default async function setup(): Promise<() => Promise<void>> {
   // `--accept-data-loss` is safe here because the DB is empty.
   try {
     execSync("npx prisma db push --accept-data-loss", {
-      env: { ...process.env, DATABASE_URL: testDbUrl },
+      // Prisma 7.7's schema engine can fail with an empty "Schema engine error"
+      // when the host shell exports RUST_LOG=warn/error. Keep test setup
+      // isolated from that developer-machine setting.
+      env: { ...process.env, DATABASE_URL: testDbUrl, RUST_LOG: "info" },
       stdio: "pipe",
     });
   } catch (e) {

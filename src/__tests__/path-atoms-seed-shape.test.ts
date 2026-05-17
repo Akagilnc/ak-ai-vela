@@ -16,6 +16,14 @@ const CADENCE_ROLES = [
   "ANNUAL_RITUAL",
 ] as const;
 const SETTINGS = ["OUTDOOR", "INDOOR", "EITHER"] as const;
+const INTERESTS = [
+  "nature",
+  "culture",
+  "craft",
+  "foundation",
+  "birding",
+  "flower",
+] as const;
 
 const EXPECTED_VIEW_ATOM_COUNTS: Record<string, number> = {
   "g1-may-baseline": 6,
@@ -24,6 +32,12 @@ const EXPECTED_VIEW_ATOM_COUNTS: Record<string, number> = {
   "g1-may-dongtan-migration-tail": 5,
   "g1-may-neighborhood-ecology": 4,
 };
+
+function atomBody(slug: string): string {
+  const atom = G1_MAY_ATOM_SEED.atoms.find((item) => item.slug === slug);
+  if (!atom) throw new Error(`${slug} atom must exist`);
+  return atom.body;
+}
 
 describe("G1 May atom seed", () => {
   it("exports the curated May atom pool and five curated views", () => {
@@ -37,7 +51,7 @@ describe("G1 May atom seed", () => {
     expect(viewSlugs).toEqual(Object.keys(EXPECTED_VIEW_ATOM_COUNTS));
   });
 
-  it("keeps every atom inside the allowed single-valued tag vocabulary", () => {
+  it("keeps every atom inside the allowed tag vocabulary", () => {
     const slugs = G1_MAY_ATOM_SEED.atoms.map((atom) => atom.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
 
@@ -49,7 +63,15 @@ describe("G1 May atom seed", () => {
       expect(atom.gradeFrom, `${atom.slug}.grade span`).toBeLessThanOrEqual(
         atom.gradeTo,
       );
-      expect(atom.interests, `${atom.slug}.interests`).toEqual(["nature"]);
+      expect(atom.interests.length, `${atom.slug}.interests`).toBeGreaterThan(0);
+      expect(new Set(atom.interests).size, `${atom.slug}.interests`).toBe(
+        atom.interests.length,
+      );
+      for (const interest of atom.interests) {
+        expect(INTERESTS, `${atom.slug}.interest:${interest}`).toContain(
+          interest,
+        );
+      }
       expect(SCHEDULE_KINDS, `${atom.slug}.scheduleKind`).toContain(
         atom.scheduleKind,
       );
@@ -68,6 +90,95 @@ describe("G1 May atom seed", () => {
         true,
       );
     }
+  });
+
+  it("does not leak internal authoring annotations into parent-facing atom bodies", () => {
+    const combined = G1_MAY_ATOM_SEED.atoms
+      .map((atom) => `${atom.title}\n${atom.body}`)
+      .join("\n\n");
+
+    expect(combined).not.toContain("兴趣对得上才进贴身");
+    expect(combined).not.toContain("失败友好 backup");
+    expect(combined).not.toContain("样板自检");
+    expect(combined).not.toContain("authoring 单元");
+  });
+
+  it("keeps Dongtan rich parent prose in atom bodies instead of compressed notes", () => {
+    const main = atomBody("g1-may-dongtan-birding-main");
+
+    for (const bird of [
+      "反嘴鹬",
+      "黑翅长脚鹬",
+      "金眶鸻",
+      "黑腹滨鹬",
+      "红嘴鸥",
+    ]) {
+      expect(main, `Dongtan main atom must keep ${bird}`).toContain(bird);
+    }
+
+    expect(main).toContain("**可能看到的候鸟（春末 5 月上中旬典型 5 种）**");
+    expect(main).toContain("**周一查**：[上海观鸟会 shwbs.org]");
+    expect(main).toContain("**拍摄指引**：现场拍 5-10 张照片 + 2-3 段 15 秒视频足够。");
+    expect(main).toContain("**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。");
+
+    expect(atomBody("g1-may-dongping-forest-backup")).toContain(
+      "崇明岛内 [东平国家森林公园](http://www.dpforest.com)",
+    );
+    expect(atomBody("g1-may-chenshan-botanical-backup")).toContain(
+      "[辰山植物园](http://www.csnbgsh.cn)",
+    );
+    expect(atomBody("g1-may-dongtan-century-park-backup")).toContain(
+      "[世纪公园](http://www.centurypark.com.cn)",
+    );
+    expect(atomBody("g1-may-dongtan-sheshan-backup")).toContain(
+      "[佘山国家森林公园](http://www.shfestival.com/sheshan)",
+    );
+  });
+
+  it("keeps neighborhood species, how-to, pitfalls, and sources in atom bodies", () => {
+    const combined = [
+      "g1-may-neighborhood-ant-trail",
+      "g1-may-neighborhood-butterfly-tracking",
+      "g1-may-neighborhood-pillbug-exploration",
+      "g1-may-neighborhood-bird-sounds",
+    ]
+      .map(atomBody)
+      .join("\n\n");
+
+    for (const species of ["菜粉蝶", "玉带凤蝶", "家蚁", "西瓜虫", "树麻雀"]) {
+      expect(combined, `neighborhood atoms must keep ${species}`).toContain(
+        species,
+      );
+    }
+
+    expect(combined).toContain("**5 种家门口可见的初夏生物**（带辨识特征）");
+    expect(combined).toContain("**蚁道观察**（15 分钟）");
+    expect(combined).toContain("**蝴蝶追踪**（20 分钟）");
+    expect(combined).toContain("**潮虫探险**（10 分钟）");
+    expect(combined).toContain("**楼下鸟声**（5 分钟）");
+    expect(combined).toContain("**别用昆虫盒装回家**");
+    expect(combined).toContain("**Sources**（Day 3 authoring 补全）");
+  });
+
+  it("derives multi-value atom interests from the MD tags instead of hardcoding nature", () => {
+    const interestsBySlug = new Map(
+      G1_MAY_ATOM_SEED.atoms.map((atom) => [atom.slug, atom.interests]),
+    );
+
+    expect(interestsBySlug.get("g1-may-observation-notebook")).toEqual([
+      "foundation",
+    ]);
+    expect(interestsBySlug.get("g1-may-bowu-may-reading")).toEqual([
+      "nature",
+      "culture",
+    ]);
+    expect(interestsBySlug.get("g1-may-lixia-egg-battle")).toEqual([
+      "culture",
+    ]);
+    expect(interestsBySlug.get("g1-may-lixia-green-bookmark")).toEqual([
+      "nature",
+      "craft",
+    ]);
   });
 
   it("keeps every curated view usable and its prose verbatim from the source MD", () => {

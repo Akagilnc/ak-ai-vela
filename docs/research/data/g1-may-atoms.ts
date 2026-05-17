@@ -32,7 +32,7 @@ export interface PathAtomSeedRow {
   body: string;
   gradeFrom: number;
   gradeTo: number;
-  interests: ["nature"];
+  interests: string[];
   scheduleKind: PathScheduleKind;
   windowType: PathWindowType | null;
   cadenceRole: PathCadenceRole;
@@ -67,7 +67,77 @@ export interface G1MayAtomSeed {
   viewAtomLinks: PathCuratedViewAtomSeedRow[];
 }
 
-const NATURE_INTEREST: ["nature"] = ["nature"];
+const NATURE_INTEREST = ["nature"];
+const FOUNDATION_INTEREST = ["foundation"];
+const NATURE_CULTURE_INTEREST = ["nature", "culture"];
+const CULTURE_INTEREST = ["culture"];
+const NATURE_CRAFT_INTEREST = ["nature", "craft"];
+const NATURE_BIRDING_INTEREST = ["nature", "birding"];
+const NATURE_FLOWER_INTEREST = ["nature", "flower"];
+
+const DONGTAN_MAIN_BODY = `**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
+
+**出发前准备**（家长花 5-10 分钟翻下面 5 种就够）：
+
+**可能看到的候鸟（春末 5 月上中旬典型 5 种）**：
+
+| 图 | 中文名 | 辨识特征 | 难度 |
+|---|---|---|---|
+| \`[图：反嘴鹬特写]\` | 反嘴鹬 | 黑白相间，嘴长且向上翘，像"反"过来的针 | 易（特征最明显）|
+| \`[图：黑翅长脚鹬站水中]\` | 黑翅长脚鹬 | 背黑、腹白、粉红色腿超长，远看像踩高跷 | 易 |
+| \`[图：金眶鸻觅食]\` | 金眶鸻 | 小型鸻鹬，眼周金黄色环。G1 可能看不清细节，但"小圆身" 好认 | 中 |
+| \`[图：黑腹滨鹬群飞]\` | 黑腹滨鹬 | 繁殖羽时腹部明显黑色斑，群体活动 | 中 |
+| \`[图：红嘴鸥停水面]\` | 红嘴鸥 | 红色嘴、灰白身。常见种，5 月仍在尾声群 | 易（最普及）|
+
+_(Vela ship 时图片直接内嵌到卡里，家长不用自己去查。图源 Day 3 authoring 时确定：Wikipedia CC 或 iNaturalist CC 授权照片优先。)_
+
+不求 5 种全看到，能认出 1-2 种就是这一次的收获。
+
+**怎么做**（按顺序）：
+
+1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。
+2. **有带队跟团**：带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。带队会讲解。
+3. **无带队自行去**：崇明东滩南六公路入口，[dongtan.cn](https://www.dongtan.cn) 查当日开放时间。
+4. **现场**：**不求看到多少种**。能认出上面表里任意 1-2 种 + 看到一次"一群飞起"或"一次进食"，就已经值了。G1 注意力有限，30-60 分钟静观察就够。
+5. **拍摄指引**：现场拍 5-10 张照片 + 2-3 段 15 秒视频足够。回家不留全部——**家长 5 分钟挑出 1-2 张有鸟 + 1 段群体活动**的最好素材，放到一个命名文件夹（比如 \`2026-05-10 东滩\`）。其他删掉。长期下来这些素材就是 portfolio 的 raw material。
+6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。
+
+**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。自驾往返 2 小时 + 现场 30 分钟看不到鸟，小孩挫败感重。宁可 5/10 前去。`;
+
+const DONGPING_BACKUP_BODY =
+  "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。";
+
+const CHENSHAN_BACKUP_BODY =
+  "**回程 backup**：[辰山植物园](http://www.csnbgsh.cn)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。";
+
+const CENTURY_PARK_BACKUP_BODY =
+  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [世纪公园](http://www.centurypark.com.cn)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）";
+
+const SHESHAN_BACKUP_BODY =
+  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）";
+
+const NEIGHBORHOOD_SPECIES_GUIDE = `**5 种家门口可见的初夏生物**（带辨识特征）：
+
+| 图 | 物种 | 家门口哪看 | 怎么让 G1 记住 |
+|---|---|---|---|
+| \`[图：菜粉蝶停花上]\` | 菜粉蝶（白蝴蝶） | 小区花坛，任何开花植物 | "白色小蝴蝶"—— 她第一个认识的蝴蝶 |
+| \`[图：玉带凤蝶飞行]\` | 玉带凤蝶（大黑黄蝴蝶） | 公园里，飞得高 | "大蝴蝶"—— 比菜粉蝶大 3 倍，她一眼能感觉出"不一样" |
+| \`[图：蚂蚁搬食物]\` | 家蚁 / 黑蚁 | 任何人行道砖缝 | 带她看 **蚁道**（一队蚂蚁搬东西的路线）—— 社会性昆虫第一印象 |
+| \`[图：西瓜虫蜷缩]\` | 西瓜虫（潮虫） | 花盆底 / 落叶下 / 石头下 | "会缩成球的小灰虫"—— G1 最爱的触碰互动 |
+| \`[图：麻雀群]\` | 树麻雀（家麻雀） | 家楼下、街角、任何树上 | 最熟悉的鸟。重点是让她意识到"这也是鸟"—— 不是只有东滩才有鸟 |
+
+_(Vela ship 时图片内嵌在卡里)_`;
+
+const NEIGHBORHOOD_PITFALLS_AND_SOURCES = `**避坑**：
+
+- **别用昆虫盒装回家**。G1 好奇心强 easily escalates 到 "抓"。教育重点是**观察在野外**，不是"带回家养死"。
+- **别用杀虫剂 / 驱蚊液喷她的观察对象**。她看蝴蝶不用喷。
+- **别强求"记住拉丁名"**。中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。
+
+**Sources**（Day 3 authoring 补全）：
+
+- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）
+- iNaturalist APP 里"上海" 区域的 top observed species list`;
 
 export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
@@ -90,7 +160,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "干啥都接 1 页。她自己的方式随便画写。（与立夏共用同一原子）",
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: FOUNDATION_INTEREST,
     scheduleKind: "ALWAYS_ON",
     windowType: null,
     cadenceRole: "LIGHT_RECURRING",
@@ -104,7 +174,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "到家翻一翻，挑 1 篇一起读",
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: NATURE_CULTURE_INTEREST,
     scheduleKind: "ALWAYS_ON",
     windowType: null,
     cadenceRole: "LIGHT_RECURRING",
@@ -205,7 +275,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "5/10 前看最后一批迁徙候鸟（深内容见东滩段原子）",
     gradeFrom: 1,
     gradeTo: 6,
-    interests: NATURE_INTEREST,
+    interests: NATURE_BIRDING_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "HOLIDAY",
     cadenceRole: "ONE_SHOT",
@@ -247,7 +317,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "家庭观鸟入门友好",
     gradeFrom: 1,
     gradeTo: 3,
-    interests: NATURE_INTEREST,
+    interests: NATURE_BIRDING_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "HOLIDAY",
     cadenceRole: "ONE_SHOT",
@@ -275,7 +345,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: '煮蛋、棉线网兜挂胸前，蛋尖对撞比谁壳不碎——传统"斗蛋"',
     gradeFrom: 1,
     gradeTo: 6,
-    interests: NATURE_INTEREST,
+    interests: CULTURE_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SOLAR_TERM",
     cadenceRole: "ANNUAL_RITUAL",
@@ -289,7 +359,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: '体重秤称她，"立夏称了夏天长得顺"。每年同一天秤一次，看 1 年长多少',
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: CULTURE_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SOLAR_TERM",
     cadenceRole: "ANNUAL_RITUAL",
@@ -317,7 +387,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "捡地上 2-3 片新叶（不折树上的），夹书一周晾干做节气书签",
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: NATURE_CRAFT_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SOLAR_TERM",
     cadenceRole: "ANNUAL_RITUAL",
@@ -331,7 +401,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: '1 页"5 月 5 日 立夏 我看到…"，她自己的方式随便画写',
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: FOUNDATION_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SOLAR_TERM",
     cadenceRole: "ANNUAL_RITUAL",
@@ -345,7 +415,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     body: "《二十四节气诗》立夏篇（陆游《立夏前二日作》、朱淑真《立夏》）；《博物》历年 5 月号立夏栏目。**按龄唯一调档**：G1 家长念 / G2 一起读 / G3 自读 + 说一句\"立夏和清明哪不一样\"",
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_INTEREST,
+    interests: CULTURE_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SOLAR_TERM",
     cadenceRole: "ANNUAL_RITUAL",
@@ -356,14 +426,10 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-dongtan-birding-main",
     title: "东滩观鸟（主）",
-    body: `兴趣对得上才进贴身；否则不推。
-
-春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
-
-现场不求看到多少种。能认出任意 1-2 种 + 看到一次"一群飞起"或"一次进食"，就已经值了。G1 注意力有限，30-60 分钟静观察就够。`,
+    body: DONGTAN_MAIN_BODY,
     gradeFrom: 1,
     gradeTo: 6,
-    interests: NATURE_INTEREST,
+    interests: NATURE_BIRDING_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SEASON_WINDOW",
     cadenceRole: "ONE_SHOT",
@@ -374,7 +440,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-dongping-forest-backup",
     title: "东平国家森林公园（崇明同日 backup）",
-    body: "失败友好 backup",
+    body: DONGPING_BACKUP_BODY,
     gradeFrom: 1,
     gradeTo: 3,
     interests: NATURE_INTEREST,
@@ -388,10 +454,10 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-chenshan-botanical-backup",
     title: "辰山植物园（回程 backup）",
-    body: "失败友好 backup；花季视觉强",
+    body: CHENSHAN_BACKUP_BODY,
     gradeFrom: 1,
     gradeTo: 3,
-    interests: NATURE_INTEREST,
+    interests: NATURE_FLOWER_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SEASON_WINDOW",
     cadenceRole: "ONE_SHOT",
@@ -402,7 +468,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-dongtan-century-park-backup",
     title: "世纪公园（不去崇明 backup）",
-    body: "失败友好 backup；也是跨段通用低折腾探索原子",
+    body: CENTURY_PARK_BACKUP_BODY,
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -416,7 +482,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-dongtan-sheshan-backup",
     title: "佘山国家森林公园（不去崇明 backup）",
-    body: "失败友好 backup；与劳动节段共用同一原子",
+    body: SHESHAN_BACKUP_BODY,
     gradeFrom: 1,
     gradeTo: 3,
     interests: NATURE_INTEREST,
@@ -430,7 +496,9 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-neighborhood-ant-trail",
     title: "蚁道观察",
-    body: "砖缝看蚂蚁 5 分钟，回来画一条蚁道",
+    body: `${NEIGHBORHOOD_SPECIES_GUIDE}
+
+**蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝，和她一起蹲下来看 **5 分钟**。看蚂蚁从哪到哪、搬什么、怎么遇到同伴。回来本子画一条蚁道。`,
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -444,7 +512,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-neighborhood-butterfly-tracking",
     title: "蝴蝶追踪",
-    body: "花坛边等 5 分钟，只看停下来那几秒，不追",
+    body: "**蝴蝶追踪**（20 分钟）：小区花坛边等 5 分钟，通常会有 1-2 种蝴蝶来。不追蝶（小孩跑得慢），只看它停下来的那几秒。",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -458,7 +526,7 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-neighborhood-pillbug-exploration",
     title: "潮虫探险",
-    body: "搬开花盆/石头看西瓜虫，轻碰看蜷球",
+    body: "**潮虫探险**（10 分钟）：搬开花盆 / 石头 / 落叶堆，看底下的西瓜虫 / 蚯蚓 / 各种小东西。**用手轻轻碰一下西瓜虫**，看它蜷成球。G1 对这种即时 feedback 最有感。",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -472,7 +540,9 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-neighborhood-bird-sounds",
     title: "楼下鸟声",
-    body: "阳台静坐听鸟叫，能分 2 种就够",
+    body: `**楼下鸟声**（5 分钟）：阳台静坐，听不同的鸟叫。麻雀的"喳喳" / 斑鸠的"咕咕" / 白头鹎清晨的歌声。她能分出 2 种就够。
+
+${NEIGHBORHOOD_PITFALLS_AND_SOURCES}`,
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
