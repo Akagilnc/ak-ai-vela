@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 import ErrorBoundary from "@/app/path/seg/[slug]/error";
+import PathCuratedSegmentLayout from "@/app/path/seg/[slug]/layout";
 import Loading from "@/app/path/seg/[slug]/loading";
 import NotFound from "@/app/path/seg/[slug]/not-found";
 import {
@@ -84,5 +85,33 @@ describe("/path/seg/[slug] route hardening", () => {
         type: "article",
       },
     });
+  });
+
+  it("keeps existing curated-view slugs inside the streaming layout", async () => {
+    const child = <div data-testid="validated-child" />;
+
+    await expect(
+      PathCuratedSegmentLayout({
+        children: child,
+        params: Promise.resolve({ slug: LIXIA_SLUG }),
+      }),
+    ).resolves.toEqual(child);
+  });
+
+  it("rejects unknown curated-view slugs before the loading stream starts", async () => {
+    await expect(
+      PathCuratedSegmentLayout({
+        children: <div />,
+        params: Promise.resolve({ slug: "__missing_curated_view__" }),
+      }),
+    ).rejects.toMatchObject({ digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
+  });
+
+  it("throws the route-level 404 for an unknown curated-view slug", async () => {
+    await expect(
+      generateMetadata({
+        params: Promise.resolve({ slug: "__missing_curated_view__" }),
+      }),
+    ).rejects.toMatchObject({ digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
   });
 });

@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { cache } from "react";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { PathCuratedViewPage } from "@/components/path/path-curated-view";
+import { prisma } from "@/lib/prisma";
+import { loadCuratedView } from "@/lib/path/curated-view-query";
 
 type RouteParams = Promise<{ slug: string }>;
-
-const loadCuratedView = cache(async (slug: string) => {
-  return prisma.pathCuratedView.findUnique({
-    where: { slug },
-    include: { atoms: { include: { atom: true } } },
-  });
-});
 
 function firstSentence(value: string | null): string | undefined {
   const text = value?.trim();
@@ -26,7 +19,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const view = await loadCuratedView(slug);
-  if (!view) return { title: "Path Explorer · Vela" };
+  if (!view) notFound();
 
   const description =
     firstSentence(view.leadLine) ?? firstSentence(view.whySpecial);
@@ -50,10 +43,7 @@ export default async function PathCuratedSegmentPage({
   const { slug } = await params;
   const view = await loadCuratedView(slug);
   // Keep dynamicParams at its default (true): curated views are DB-seeded, so a
-  // newly seeded slug must resolve immediately without a rebuild. notFound()
-  // returns a real HTTP 404 + not-found UI in production; `next dev` streams it
-  // as 200 (framework artifact). Do NOT add `dynamicParams = false` to "fix"
-  // that — it would 404 every newly seeded view until the next build.
+  // newly seeded slug must resolve immediately without a rebuild.
   if (!view) notFound();
 
   return (
