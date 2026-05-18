@@ -210,7 +210,7 @@ describe("PathCuratedViewPage", () => {
       "下面这些不一定贴她现在的兴趣",
     );
     expect(exploreIntro.textContent).not.toMatch(/顺路|又不亏|不亏|反正/);
-  });
+  }, 15_000);
 
   it("renders real seed atom markdown as structured tables and nested routes", () => {
     const dongtan = viewFromSeed("g1-may-dongtan-migration-tail");

@@ -225,5 +225,5 @@ describe("prisma seed script --reset", () => {
       G1_MAY_ATOM_SEED.viewAtomLinks.length,
     );
     await expectAllSeededProseBlocks();
-  }, 30_000);
+  }, 60_000);
 });

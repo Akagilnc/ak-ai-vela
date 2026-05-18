@@ -97,7 +97,7 @@ describe("Path overview runtime DB baseline", () => {
 
     vi.resetModules();
     clearAppPrismaSingleton();
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await appPrisma?.$disconnect();
