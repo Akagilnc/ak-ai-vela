@@ -7,8 +7,8 @@ function createPrismaClient() {
   const testUrl =
     process.env.NODE_ENV === "test" ? process.env.VELA_TEST_DB_URL : undefined;
   const url =
-    process.env.DATABASE_URL ||
     testUrl ||
+    process.env.DATABASE_URL ||
     `file:${path.join(process.cwd(), "prisma", "dev.db")}`;
   const adapter = new PrismaBetterSqlite3({ url });
   return new PrismaClient({ adapter });

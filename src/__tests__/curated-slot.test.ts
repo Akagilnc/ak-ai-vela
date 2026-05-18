@@ -27,6 +27,26 @@ function slugs(atoms: SlotAtom[]): string[] {
 }
 
 describe("selectSlot", () => {
+  it("returns empty slots when there are no atoms", () => {
+    const result = selectSlot([], config);
+
+    expect(result.tight).toEqual([]);
+    expect(result.explore).toEqual([]);
+  });
+
+  it("returns empty slots when every atom is above the friction ceiling", () => {
+    const result = selectSlot(
+      [
+        atom({ slug: "too-hard", frictionLevel: 4, displayOrder: 1 }),
+        atom({ slug: "also-too-hard", frictionLevel: 5, displayOrder: 2 }),
+      ],
+      config,
+    );
+
+    expect(result.tight).toEqual([]);
+    expect(result.explore).toEqual([]);
+  });
+
   it("drops atoms above the friction ceiling", () => {
     const result = selectSlot(
       [

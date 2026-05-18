@@ -159,6 +159,12 @@ function stripPromotedInlineLabel(value: string, label: string) {
   return value.replace(inlineLabelPattern, "").trimStart();
 }
 
+function markdownHrefKind(href: string): "external" | "internal" | null {
+  if (href.startsWith("/") && !href.startsWith("//")) return "internal";
+  if (/^https?:\/\//i.test(href)) return "external";
+  return null;
+}
+
 function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
   const parts: ReactNode[] = [];
   const tokenPattern = /(`[^`\n]+`|\*\*[^*]+\*\*|_[^_\n]+_|\[[^\[\]]+\]\([^)]+\))/g;
@@ -189,16 +195,18 @@ function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
       const linkMatch = token.match(/^\[([^\[\]]+)\]\(([^)]+)\)$/);
       if (linkMatch) {
         const [, label, href] = linkMatch;
-        const isExternalHref = /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//");
+        const hrefKind = markdownHrefKind(href);
         parts.push(
-          isExternalHref ? (
+          hrefKind === "external" ? (
             <a key={key} href={href} target="_blank" rel="noreferrer">
               {label}
             </a>
-          ) : (
+          ) : hrefKind === "internal" ? (
             <Link key={key} href={href}>
               {label}
             </Link>
+          ) : (
+            label
           ),
         );
       } else {
@@ -592,11 +600,12 @@ export function PathCuratedViewPage({ view }: Props) {
     .filter((atom): atom is CuratedAtom => Boolean(atom));
   const renderedProseBlocks = proseBlocksForView(view);
   const atomSectionStart = renderedProseBlocks.length + 1;
+  const overviewHref = view.month ? `/path?month=${view.month}` : "/path";
 
   return (
     <>
       <header className="app-chrome detail-mode">
-        <Link href="/path" className="back-btn">
+        <Link href={overviewHref} className="back-btn">
           <BackIcon />
           <span>Path</span>
         </Link>

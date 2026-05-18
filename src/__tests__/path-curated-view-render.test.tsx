@@ -5,7 +5,6 @@ import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 import { PathCuratedViewPage } from "@/components/path/path-curated-view";
-import { selectSlot, type SlotAtom } from "@/lib/path/curated-slot";
 import { G1_MAY_ATOM_SEED } from "../../docs/research/data/g1-may-atoms";
 
 const LIXIA_SLUG = "g1-may-lixia-solar-term";
@@ -17,11 +16,6 @@ const LIXIA_HEART =
   '节气不是传统文化 performance，是季节感的 anchor。让她知道一年的 cycle 不只是"放假 / 上学"。';
 
 type CuratedViewProp = ComponentProps<typeof PathCuratedViewPage>["view"];
-
-function normalizeInterests(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string");
-}
 
 function viewFromSeed(slug: string): CuratedViewProp {
   const view = G1_MAY_ATOM_SEED.curatedViews.find((candidate) => candidate.slug === slug);
@@ -111,23 +105,17 @@ describe("PathCuratedViewPage", () => {
   it("renders authored prose verbatim and splits atoms into tight and explore slots", () => {
     const view = viewFromSeed(LIXIA_SLUG);
 
-    const slotAtoms: SlotAtom[] = view.atoms
-      .map(({ atom }) => ({
-        slug: atom.slug,
-        interests: normalizeInterests(atom.interests),
-        frictionLevel: atom.frictionLevel,
-        cadenceRole: atom.cadenceRole,
-        displayOrder: atom.displayOrder,
-      }))
-      .sort((a, b) => {
-        const order = a.displayOrder - b.displayOrder;
-        if (order !== 0) return order;
-        return a.slug.localeCompare(b.slug);
-      });
-    const expectedSlot = selectSlot(slotAtoms, {
-      tightRatio: view.defaultTightRatio,
-      frictionCeiling: view.frictionCeilingDefault,
-    });
+    const expectedTightSlugs = [
+      "g1-may-lixia-outdoor-observation",
+      "g1-may-lixia-egg-battle",
+      "g1-may-lixia-weighing",
+    ];
+    const expectedExploreSlugs = [
+      "g1-may-lixia-plant-a-seed",
+      "g1-may-lixia-green-bookmark",
+      "g1-may-lixia-observation-note",
+      "g1-may-lixia-solar-term-reading",
+    ];
     const atomBySlug = new Map(
       view.atoms.map(({ atom }) => [atom.slug, atom] as const),
     );
@@ -144,6 +132,10 @@ describe("PathCuratedViewPage", () => {
     expect(
       screen.getByRole("heading", { name: "立夏节气段" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Path" })).toHaveAttribute(
+      "href",
+      "/path?month=5",
+    );
 
     const proseRegions = [
       "触发条件",
@@ -192,17 +184,17 @@ describe("PathCuratedViewPage", () => {
       .map((heading) => heading.textContent);
 
     expect(tightTitles).toEqual(
-      expectedSlot.tight.map((atom) => seededAtom(atom.slug).title),
+      expectedTightSlugs.map((slug) => seededAtom(slug).title),
     );
     expect(exploreTitles).toEqual(
-      expectedSlot.explore.map((atom) => seededAtom(atom.slug).title),
+      expectedExploreSlugs.map((slug) => seededAtom(slug).title),
     );
 
-    for (const atom of expectedSlot.tight) {
-      expectAtomBodyRendered(tightRegion, seededAtom(atom.slug));
+    for (const slug of expectedTightSlugs) {
+      expectAtomBodyRendered(tightRegion, seededAtom(slug));
     }
-    for (const atom of expectedSlot.explore) {
-      expectAtomBodyRendered(exploreRegion, seededAtom(atom.slug));
+    for (const slug of expectedExploreSlugs) {
+      expectAtomBodyRendered(exploreRegion, seededAtom(slug));
     }
 
     const exploreIntro = within(exploreRegion).getByText(/有空不妨试试/);
@@ -713,6 +705,8 @@ describe("PathCuratedViewPage", () => {
 
 - [资料](https://example.com/species)
 - [内部](/path/seg/example)
+- [危险](data:text/html,evil)
+- [文件](file:///tmp/seed)
 
 1. **第一步** 看路线
 2. **第二步** 讲故事
@@ -753,6 +747,10 @@ _[提示 [路线](https://example.com/route) 查]_`,
       "/path/seg/example",
     );
     expect(screen.getByRole("link", { name: "内部" })).not.toHaveAttribute("target");
+    expect(screen.queryByRole("link", { name: "危险" })).not.toBeInTheDocument();
+    expect(screen.getByText("危险")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "文件" })).not.toBeInTheDocument();
+    expect(screen.getByText("文件")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "路线" })).toHaveAttribute(
       "href",
       "https://example.com/route",

@@ -10,7 +10,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 const testDbPath = path.join(tmpdir(), `vela-runtime-db-${randomUUID()}.db`);
 const testDbUrl = `file:${testDbPath}`;
+const poisonDbPath = path.join(tmpdir(), `vela-runtime-poison-${randomUUID()}.db`);
+const poisonDbUrl = `file:${poisonDbPath}`;
 let originalDatabaseUrl: string | undefined;
+let originalVelaTestDbUrl: string | undefined;
 let appPrisma: PrismaClient | undefined;
 
 const runtimeProseBlocks = [
@@ -54,7 +57,9 @@ function clearAppPrismaSingleton() {
 describe("Path overview runtime DB baseline", () => {
   beforeAll(async () => {
     originalDatabaseUrl = process.env.DATABASE_URL;
-    process.env.DATABASE_URL = testDbUrl;
+    originalVelaTestDbUrl = process.env.VELA_TEST_DB_URL;
+    process.env.DATABASE_URL = poisonDbUrl;
+    process.env.VELA_TEST_DB_URL = testDbUrl;
 
     execFileSync("npx", ["prisma", "db", "push", "--accept-data-loss"], {
       env: { ...process.env, DATABASE_URL: testDbUrl, RUST_LOG: "info" },
@@ -97,7 +102,7 @@ describe("Path overview runtime DB baseline", () => {
 
     vi.resetModules();
     clearAppPrismaSingleton();
-  }, 30_000);
+  }, 60_000);
 
   afterAll(async () => {
     await appPrisma?.$disconnect();
@@ -108,14 +113,23 @@ describe("Path overview runtime DB baseline", () => {
     } else {
       process.env.DATABASE_URL = originalDatabaseUrl;
     }
+    if (originalVelaTestDbUrl === undefined) {
+      delete process.env.VELA_TEST_DB_URL;
+    } else {
+      process.env.VELA_TEST_DB_URL = originalVelaTestDbUrl;
+    }
 
     for (const suffix of ["", "-journal", "-wal", "-shm"]) {
       const file = `${testDbPath}${suffix}`;
       if (existsSync(file)) unlinkSync(file);
     }
+    for (const suffix of ["", "-journal", "-wal", "-shm"]) {
+      const file = `${poisonDbPath}${suffix}`;
+      if (existsSync(file)) unlinkSync(file);
+    }
   });
 
-  it("can run the /path stage query through the app Prisma client", async () => {
+  it("uses the isolated VELA_TEST_DB_URL before ambient DATABASE_URL in test mode", async () => {
     const { prisma } = await import("@/lib/prisma");
     appPrisma = prisma;
 

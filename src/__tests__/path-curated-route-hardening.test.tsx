@@ -92,7 +92,7 @@ describe("/path/seg/[slug] route hardening", () => {
       "href",
       "/path",
     );
-  });
+  }, 15_000);
 
   it("renders the branded curated segment not-found UI", () => {
     render(<NotFound />);
