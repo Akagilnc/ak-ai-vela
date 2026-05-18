@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import type { ComponentProps } from "react";
 import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
@@ -19,27 +20,35 @@ const LIXIA_OUTPUT =
 const LIXIA_SERENDIPITY =
   "每年 5 月 5 日她再看这一页，会看到自己 1 年的变化 layer——这是 portfolio 里不刻意的 serendipity。";
 
+type CuratedViewProp = ComponentProps<typeof PathCuratedViewPage>["view"];
+
 function normalizeInterests(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string");
 }
 
+async function loadSeededView(slug: string): Promise<CuratedViewProp> {
+  const view = await prisma.pathCuratedView.findUnique({
+    where: { slug },
+    include: {
+      atoms: {
+        include: { atom: true },
+        orderBy: { id: "asc" },
+      },
+    },
+  });
+
+  expect(view).not.toBeNull();
+  if (!view) {
+    throw new Error(`${slug} curated view must be seeded`);
+  }
+
+  return view;
+}
+
 describe("PathCuratedViewPage", () => {
   it("renders authored prose verbatim and splits atoms into tight and explore slots", async () => {
-    const view = await prisma.pathCuratedView.findUnique({
-      where: { slug: LIXIA_SLUG },
-      include: {
-        atoms: {
-          include: { atom: true },
-          orderBy: { id: "asc" },
-        },
-      },
-    });
-
-    expect(view).not.toBeNull();
-    if (!view) {
-      throw new Error(`${LIXIA_SLUG} curated view must be seeded`);
-    }
+    const view = await loadSeededView(LIXIA_SLUG);
 
     const slotAtoms: SlotAtom[] = view.atoms
       .map(({ atom }) => ({
@@ -117,5 +126,165 @@ describe("PathCuratedViewPage", () => {
       "下面这些不一定贴她现在的兴趣",
     );
     expect(exploreIntro.textContent).not.toMatch(/顺路|又不亏|不亏|反正/);
+  });
+
+  it("uses source-authored labels for baseline and labor budget prose", async () => {
+    const baseline = await loadSeededView("g1-may-baseline");
+    const baselineRender = render(<PathCuratedViewPage view={baseline} />);
+
+    expect(screen.getByRole("region", { name: "时间占用" })).toHaveTextContent(
+      "一个月 3-5 次 weekend 半天",
+    );
+    expect(
+      screen.queryByRole("region", { name: "为什么特别" }),
+    ).not.toBeInTheDocument();
+
+    baselineRender.unmount();
+
+    const labor = await loadSeededView("g1-may-labor-holiday");
+    render(<PathCuratedViewPage view={labor} />);
+
+    expect(screen.getByRole("region", { name: "时间预算" })).toHaveTextContent(
+      "5 天里用 **1-2 天**",
+    );
+    expect(
+      screen.queryByRole("region", { name: "为什么特别" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not repeat an inline source label after promoting it to a heading", () => {
+    const view = {
+      slug: "g1-may-baseline",
+      title: "Baseline",
+      month: 5,
+      leadLine: "Lead",
+      whySpecial: "**时间占用**：一个月 3-5 次 weekend 半天",
+      heart: null,
+      output: null,
+      serendipity: null,
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "baseline-atom",
+            title: "Baseline atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    const baselineRender = render(<PathCuratedViewPage view={view} />);
+
+    const region = screen.getByRole("region", { name: "时间占用" });
+    expect(
+      within(region).getByText("一个月 3-5 次 weekend 半天"),
+    ).toBeInTheDocument();
+    expect(region).not.toHaveTextContent("**时间占用**");
+
+    baselineRender.unmount();
+
+    const laborView = {
+      ...view,
+      slug: "g1-may-labor-holiday",
+      title: "Labor",
+      whySpecial: "时间预算：5 天里用 **1-2 天** 做 nature-themed 活动",
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={laborView} />);
+
+    const laborRegion = screen.getByRole("region", { name: "时间预算" });
+    expect(
+      within(laborRegion).getByText(
+        "5 天里用 **1-2 天** 做 nature-themed 活动",
+      ),
+    ).toBeInTheDocument();
+    expect(laborRegion).not.toHaveTextContent("时间预算：");
+  });
+
+  it("skips prose sections that have no authored text", () => {
+    const view = {
+      slug: "test-empty-prose",
+      title: "Test empty prose",
+      month: 5,
+      leadLine: "Lead",
+      whySpecial: "   ",
+      heart: null,
+      output: "Output",
+      serendipity: null,
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "empty-prose-atom",
+            title: "Empty prose atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(
+      screen.getByRole("region", { name: "一句话" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "为什么特别" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "心法" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "产出" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "serendipity" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("preserves atom body line breaks in rendered detail cards", () => {
+    const view = {
+      slug: "test-curated-view",
+      title: "Test curated view",
+      month: 5,
+      leadLine: "Lead",
+      whySpecial: null,
+      heart: null,
+      output: null,
+      serendipity: null,
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "line-break-atom",
+            title: "Line break atom",
+            body: "第一行\n第二行",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    const body = screen.getByText(
+      (_, element) => element?.textContent === "第一行\n第二行",
+    );
+    expect(body).toHaveStyle({ whiteSpace: "pre-wrap" });
   });
 });

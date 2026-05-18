@@ -16,6 +16,7 @@ type CuratedAtom = Pick<
 
 export type CuratedViewForPage = Pick<
   PathCuratedView,
+  | "slug"
   | "title"
   | "month"
   | "leadLine"
@@ -41,8 +42,32 @@ const PROSE_BLOCKS = [
   { key: "serendipity", label: "serendipity" },
 ] as const;
 
+type ProseKey = (typeof PROSE_BLOCKS)[number]["key"];
+
+const PROSE_LABEL_OVERRIDES_BY_SLUG: Record<
+  string,
+  Partial<Record<ProseKey, string>>
+> = {
+  // These two seed rows store source-authored time labels in whySpecial.
+  "g1-may-baseline": { whySpecial: "时间占用" },
+  "g1-may-labor-holiday": { whySpecial: "时间预算" },
+};
+
 const EXPLORE_INTRO =
   "下面这些不一定贴她现在的兴趣，但很可能玩得来，有空不妨试试。";
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function stripPromotedInlineLabel(value: string, label: string) {
+  const labelPattern = escapeRegExp(label);
+  const inlineLabelPattern = new RegExp(
+    `^(?:\\*\\*)?${labelPattern}(?:\\*\\*)?\\s*[：:]\\s*`,
+  );
+
+  return value.replace(inlineLabelPattern, "").trimStart();
+}
 
 function normalizeInterests(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -57,6 +82,28 @@ function toSlotAtom(atom: CuratedAtom): SlotAtom {
     cadenceRole: atom.cadenceRole,
     displayOrder: atom.displayOrder,
   };
+}
+
+function proseBlocksForView(view: CuratedViewForPage) {
+  const labelOverrides = PROSE_LABEL_OVERRIDES_BY_SLUG[view.slug] ?? {};
+
+  return PROSE_BLOCKS.flatMap((block) => {
+    const value = view[block.key];
+    if (!value?.trim()) return [];
+    const labelOverride = labelOverrides[block.key];
+    const renderedValue = labelOverride
+      ? stripPromotedInlineLabel(value, labelOverride)
+      : value;
+    if (!renderedValue.trim()) return [];
+
+    return [
+      {
+        ...block,
+        label: labelOverride ?? block.label,
+        value: renderedValue,
+      },
+    ];
+  });
 }
 
 function AtomList({ atoms }: { atoms: CuratedAtom[] }) {
@@ -87,6 +134,7 @@ function AtomList({ atoms }: { atoms: CuratedAtom[] }) {
               fontSize: 14,
               lineHeight: 1.65,
               margin: 0,
+              whiteSpace: "pre-wrap",
             }}
           >
             {atom.body}
@@ -117,7 +165,8 @@ export function PathCuratedViewPage({ view }: Props) {
   const exploreAtoms = slot.explore
     .map((atom) => atomBySlug.get(atom.slug))
     .filter((atom): atom is CuratedAtom => Boolean(atom));
-  const atomSectionStart = PROSE_BLOCKS.length + 1;
+  const renderedProseBlocks = proseBlocksForView(view);
+  const atomSectionStart = renderedProseBlocks.length + 1;
 
   return (
     <>
@@ -146,7 +195,7 @@ export function PathCuratedViewPage({ view }: Props) {
           <h1 id="curated-title">{view.title}</h1>
         </section>
 
-        {PROSE_BLOCKS.map((block, index) => (
+        {renderedProseBlocks.map((block, index) => (
           <section
             key={block.key}
             className="d-sec"
@@ -159,7 +208,7 @@ export function PathCuratedViewPage({ view }: Props) {
               <h2 id={`curated-${block.key}-heading`}>{block.label}</h2>
             </div>
             <p className="summary" style={{ whiteSpace: "pre-wrap" }}>
-              {view[block.key] ?? ""}
+              {block.value}
             </p>
           </section>
         ))}
