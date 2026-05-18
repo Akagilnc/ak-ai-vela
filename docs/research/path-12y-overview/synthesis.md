@@ -125,7 +125,7 @@ R1-R3 cross-review surface 的 4 个未解决家间冲突，WebFetch 后全部�
 
 **mockup v3 用**：
 - **反 SAT 焦虑核弹**：SAT/ACT considerable importance 11 年 58% → 5%（PDF page 4），成绩 + 课程强度才是 admission 核心
-- **反"美高 vs 国际学校"焦虑核弹**：High school attended considerable importance 只有 **1.6%**（PDF page 3）— 大学不在意你读哪所中学
+- **反"美高 vs 国际学校"焦虑核弹**：High school attended considerable importance 只有 **1.6%**（PDF page 3）— 学校背景不是核心决定项，但仍可能有 limited / moderate 参考价值
 - **反"AP/IB 谁更好"焦虑**：AP/IB Subject test considerable importance 只有 **1.1%**（PDF page 2）— 比 SAT 还低
 - **反"活动堆量"**：Extracurricular activities 6.5% / Interview 4.3% / Work 2.2%
 - **反"legacy / 关系户"**：Alumni relations 0.5%

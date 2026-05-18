@@ -508,13 +508,23 @@ function normalizeProseBlocks(value: unknown): AuthoredProseBlock[] {
   return blocks;
 }
 
+function includesExpectedProseKeys(
+  blocks: AuthoredProseBlock[],
+  expectedKeys: readonly string[],
+) {
+  let expectedIndex = 0;
+  for (const block of blocks) {
+    if (block.key === expectedKeys[expectedIndex]) expectedIndex += 1;
+  }
+  return expectedIndex === expectedKeys.length;
+}
+
 function proseBlocksForView(view: CuratedViewForPage) {
   const authoredBlocks = normalizeProseBlocks(view.proseBlocks);
   const expectedKeys = AUTHORED_PROSE_KEYS_BY_SLUG[view.slug];
   if (
     authoredBlocks.length > 0 &&
-    (!expectedKeys ||
-      authoredBlocks.map((block) => block.key).join("\n") === expectedKeys.join("\n"))
+    (!expectedKeys || includesExpectedProseKeys(authoredBlocks, expectedKeys))
   ) {
     return authoredBlocks;
   }

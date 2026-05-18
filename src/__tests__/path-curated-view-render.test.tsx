@@ -605,6 +605,36 @@ describe("PathCuratedViewPage", () => {
     expect(screen.queryByText("Authored lead")).not.toBeInTheDocument();
   });
 
+  it("keeps known-view authored prose when it includes extra valid sections", () => {
+    const view = {
+      ...viewFromSeed(LIXIA_SLUG),
+      leadLine: "Legacy lead",
+      whySpecial: "Legacy why",
+      output: "Legacy output",
+      heart: "Legacy heart",
+      proseBlocks: [
+        { key: "leadLine", label: "触发条件", value: "Authored lead" },
+        { key: "whatToDo", label: "怎么做", value: "Extra authored guidance" },
+        { key: "precondition", label: "前置", value: "Authored precondition" },
+        { key: "time", label: "时间", value: "Authored time" },
+        { key: "whySpecial", label: "为什么特别", value: "Authored why" },
+        { key: "output", label: "产出", value: "Authored output" },
+        { key: "heart", label: "心法", value: "Authored heart" },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("region", { name: "怎么做" })).toHaveTextContent(
+      "Extra authored guidance",
+    );
+    expect(screen.getByRole("region", { name: "前置" })).toHaveTextContent(
+      "Authored precondition",
+    );
+    expect(screen.queryByText("Legacy lead")).not.toBeInTheDocument();
+    expect(screen.queryByText("Legacy output")).not.toBeInTheDocument();
+  });
+
   it("keeps authored prose DOM IDs distinct from fixed atom section IDs", () => {
     const view = {
       slug: "test-prose-id-collision",
