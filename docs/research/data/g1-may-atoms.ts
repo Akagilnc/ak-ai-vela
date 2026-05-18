@@ -53,7 +53,7 @@ export interface PathAtomSeedRow {
 export interface PathCuratedViewSeedRow {
   slug: string;
   title: string;
-  month: 5;
+  month: number;
   leadLine: string | null;
   whySpecial: string;
   heart: string;
@@ -71,6 +71,7 @@ export interface PathCuratedViewAtomSeedRow {
 
 export interface G1MayAtomSeed {
   stageSlug: typeof PATH_ATOM_STAGE_SLUG;
+  slugPrefix: "g1-may-";
   atoms: PathAtomSeedRow[];
   curatedViews: PathCuratedViewSeedRow[];
   viewAtomLinks: PathCuratedViewAtomSeedRow[];
@@ -84,7 +85,11 @@ const NATURE_CRAFT_INTEREST = ["nature", "craft"] as const;
 const NATURE_BIRDING_INTEREST = ["nature", "birding"] as const;
 const NATURE_FLOWER_INTEREST = ["nature", "flower"] as const;
 
-const DONGTAN_MAIN_BODY = `**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
+const DONGTAN_MAIN_BODY = `**前置**：至少 1 次场馆观察经验（有"安静看动物"的习惯）。G1 没有的话，改用佘山 / 世纪公园 + 望远镜替代。
+
+**时间**：半天，6-8 小时含往返交通。
+
+**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
 
 **出发前准备**（家长花 5-10 分钟翻下面 5 种就够）：
 
@@ -153,7 +158,12 @@ const NEIGHBORHOOD_PITFALLS_AND_HEART = `**产出**：本子上的 "家门口生
 
 **心法**：自然不只在远方的保护区。家门口 50 米内就有完整的城市生态系统。这张卡的真正价值 = **让她每天下楼的路变成实地课堂**，门槛为 0，频次无限。长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。
 
-这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。东滩 / 自博是 monthly events，家门口生态是 daily baseline。`;
+这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。东滩 / 自博是 monthly events，家门口生态是 daily baseline。
+
+**Sources**：
+
+- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）
+- iNaturalist APP 里"上海" 区域的 top observed species list`;
 
 export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
@@ -217,14 +227,21 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
     title: "场馆·上海自然博物馆动线",
     body: `5 月推荐自博或海洋馆（室内，天气稍热更舒适）。避开 5/1-3 人流峰值，挪 5/4 或 5/5。
 
-上海自然博物馆 · G1-G3 推荐路线（90 分钟，按龄调档）：
+**上海自然博物馆 · G1-G3 推荐路线（90 分钟，按龄调档）**：
 
-1. 进门先直奔 生命长河（恐龙 + 古生物大厅）— 20-25 min。视觉冲击强，全龄高能区。
-2. 转 生态万象 看上海 / 华东本土生态 — 15-20 min。她在东滩 / 动物园看到的活物，这里能看到 permanent 展陈版本。
-3. 探索中心 互动玩 — 20-25 min。小孩能摸能玩的展区，注意力尾声释放。
+1. 进门先直奔 **生命长河**（恐龙 + 古生物大厅）— 20-25 min。视觉冲击强，全龄高能区。
+2. 转 **生态万象** 看上海 / 华东本土生态 — 15-20 min。她在东滩 / 动物园看到的活物，这里能看到 permanent 展陈版本。
+3. **探索中心** 互动玩 — 20-25 min。小孩能摸能玩的展区，注意力尾声释放。
 4. 礼品店 5 min（她选 1 个 ≤ ¥50 的小东西，建立"博物馆正向记忆"）。
 
-按龄调档：G1 重"看到 + 有印象"；G2 找 1-2 种"在东滩见过的"；G3 自己看导览图带路，挑一种最感兴趣的回家查它吃什么/活在哪个年代。`,
+**按龄调档**（同一条线，难度旋钮拧一下，不是另写一条）：
+- **G1**：上面 4 步原样。每区停留短，重"看到 + 有印象"，不要求记名字。家长全程带。
+- **G2**：每区多停 5-10 min；生态万象让她**自己找** 1-2 种"在东滩见过的"，建立"展陈 ↔ 野外"对应。回家本子记 2-3 种。
+- **G3**：路线她**自己看导览图带路**；生命长河加一个"挑一种最感兴趣的回家查它吃什么/活在哪个年代"的小任务；探索中心选一个互动展深玩而不是走马观花。家长退到旁观。
+
+_[具体展区位置以自博当日导览图为准，展区会不定期更新 — 家长可提前 [snhm.org.cn](https://www.snhm.org.cn) 查当月特展]_
+
+**讲解 info 的使用方式**（挂在两条场馆动线原子上）：家长不用提前背。**现场她指着哪个，家长打开 Vela 这张卡，找到对应展区的 trivia 点开念一两条就行**。Vela 是家长的 speaking-point teleprompter，不是 homework。`,
     gradeFrom: 1,
     gradeTo: 3,
     interests: NATURE_INTEREST,
@@ -238,15 +255,30 @@ export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-may-shanghai-ocean-aquarium-route",
     title: "场馆·上海海洋水族馆动线",
-    body: `上海海洋水族馆 · G1 推荐路线（90 分钟）：
+    body: `**上海海洋水族馆 · G1 推荐路线（90 分钟）**：
 
-1. 海底隧道 先给她 wow 体验 — 10-15 min。
-2. 长江区（中国淡水）— 15-20 min。中华鲟 / 扬子鳄这些本土物种，可以讲"这些动物就住在离我们不远的长江"。
-3. 非洲区 + 南极区 — 20-25 min。看大型鱼 + 企鹅。
-4. 互动触摸池（若开放）— 10-15 min。
+1. **海底隧道** 先给她 wow 体验 — 10-15 min。水下穿行感 = 很多 G1 第一次。
+2. **长江区（中国淡水）** — 15-20 min。中华鲟 / 扬子鳄这些本土物种，可以讲"这些动物就住在离我们不远的长江"。
+   - 💬 **可以讲的小故事**（家长现场点开看，挑一个讲）：
+     - 中华鲟是"活化石"——这个家族 1.5 亿年前就在地球上，和恐龙生活在同一个时代，也熬过了恐龙灭绝后的漫长时间
+     - 中华鲟每年会从东海游回长江产卵，一路能游 2000 多公里
+     - 扬子鳄是地球上只有中国才有的鳄鱼，全世界就它一种"只住中国"
+     - 长江江豚被叫"微笑天使"，2022 年普查约 1200 多头，数量第一次回升
+3. **非洲区 + 南极区** — 20-25 min。看大型鱼 + 企鹅。
+   - 💬 **可以讲的小故事**：
+     - 企鹅不是"北极动物"——野生企鹅主要在南半球，北极没有
+     - 企鹅的翅膀不是用来飞的，是演化成了"游泳桨"
+4. **互动触摸池**（若开放）— 10-15 min。
 5. 出口 5 min。
 
-讲解 info 的使用方式：家长不用提前背。现场她指着哪个，家长打开 Vela 这张卡，找到对应展区的 trivia 点开念一两条就行。`,
+**按龄调档**：
+- **G1**：上面路线原样，家长带着看，重"看到 + 哇一下"。
+- **G2**：长江区多停 5 min，让她自己找 1 种"本土物种"，说出它为什么和长江有关。
+- **G3**：她自己选 1 个展区查证 1 个问题，比如"企鹅为什么不是北极动物"，回家写 2 句。
+
+_[展区以馆当日实际开放为准，[sh-aquarium.com](https://www.sh-aquarium.com/zh/html/index.aspx) 查当日动线]_
+
+**讲解 info 的使用方式**（挂在两条场馆动线原子上）：家长不用提前背。**现场她指着哪个，家长打开 Vela 这张卡，找到对应展区的 trivia 点开念一两条就行**。Vela 是家长的 speaking-point teleprompter，不是 homework。`,
     gradeFrom: 1,
     gradeTo: 3,
     interests: NATURE_INTEREST,
@@ -676,6 +708,7 @@ export const G1_MAY_VIEW_ATOM_LINKS: PathCuratedViewAtomSeedRow[] = [
 
 export const G1_MAY_ATOM_SEED: G1MayAtomSeed = {
   stageSlug: PATH_ATOM_STAGE_SLUG,
+  slugPrefix: "g1-may-",
   atoms: G1_MAY_ATOMS,
   curatedViews: G1_MAY_CURATED_VIEWS,
   viewAtomLinks: G1_MAY_VIEW_ATOM_LINKS,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
 import type { PathAtom, PathCuratedView } from "@prisma/client";
 import { selectSlot, type SlotAtom } from "@/lib/path/curated-slot";
 import { BackIcon } from "./path-icons";
@@ -48,13 +49,43 @@ const PROSE_LABEL_OVERRIDES_BY_SLUG: Record<
   string,
   Partial<Record<ProseKey, string>>
 > = {
-  // These two seed rows store source-authored time labels in whySpecial.
+  // The derived seed stores source prose in stable fields; labels stay source-authored per view.
   "g1-may-baseline": { whySpecial: "时间占用" },
-  "g1-may-labor-holiday": { whySpecial: "时间预算" },
+  "g1-may-labor-holiday": { leadLine: "触发条件", whySpecial: "时间预算" },
+  "g1-may-lixia-solar-term": { leadLine: "触发条件" },
+  "g1-may-dongtan-migration-tail": {
+    leadLine: "触发条件",
+    whySpecial: "为什么是这个时间窗",
+  },
+  "g1-may-neighborhood-ecology": { leadLine: "触发条件" },
 };
 
 const EXPLORE_INTRO =
   "下面这些不一定贴她现在的兴趣，但很可能玩得来，有空不妨试试。";
+
+const markdownBlockSpacing: CSSProperties = {
+  margin: "0 0 10px",
+  whiteSpace: "pre-wrap",
+};
+
+const markdownListSpacing: CSSProperties = {
+  margin: "0 0 10px",
+  paddingLeft: 22,
+};
+
+const markdownTableStyle: CSSProperties = {
+  borderCollapse: "collapse",
+  fontSize: 13,
+  margin: "0 0 10px",
+  width: "100%",
+};
+
+const markdownCellStyle: CSSProperties = {
+  border: "1px solid var(--line)",
+  padding: "6px 8px",
+  textAlign: "left",
+  verticalAlign: "top",
+};
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -67,6 +98,281 @@ function stripPromotedInlineLabel(value: string, label: string) {
   );
 
   return value.replace(inlineLabelPattern, "").trimStart();
+}
+
+function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const tokenPattern = /(`[^`\n]+`|\*\*[^*]+\*\*|_[^_\n]+_|\[[^\[\]]+\]\([^)]+\))/g;
+  let cursor = 0;
+  let tokenIndex = 0;
+
+  for (const match of value.matchAll(tokenPattern)) {
+    const [token] = match;
+    const start = match.index ?? 0;
+    if (start > cursor) {
+      parts.push(value.slice(cursor, start));
+    }
+
+    const key = `${keyPrefix}-${tokenIndex++}`;
+    if (token.startsWith("**")) {
+      parts.push(
+        <strong key={key}>
+          {renderInlineMarkdown(token.slice(2, -2), `${key}-strong`)}
+        </strong>,
+      );
+    } else if (token.startsWith("`")) {
+      parts.push(<code key={key}>{token.slice(1, -1)}</code>);
+    } else if (token.startsWith("_")) {
+      parts.push(
+        <em key={key}>{renderInlineMarkdown(token.slice(1, -1), `${key}-em`)}</em>,
+      );
+    } else {
+      const linkMatch = token.match(/^\[([^\[\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+        const [, label, href] = linkMatch;
+        const isExternalHref = /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//");
+        parts.push(
+          isExternalHref ? (
+            <a key={key} href={href} target="_blank" rel="noreferrer">
+              {label}
+            </a>
+          ) : (
+            <Link key={key} href={href}>
+              {label}
+            </Link>
+          ),
+        );
+      } else {
+        parts.push(token);
+      }
+    }
+
+    cursor = start + token.length;
+  }
+
+  if (cursor < value.length) {
+    parts.push(value.slice(cursor));
+  }
+
+  return parts;
+}
+
+function isTableLine(value: string) {
+  return /^\s*\|.*\|\s*$/.test(value);
+}
+
+function isTableSeparator(value: string) {
+  return /^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)+\|?\s*$/.test(value);
+}
+
+type MarkdownListKind = "ordered" | "unordered";
+
+type MarkdownListItem = {
+  content: string;
+  children: MarkdownListNode[];
+};
+
+type MarkdownListNode = {
+  kind: MarkdownListKind;
+  start: number | undefined;
+  items: MarkdownListItem[];
+};
+
+type MarkdownListLine = {
+  kind: MarkdownListKind;
+  indent: number;
+  number: number | undefined;
+  content: string;
+};
+
+function parseMarkdownListLine(value: string): MarkdownListLine | null {
+  const match = value.match(/^(\s*)(?:(\d+)\.\s+|-\s+)(.+)$/);
+  if (!match) return null;
+
+  return {
+    kind: match[2] ? "ordered" : "unordered",
+    indent: match[1].replace(/\t/g, "  ").length,
+    number: match[2] ? Number(match[2]) : undefined,
+    content: match[3],
+  };
+}
+
+function parseMarkdownList(
+  lines: string[],
+  startIndex: number,
+  kind: MarkdownListKind,
+  indent: number,
+): { node: MarkdownListNode; nextIndex: number } {
+  const node: MarkdownListNode = {
+    kind,
+    start: undefined,
+    items: [],
+  };
+  let index = startIndex;
+
+  while (index < lines.length) {
+    if (!lines[index].trim()) break;
+
+    const parsed = parseMarkdownListLine(lines[index]);
+    if (!parsed || parsed.indent < indent) break;
+
+    const currentItem = node.items[node.items.length - 1];
+    if (parsed.indent > indent) {
+      if (!currentItem) break;
+      const child = parseMarkdownList(lines, index, parsed.kind, parsed.indent);
+      currentItem.children.push(child.node);
+      index = child.nextIndex;
+      continue;
+    }
+
+    if (parsed.kind !== kind) break;
+    if (node.kind === "ordered" && node.start == null) {
+      node.start = parsed.number;
+    }
+    node.items.push({ content: parsed.content, children: [] });
+    index += 1;
+  }
+
+  return { node, nextIndex: index };
+}
+
+function renderMarkdownList(node: MarkdownListNode, keyPrefix: string) {
+  const items = node.items.map((item, itemIndex) => (
+    <li key={`${keyPrefix}-li-${itemIndex}`}>
+      {renderInlineMarkdown(item.content, `${keyPrefix}-li-${itemIndex}`)}
+      {item.children.map((child, childIndex) =>
+        renderMarkdownList(child, `${keyPrefix}-child-${itemIndex}-${childIndex}`),
+      )}
+    </li>
+  ));
+
+  if (node.kind === "ordered") {
+    return (
+      <ol key={keyPrefix} start={node.start} style={markdownListSpacing}>
+        {items}
+      </ol>
+    );
+  }
+
+  return (
+    <ul key={keyPrefix} style={markdownListSpacing}>
+      {items}
+    </ul>
+  );
+}
+
+function splitTableRow(value: string) {
+  return value
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function renderMarkdownBlocks(text: string): ReactNode[] {
+  const lines = text.split(/\r?\n/);
+  const blocks: ReactNode[] = [];
+  let index = 0;
+  let blockIndex = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim()) {
+      index += 1;
+      continue;
+    }
+
+    if (
+      isTableLine(line) &&
+      index + 1 < lines.length &&
+      isTableSeparator(lines[index + 1])
+    ) {
+      const header = splitTableRow(line);
+      index += 2;
+      const rows: string[][] = [];
+      while (index < lines.length && isTableLine(lines[index])) {
+        rows.push(splitTableRow(lines[index]));
+        index += 1;
+      }
+      blocks.push(
+        <table key={`table-${blockIndex++}`} style={markdownTableStyle}>
+          <thead>
+            <tr>
+              {header.map((cell, cellIndex) => (
+                <th key={cellIndex} style={markdownCellStyle}>
+                  {renderInlineMarkdown(cell, `th-${blockIndex}-${cellIndex}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {row.map((cell, cellIndex) => (
+                  <td key={cellIndex} style={markdownCellStyle}>
+                    {renderInlineMarkdown(cell, `td-${blockIndex}-${rowIndex}-${cellIndex}`)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>,
+      );
+      continue;
+    }
+
+    const listLine = parseMarkdownListLine(line);
+    if (listLine) {
+      const { node, nextIndex } = parseMarkdownList(
+        lines,
+        index,
+        listLine.kind,
+        listLine.indent,
+      );
+      blocks.push(renderMarkdownList(node, `list-${blockIndex++}`));
+      index = nextIndex;
+      continue;
+    }
+
+    const paragraphLines: string[] = [];
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !(
+        parseMarkdownListLine(lines[index]) ||
+        (isTableLine(lines[index]) &&
+          index + 1 < lines.length &&
+          isTableSeparator(lines[index + 1]))
+      )
+    ) {
+      paragraphLines.push(lines[index]);
+      index += 1;
+    }
+    blocks.push(
+      <p key={`p-${blockIndex++}`} style={markdownBlockSpacing}>
+        {renderInlineMarkdown(paragraphLines.join("\n"), `p-${blockIndex}`)}
+      </p>,
+    );
+  }
+
+  return blocks;
+}
+
+function MarkdownText({
+  text,
+  className,
+  style,
+}: {
+  text: string;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <div className={className} style={style}>
+      {renderMarkdownBlocks(text)}
+    </div>
+  );
 }
 
 function normalizeInterests(value: unknown): string[] {
@@ -128,7 +434,8 @@ function AtomList({ atoms }: { atoms: CuratedAtom[] }) {
           }}
         >
           <h3 style={{ margin: "0 0 6px", fontSize: 16 }}>{atom.title}</h3>
-          <p
+          <MarkdownText
+            text={atom.body}
             style={{
               color: "var(--ink)",
               fontSize: 14,
@@ -136,9 +443,7 @@ function AtomList({ atoms }: { atoms: CuratedAtom[] }) {
               margin: 0,
               whiteSpace: "pre-wrap",
             }}
-          >
-            {atom.body}
-          </p>
+          />
         </li>
       ))}
     </ul>
@@ -207,9 +512,11 @@ export function PathCuratedViewPage({ view }: Props) {
               <span className="num">{String(index + 1).padStart(2, "0")}</span>
               <h2 id={`curated-${block.key}-heading`}>{block.label}</h2>
             </div>
-            <p className="summary" style={{ whiteSpace: "pre-wrap" }}>
-              {block.value}
-            </p>
+            <MarkdownText
+              className="summary"
+              text={block.value}
+              style={{ whiteSpace: "pre-wrap" }}
+            />
           </section>
         ))}
 

@@ -156,6 +156,42 @@ async function seedPathAtomExplorer() {
       );
     }
 
+    const seedSlugPrefix = seed.slugPrefix;
+    const validAtomSlugs = seed.atoms.map((atom) => atom.slug);
+    const validViewSlugs = seed.curatedViews.map((view) => view.slug);
+
+    await tx.pathCuratedViewAtom.deleteMany({
+      where: {
+        OR: [
+          { curatedView: { stageId: stage.id, slug: { in: validViewSlugs } } },
+          {
+            curatedView: {
+              stageId: stage.id,
+              slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
+            },
+          },
+          {
+            atom: {
+              stageId: stage.id,
+              slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
+            },
+          },
+        ],
+      },
+    });
+    await tx.pathCuratedView.deleteMany({
+      where: {
+        stageId: stage.id,
+        slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
+      },
+    });
+    await tx.pathAtom.deleteMany({
+      where: {
+        stageId: stage.id,
+        slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
+      },
+    });
+
     const atomIdBySlug = new Map<string, number>();
     for (const atom of seed.atoms) {
       const { interests, ...rest } = atom;
