@@ -6,7 +6,6 @@ import "@testing-library/jest-dom/vitest";
 
 import { PathCuratedViewPage } from "@/components/path/path-curated-view";
 import { selectSlot, type SlotAtom } from "@/lib/path/curated-slot";
-import { prisma } from "@/lib/prisma";
 import { G1_MAY_ATOM_SEED } from "../../docs/research/data/g1-may-atoms";
 
 const LIXIA_SLUG = "g1-may-lixia-solar-term";
@@ -24,25 +23,6 @@ type CuratedViewProp = ComponentProps<typeof PathCuratedViewPage>["view"];
 function normalizeInterests(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string");
-}
-
-async function loadSeededView(slug: string): Promise<CuratedViewProp> {
-  const view = await prisma.pathCuratedView.findUnique({
-    where: { slug },
-    include: {
-      atoms: {
-        include: { atom: true },
-        orderBy: { id: "asc" },
-      },
-    },
-  });
-
-  expect(view).not.toBeNull();
-  if (!view) {
-    throw new Error(`${slug} curated view must be seeded`);
-  }
-
-  return view;
 }
 
 function viewFromSeed(slug: string): CuratedViewProp {
@@ -124,8 +104,8 @@ function directListItems(list: Element) {
 }
 
 describe("PathCuratedViewPage", () => {
-  it("renders authored prose verbatim and splits atoms into tight and explore slots", async () => {
-    const view = await loadSeededView(LIXIA_SLUG);
+  it("renders authored prose verbatim and splits atoms into tight and explore slots", () => {
+    const view = viewFromSeed(LIXIA_SLUG);
 
     const slotAtoms: SlotAtom[] = view.atoms
       .map(({ atom }) => ({
@@ -208,7 +188,7 @@ describe("PathCuratedViewPage", () => {
     expect(exploreIntro.textContent).not.toMatch(/顺路|又不亏|不亏|反正/);
   });
 
-  it("renders real seed atom markdown as structured tables and nested routes", async () => {
+  it("renders real seed atom markdown as structured tables and nested routes", () => {
     const dongtan = viewFromSeed("g1-may-dongtan-migration-tail");
     const dongtanRender = render(<PathCuratedViewPage view={dongtan} />);
 
@@ -249,8 +229,8 @@ describe("PathCuratedViewPage", () => {
     );
   });
 
-  it("uses source-authored labels for baseline and labor budget prose", async () => {
-    const baseline = await loadSeededView("g1-may-baseline");
+  it("uses source-authored labels for baseline and labor budget prose", () => {
+    const baseline = viewFromSeed("g1-may-baseline");
     const baselineRender = render(<PathCuratedViewPage view={baseline} />);
 
     expect(screen.getByRole("region", { name: "时间占用" })).toHaveTextContent(
@@ -262,7 +242,7 @@ describe("PathCuratedViewPage", () => {
 
     baselineRender.unmount();
 
-    const labor = await loadSeededView("g1-may-labor-holiday");
+    const labor = viewFromSeed("g1-may-labor-holiday");
     render(<PathCuratedViewPage view={labor} />);
 
     expect(screen.getByRole("region", { name: "时间预算" })).toHaveTextContent(
@@ -273,8 +253,8 @@ describe("PathCuratedViewPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("uses source-authored labels for trigger and time-window prose", async () => {
-    const labor = await loadSeededView("g1-may-labor-holiday");
+  it("uses source-authored labels for trigger and time-window prose", () => {
+    const labor = viewFromSeed("g1-may-labor-holiday");
     const laborRender = render(<PathCuratedViewPage view={labor} />);
 
     expect(screen.getByRole("region", { name: "触发条件" })).toHaveTextContent(
@@ -283,7 +263,7 @@ describe("PathCuratedViewPage", () => {
 
     laborRender.unmount();
 
-    const dongtan = await loadSeededView("g1-may-dongtan-migration-tail");
+    const dongtan = viewFromSeed("g1-may-dongtan-migration-tail");
     const dongtanRender = render(<PathCuratedViewPage view={dongtan} />);
 
     expect(screen.getByRole("region", { name: "触发条件" })).toHaveTextContent(
@@ -295,7 +275,7 @@ describe("PathCuratedViewPage", () => {
 
     dongtanRender.unmount();
 
-    const neighborhood = await loadSeededView("g1-may-neighborhood-ecology");
+    const neighborhood = viewFromSeed("g1-may-neighborhood-ecology");
     render(<PathCuratedViewPage view={neighborhood} />);
 
     expect(screen.getByRole("region", { name: "触发条件" })).toHaveTextContent(

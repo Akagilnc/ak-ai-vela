@@ -52,4 +52,3 @@ Results:
 - Prisma schema validation: valid.
 - Diff whitespace check: passed.
 - Protected hook files: no diff.
-

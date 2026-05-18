@@ -3,6 +3,52 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+const MOCK_CURATED_VIEWS = vi.hoisted(() => [
+  {
+    slug: "g1-may-baseline",
+    title: "5 月底盘",
+    leadLine: "5 月春末夏初，天气刚好。",
+    whySpecial: "一个月 3-5 次 weekend 半天。",
+  },
+  {
+    slug: "g1-may-dongtan-migration-tail",
+    title: "东滩迁徙尾声段",
+    leadLine: "每年 5 月上中旬，春季候鸟最后一批离开上海。",
+    whySpecial: "春季鸟类迁徙主季是 3-4 月。",
+  },
+  {
+    slug: "g1-may-labor-holiday",
+    title: "劳动节 5 天段",
+    leadLine: "每年 5/1-5 假期。",
+    whySpecial: "5 天里用 1-2 天做 nature-themed 活动。",
+  },
+  {
+    slug: "g1-may-lixia-solar-term",
+    title: "立夏节气段",
+    leadLine: "每年 5 月上旬立夏节气。",
+    whySpecial: "立夏是 culture + nature 双触发点。",
+  },
+  {
+    slug: "g1-may-neighborhood-ecology",
+    title: "初夏家门口生态段",
+    leadLine: "每年 5 月下旬起，第一批初夏物种开始出现。",
+    whySpecial: "她家 50 米内就有 100 种生物。",
+  },
+]);
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    pathCuratedView: {
+      findMany: async () => MOCK_CURATED_VIEWS.map(({ slug }) => ({ slug })),
+    },
+  },
+}));
+
+vi.mock("@/lib/path/curated-view-query", () => ({
+  loadCuratedView: async (slug: string) =>
+    MOCK_CURATED_VIEWS.find((view) => view.slug === slug) ?? null,
+}));
+
 import ErrorBoundary from "@/app/path/seg/[slug]/error";
 import PathCuratedSegmentLayout from "@/app/path/seg/[slug]/layout";
 import Loading from "@/app/path/seg/[slug]/loading";
