@@ -235,6 +235,7 @@ model PathCuratedView {
   heart                  String?
   output                 String?
   serendipity            String?
+  proseBlocks            Json?
   defaultTightRatio      Int      @default(50)
   frictionCeilingDefault Int      @default(3)
   displayOrder           Int

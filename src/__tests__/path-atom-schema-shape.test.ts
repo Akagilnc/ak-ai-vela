@@ -69,6 +69,7 @@ describe("Path atom schema shape", () => {
       { name: "heart", kind: "scalar", type: "String" },
       { name: "output", kind: "scalar", type: "String" },
       { name: "serendipity", kind: "scalar", type: "String" },
+      { name: "proseBlocks", kind: "scalar", type: "Json" },
       { name: "defaultTightRatio", kind: "scalar", type: "Int" },
       { name: "frictionCeilingDefault", kind: "scalar", type: "Int" },
       { name: "displayOrder", kind: "scalar", type: "Int" },

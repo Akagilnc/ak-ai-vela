@@ -20,6 +20,13 @@ const CADENCE_ROLES = [
 ] as const;
 const SETTINGS = ["OUTDOOR", "INDOOR", "EITHER"] as const;
 const INTERESTS = PATH_INTEREST_TAGS;
+const USER_FACING_VIEW_SCALAR_KEYS = [
+  "leadLine",
+  "whySpecial",
+  "heart",
+  "output",
+  "serendipity",
+] as const;
 
 const EXPECTED_VIEW_ATOM_COUNTS: Record<string, number> = {
   "g1-may-baseline": 6,
@@ -29,10 +36,240 @@ const EXPECTED_VIEW_ATOM_COUNTS: Record<string, number> = {
   "g1-may-neighborhood-ecology": 4,
 };
 
+const EXPECTED_CURATED_PROSE_KEYS: Record<string, string[]> = {
+  "g1-may-baseline": ["leadLine", "timeBudget", "output", "heart"],
+  "g1-may-labor-holiday": [
+    "leadLine",
+    "precondition",
+    "timeBudget",
+    "output",
+    "pitfalls",
+    "heart",
+  ],
+  "g1-may-lixia-solar-term": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "output",
+    "heart",
+  ],
+  "g1-may-dongtan-migration-tail": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "prepGuide",
+    "howTo",
+    "output",
+    "pitfalls",
+    "backupPlan",
+    "backupHeart",
+    "heart",
+  ],
+  "g1-may-neighborhood-ecology": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "speciesGuide",
+    "howTo",
+    "output",
+    "pitfalls",
+    "heart",
+    "sources",
+  ],
+};
+
+const EXPECTED_CURATED_PROSE_SNIPPETS: Record<string, string[]> = {
+  "g1-may-labor-holiday": [
+    "家里有基本出行 planning 能力，没特别要求。",
+    "5/1-3 上海各场馆人流峰值。提前预约票 + 尽量挪到 5/4 或 5/5。",
+  ],
+  "g1-may-lixia-solar-term": [
+    "无。",
+    "1-2 小时，不占 weekend 半天。",
+  ],
+  "g1-may-dongtan-migration-tail": [
+    "**可能看到的候鸟（春末 5 月上中旬典型 5 种）**",
+    "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org)",
+    "6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。",
+    "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：",
+  ],
+  "g1-may-neighborhood-ecology": [
+    "家附近有任何绿化（小区内花坛 / 楼下绿地 / 社区公园即可）。完全 0 门槛。",
+    "一次 15-30 分钟。可以拆成一周 2-3 次，每次 15 分钟。",
+    "**5 种家门口可见的初夏生物**（带辨识特征）",
+  ],
+};
+
+const EXPECTED_CURATED_PROSE_SOURCE_RANGES: Record<
+  string,
+  Record<string, readonly [start: string, end: string]>
+> = {
+  "g1-may-baseline": {
+    leadLine: ["5 月春末夏初，天气刚好。", "周末 routine 2-3 次小 action 保持观察本在用。"],
+    timeBudget: ["一个月 3-5 次 weekend 半天。", "留一半以上给别的。"],
+    output: ["本子多 1-3 页图文；", "视频 1-2 期。"],
+    heart: ['5 月是过渡月，不追求"做什么大事"。', "你能坚持 4 月的 routine 就是胜利。"],
+  },
+  "g1-may-labor-holiday": {
+    leadLine: ["每年 5/1-5 假期。", "5/5（周二）。"],
+    precondition: [
+      "家里有基本出行 planning 能力，没特别要求。",
+      "家里有基本出行 planning 能力，没特别要求。",
+    ],
+    timeBudget: [
+      "5 天里用 **1-2 天** 做 nature-themed 活动，",
+      "不要 5 天全排 Vela。",
+    ],
+    output: ["一次 mini-trip，", "观察本上 1-2 页新地方的记录。"],
+    pitfalls: ["5/1-3 上海各场馆人流峰值。", "尽量挪到 5/4 或 5/5。"],
+    heart: ['劳动节不是"冲刺日程"，', "不在于多。"],
+  },
+  "g1-may-lixia-solar-term": {
+    leadLine: ["每年 5 月上旬立夏节气。", "刚好在劳动节假期内。"],
+    precondition: ["无。", "无。"],
+    time: ["1-2 小时，不占 weekend 半天。", "1-2 小时，不占 weekend 半天。"],
+    whySpecial: [
+      "立夏是 culture + nature 双触发点",
+      "一年 24 节气是她和自然对表的锚点。",
+    ],
+    output: [
+      "节气 log 1 页 + 家里 1 个 artifact",
+      "这是 portfolio 里不刻意的 serendipity。",
+    ],
+    heart: ["节气不是传统文化 performance，", '不只是"放假 / 上学"。'],
+  },
+  "g1-may-dongtan-migration-tail": {
+    leadLine: [
+      "每年 5 月上中旬，春季候鸟最后一批离开上海。",
+      "基本看不到了。",
+    ],
+    precondition: [
+      "至少 1 次场馆观察经验（有\"安静看动物\"的习惯）。",
+      "改用佘山 / 世纪公园 + 望远镜替代。",
+    ],
+    time: ["半天，6-8 小时含往返交通。", "半天，6-8 小时含往返交通。"],
+    whySpecial: [
+      "春季鸟类迁徙主季是 3-4 月，",
+      '这是她第一次理解"自然有档期"的机会。',
+    ],
+    prepGuide: [
+      "**可能看到的候鸟（春末 5 月上中旬典型 5 种）**",
+      "不求 5 种全看到，能认出 1-2 种就是这一次的收获。",
+    ],
+    howTo: [
+      "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。",
+      "文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。",
+    ],
+    output: [
+      "迁徙季最后一次观察记录。",
+      "portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
+    ],
+    pitfalls: ["5 月中旬后基本看不到春季候鸟，别白跑。", "宁可 5/10 前去。"],
+    backupPlan: [
+      'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
+      "- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）",
+    ],
+    backupHeart: [
+      '提前准备 2-3 个"退一步也 OK"的替代方案，',
+      '这个基线比"每次都看到鸟"更重要。',
+    ],
+    heart: ["自然有档期。错过这次等半年。", "这条经验她会记很久。"],
+  },
+  "g1-may-neighborhood-ecology": {
+    leadLine: [
+      "每年 5 月下旬起（上海大致 5/20 后），",
+      "第一批初夏物种开始在城市绿化 / 小区 / 公园大量出现。",
+    ],
+    precondition: [
+      "家附近有任何绿化（小区内花坛 / 楼下绿地 / 社区公园即可）。",
+      "完全 0 门槛。",
+    ],
+    time: ["一次 15-30 分钟。", "可以拆成一周 2-3 次，每次 15 分钟。"],
+    whySpecial: [
+      "前面几张卡（场馆 / 东滩 / 节气）都有某种",
+      "低门槛、高频次，是月度 baseline 的支撑面。",
+    ],
+    speciesGuide: [
+      "**5 种家门口可见的初夏生物**（带辨识特征）",
+      "不是只有东滩才有鸟 |",
+    ],
+    howTo: [
+      "1. **蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝",
+      "她能分出 2 种就够。",
+    ],
+    output: [
+      '本子上的 "家门口生物 count"——一个月累积能记 10-20 种。',
+      "这个数字她自己看着会长骄傲。",
+    ],
+    pitfalls: [
+      "- **别用昆虫盒装回家**。",
+      '中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。',
+    ],
+    heart: ["自然不只在远方的保护区。", "家门口生态是 daily baseline。"],
+    sources: [
+      "- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）",
+      '- iNaturalist APP 里"上海" 区域的 top observed species list',
+    ],
+  },
+};
+
+const PARENT_FACING_SOURCE_MD = SOURCE_MD.replaceAll(
+  '（**不写**"反正顺路/又不亏"那种）',
+  "",
+)
+  .replaceAll("| 图 | 中文名 | 辨识特征 | 难度 |", "| 中文名 | 辨识特征 | 难度 |")
+  .replaceAll(
+    "| 图 | 物种 | 家门口哪看 | 怎么让 G1 记住 |",
+    "| 物种 | 家门口哪看 | 怎么让 G1 记住 |",
+  )
+  .replaceAll("|---|---|---|---|", "|---|---|---|")
+  .replaceAll(
+    "_(Vela ship 时图片直接内嵌到卡里，家长不用自己去查。图源 Day 3 authoring 时确定：Wikipedia CC 或 iNaturalist CC 授权照片优先。)_\n\n",
+    "",
+  )
+  .replaceAll("_(Vela ship 时图片内嵌在卡里)_\n\n", "")
+  .replace(/^\| `\[图：[^\]]+\]` \| /gm, "| ");
+
 function atomBody(slug: string): string {
   const atom = G1_MAY_ATOM_SEED.atoms.find((item) => item.slug === slug);
   if (!atom) throw new Error(`${slug} atom must exist`);
   return atom.body;
+}
+
+function viewProse(slug: string): string {
+  const view = G1_MAY_ATOM_SEED.curatedViews.find((item) => item.slug === slug);
+  if (!view) throw new Error(`${slug} view must exist`);
+  return view.proseBlocks.map((block) => `${block.label}\n${block.value}`).join("\n\n");
+}
+
+function viewProseBlock(slug: string, key: string) {
+  const view = G1_MAY_ATOM_SEED.curatedViews.find((item) => item.slug === slug);
+  if (!view) throw new Error(`${slug} view must exist`);
+  const block = view.proseBlocks.find((item) => item.key === key);
+  if (!block) throw new Error(`${slug}.${key} prose block must exist`);
+  return block;
+}
+
+function sourceRange(start: string, end: string): string {
+  const startIndex = PARENT_FACING_SOURCE_MD.indexOf(start);
+  expect(startIndex, `${start} must exist in sanitized source MD`).toBeGreaterThanOrEqual(
+    0,
+  );
+  const endIndex = PARENT_FACING_SOURCE_MD.indexOf(end, startIndex);
+  expect(endIndex, `${end} must exist after ${start}`).toBeGreaterThanOrEqual(0);
+  return PARENT_FACING_SOURCE_MD.slice(startIndex, endIndex + end.length).trim();
+}
+
+function expectProseBlockEqualsSourceRange(
+  slug: string,
+  key: string,
+  start: string,
+  end: string,
+): void {
+  expect(viewProseBlock(slug, key).value).toBe(sourceRange(start, end));
 }
 
 function expectCopiedSnippet(target: string, snippet: string): void {
@@ -110,12 +347,30 @@ describe("G1 May atom seed", () => {
   });
 
   it("does not leak internal authoring annotations into parent-facing atom bodies", () => {
-    const combined = G1_MAY_ATOM_SEED.atoms
-      .map((atom) => `${atom.title}\n${atom.body}`)
-      .join("\n\n");
+    const combined = [
+      ...G1_MAY_ATOM_SEED.atoms.map((atom) => `${atom.title}\n${atom.body}`),
+      ...G1_MAY_ATOM_SEED.curatedViews.flatMap((view) => [
+        view.title,
+        ...view.proseBlocks.map((block) => `${block.label}\n${block.value}`),
+        ...USER_FACING_VIEW_SCALAR_KEYS.flatMap((key) => {
+          const value = view[key];
+          return value ? [`${key}\n${value}`] : [];
+        }),
+      ]),
+    ].join("\n\n");
 
     expect(combined).not.toContain("兴趣对得上才进贴身");
-    expect(combined).not.toContain("失败友好 backup");
+    expect(combined).not.toContain("偏自然观察的娃才进贴身");
+    expect(combined).not.toContain("失败友好");
+    expect(combined).not.toContain("backup 设计哲学");
+    expect(combined).not.toContain("槽 =");
+    expect(combined).not.toContain("家庭风格函数");
+    expect(combined).not.toContain("无信号兜底");
+    expect(combined).not.toContain("折腾天花板");
+    expect(combined).not.toContain("探索席位");
+    expect(combined).not.toContain("读数下的一种填法示例");
+    expect(combined).not.toContain("可调旋钮");
+    expect(combined).not.toContain("文案给家长");
     expect(combined).not.toContain("样板自检");
     expect(combined).not.toContain("authoring 单元");
     expect(combined).not.toContain("Day 3 authoring");
@@ -123,14 +378,20 @@ describe("G1 May atom seed", () => {
     expect(combined).not.toContain("图源 Day");
     expect(combined).not.toContain("CC 授权");
     expect(combined).not.toContain("[图：");
+    expect(combined).not.toContain("**不写**");
+    expect(combined).not.toContain("反正顺路");
+    expect(combined).not.toContain("又不亏");
   });
 
-  it("keeps source citations scoped to the authored neighborhood ecology atom", () => {
+  it("keeps source citations scoped to the authored neighborhood ecology prose block", () => {
     const sourceBearingAtomSlugs = G1_MAY_ATOM_SEED.atoms
       .filter((atom) => atom.body.includes("**Sources**"))
       .map((atom) => atom.slug);
 
-    expect(sourceBearingAtomSlugs).toEqual(["g1-may-neighborhood-bird-sounds"]);
+    expect(sourceBearingAtomSlugs).toEqual([]);
+    expect(viewProseBlock("g1-may-neighborhood-ecology", "sources").value).toContain(
+      "iNaturalist APP",
+    );
   });
 
   it("keeps museum routes, age adjustments, trivia, and source notes in atom bodies", () => {
@@ -165,8 +426,8 @@ describe("G1 May atom seed", () => {
     }
   });
 
-  it("keeps Dongtan rich parent prose in atom bodies instead of compressed notes", () => {
-    const main = atomBody("g1-may-dongtan-birding-main");
+  it("keeps Dongtan rich parent prose in curated prose blocks", () => {
+    const prose = viewProse("g1-may-dongtan-migration-tail");
 
     for (const bird of [
       "反嘴鹬",
@@ -175,7 +436,7 @@ describe("G1 May atom seed", () => {
       "黑腹滨鹬",
       "红嘴鸥",
     ]) {
-      expectCopiedSnippet(main, bird);
+      expectCopiedSnippet(prose, bird);
     }
 
     for (const snippet of [
@@ -198,12 +459,59 @@ describe("G1 May atom seed", () => {
       "**产出**：迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
       "**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。",
       'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
-      '**重要心法**（backup 设计哲学）：**预设"失败友好" 的 2-3 个 backup**，家长敢带孩子出门。',
-      '一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。',
+      "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)",
+      "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：",
+      '**重要心法**：提前准备 2-3 个"退一步也 OK"的替代方案，家长才敢带孩子出门。',
       "**心法**：自然有档期。错过这次等半年。这条经验她会记很久。",
     ]) {
-      expectCopiedSnippet(main, snippet);
+      const sourceSnippet = snippet
+        .replace("**前置**：", "")
+        .replace("**时间**：", "")
+        .replace("**为什么是这个时间窗**：", "")
+        .replace("**产出**：", "")
+        .replace("**避坑**：", "")
+        .replace("**重要心法**：", "")
+        .replace("**心法**：", "");
+      expect(SOURCE_MD, `${snippet} must exist in source MD`).toContain(sourceSnippet);
+      expect(prose, `${snippet} must be copied into curated prose`).toContain(
+        sourceSnippet,
+      );
     }
+
+    expectProseBlockEqualsSourceRange(
+      "g1-may-dongtan-migration-tail",
+      "prepGuide",
+      "**可能看到的候鸟（春末 5 月上中旬典型 5 种）**",
+      "不求 5 种全看到，能认出 1-2 种就是这一次的收获。",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-dongtan-migration-tail",
+      "howTo",
+      "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。",
+      "文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-dongtan-migration-tail",
+      "pitfalls",
+      "5 月中旬后基本看不到春季候鸟，别白跑。",
+      "宁可 5/10 前去。",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-dongtan-migration-tail",
+      "backupPlan",
+      'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
+      "- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-dongtan-migration-tail",
+      "backupHeart",
+      '提前准备 2-3 个"退一步也 OK"的替代方案，',
+      '这个基线比"每次都看到鸟"更重要。',
+    );
+
+    expect(atomBody("g1-may-dongtan-birding-main")).not.toContain(
+      "2026-05-10 东滩",
+    );
 
     expect(atomBody("g1-may-dongping-forest-backup")).toContain(
       "崇明岛内 [东平国家森林公园](http://www.dpforest.com)",
@@ -219,7 +527,39 @@ describe("G1 May atom seed", () => {
     );
   });
 
-  it("keeps neighborhood species, how-to, pitfalls, and heart in atom bodies", () => {
+  it("keeps scalar curated prose blocks exact instead of substring-only", () => {
+    for (const [slug, ranges] of Object.entries({
+      "g1-may-baseline": [
+        ["leadLine", "5 月春末夏初，天气刚好。", "周末 routine 2-3 次小 action 保持观察本在用。"],
+        ["timeBudget", "一个月 3-5 次 weekend 半天。", "留一半以上给别的。"],
+        ["output", "本子多 1-3 页图文；", "视频 1-2 期。"],
+        ["heart", '5 月是过渡月，不追求"做什么大事"。', "你能坚持 4 月的 routine 就是胜利。"],
+      ],
+      "g1-may-labor-holiday": [
+        ["leadLine", "每年 5/1-5 假期。", "5/5（周二）。"],
+        ["precondition", "家里有基本出行 planning 能力，没特别要求。", "家里有基本出行 planning 能力，没特别要求。"],
+        ["timeBudget", "5 天里用 **1-2 天** 做 nature-themed 活动，", "不要 5 天全排 Vela。"],
+        ["output", "一次 mini-trip，", "观察本上 1-2 页新地方的记录。"],
+        ["pitfalls", "5/1-3 上海各场馆人流峰值。", "尽量挪到 5/4 或 5/5。"],
+        ["heart", '劳动节不是"冲刺日程"，', "不在于多。"],
+      ],
+      "g1-may-lixia-solar-term": [
+        ["leadLine", "每年 5 月上旬立夏节气。", "刚好在劳动节假期内。"],
+        ["precondition", "无。", "无。"],
+        ["time", "1-2 小时，不占 weekend 半天。", "1-2 小时，不占 weekend 半天。"],
+        ["whySpecial", "立夏是 culture + nature 双触发点", "一年 24 节气是她和自然对表的锚点。"],
+        ["output", "节气 log 1 页 + 家里 1 个 artifact", "这是 portfolio 里不刻意的 serendipity。"],
+        ["heart", "节气不是传统文化 performance，", '不只是"放假 / 上学"。'],
+      ],
+    })) {
+      for (const [key, start, end] of ranges) {
+        expectProseBlockEqualsSourceRange(slug, key, start, end);
+      }
+    }
+  });
+
+  it("keeps neighborhood species, how-to, pitfalls, and heart in curated prose", () => {
+    const prose = viewProse("g1-may-neighborhood-ecology");
     const combined = [
       "g1-may-neighborhood-ant-trail",
       "g1-may-neighborhood-butterfly-tracking",
@@ -230,10 +570,11 @@ describe("G1 May atom seed", () => {
       .join("\n\n");
 
     expect(SOURCE_MD).toContain("**Sources**（Day 3 authoring 补全）：");
-    expect(combined).toContain("**Sources**：");
+    expect(combined).not.toContain("**Sources**");
+    expect(prose).toContain("iNaturalist APP");
 
     for (const species of ["菜粉蝶", "玉带凤蝶", "家蚁", "西瓜虫", "树麻雀"]) {
-      expectCopiedSnippet(combined, species);
+      expectCopiedSnippet(prose, species);
     }
 
     for (const snippet of [
@@ -247,7 +588,7 @@ describe("G1 May atom seed", () => {
       "**蝴蝶追踪**（20 分钟）",
       "**潮虫探险**（10 分钟）",
       "**楼下鸟声**（5 分钟）",
-      '**产出**：本子上的 "家门口生物 count"——一个月累积能记 10-20 种。',
+      '本子上的 "家门口生物 count"——一个月累积能记 10-20 种。',
       "**别用昆虫盒装回家**",
       "**别用杀虫剂 / 驱蚊液喷她的观察对象**。",
       "**别强求\"记住拉丁名\"**。",
@@ -256,8 +597,44 @@ describe("G1 May atom seed", () => {
       "- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）",
       "- iNaturalist APP 里\"上海\" 区域的 top observed species list",
     ]) {
-      expectCopiedSnippet(combined, snippet);
+      expectCopiedSnippet(prose, snippet);
     }
+
+    expectProseBlockEqualsSourceRange(
+      "g1-may-neighborhood-ecology",
+      "speciesGuide",
+      "**5 种家门口可见的初夏生物**（带辨识特征）",
+      "不是只有东滩才有鸟 |",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-neighborhood-ecology",
+      "howTo",
+      "1. **蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝",
+      "她能分出 2 种就够。",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-neighborhood-ecology",
+      "pitfalls",
+      "- **别用昆虫盒装回家**。",
+      '中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。',
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-neighborhood-ecology",
+      "heart",
+      "自然不只在远方的保护区。",
+      "家门口生态是 daily baseline。",
+    );
+    expectProseBlockEqualsSourceRange(
+      "g1-may-neighborhood-ecology",
+      "sources",
+      "- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）",
+      '- iNaturalist APP 里"上海" 区域的 top observed species list',
+    );
+
+    expect(combined).toContain("**蚁道观察**（15 分钟）");
+    expect(combined).toContain("**蝴蝶追踪**（20 分钟）");
+    expect(combined).toContain("**潮虫探险**（10 分钟）");
+    expect(combined).toContain("**楼下鸟声**（5 分钟）");
   });
 
   it("derives multi-value atom interests from the MD tags instead of hardcoding nature", () => {
@@ -356,6 +733,40 @@ describe("G1 May atom seed", () => {
         expect(SOURCE_MD, `${view.slug}.${field} must be copied verbatim`).toContain(
           value,
         );
+      }
+
+      const proseBlocks = view.proseBlocks ?? [];
+      const expectedProseKeys = EXPECTED_CURATED_PROSE_KEYS[view.slug];
+      const expectedSourceRanges = EXPECTED_CURATED_PROSE_SOURCE_RANGES[view.slug];
+      if (!expectedProseKeys) {
+        throw new Error(`${view.slug} must declare expected prose block coverage`);
+      }
+      if (!expectedSourceRanges) {
+        throw new Error(`${view.slug} must declare exact source ranges`);
+      }
+      expect(Object.keys(expectedSourceRanges), `${view.slug}.source ranges`).toEqual(
+        expectedProseKeys,
+      );
+      expect(
+        proseBlocks.map((block) => block.key),
+        `${view.slug}.proseBlocks keys`,
+      ).toEqual(expectedProseKeys);
+      expect(proseBlocks.length, `${view.slug}.proseBlocks`).toBeGreaterThan(0);
+      for (const block of proseBlocks) {
+        const range = expectedSourceRanges[block.key];
+        if (!range) throw new Error(`${view.slug}.${block.key} source range missing`);
+        expect(block.label, `${view.slug}.${block.key}.label`).toBeTruthy();
+        expect(block.value, `${view.slug}.${block.key}.value`).toBeTruthy();
+        expect(block.value, `${view.slug}.${block.key} must be copied verbatim`).toBe(
+          sourceRange(...range),
+        );
+      }
+
+      for (const snippet of EXPECTED_CURATED_PROSE_SNIPPETS[view.slug] ?? []) {
+        expect(
+          proseBlocks.some((block) => block.value.includes(snippet)),
+          `${view.slug} must preserve source snippet: ${snippet}`,
+        ).toBe(true);
       }
     }
   });

@@ -208,10 +208,17 @@ async function seedPathAtomExplorer() {
 
     const viewIdBySlug = new Map<string, number>();
     for (const view of seed.curatedViews) {
+      const { proseBlocks, ...rest } = view;
+      const jsonFields = {
+        proseBlocks:
+          proseBlocks == null
+            ? Prisma.JsonNull
+            : (proseBlocks as unknown as Prisma.InputJsonValue),
+      };
       const row = await tx.pathCuratedView.upsert({
-        where: { slug: view.slug },
-        update: { ...view, stageId: stage.id },
-        create: { ...view, stageId: stage.id },
+        where: { slug: rest.slug },
+        update: { ...rest, ...jsonFields, stageId: stage.id },
+        create: { ...rest, ...jsonFields, stageId: stage.id },
       });
       viewIdBySlug.set(row.slug, row.id);
     }

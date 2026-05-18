@@ -15,8 +15,6 @@ const LIXIA_WHY_SPECIAL =
   "立夏是 culture + nature 双触发点——有传统习俗（秤人、立夏蛋、养蚕），也是春末转夏的明显自然变化节点。一年 24 节气是她和自然对表的锚点。";
 const LIXIA_HEART =
   '节气不是传统文化 performance，是季节感的 anchor。让她知道一年的 cycle 不只是"放假 / 上学"。';
-const LIXIA_SERENDIPITY =
-  "每年 5 月 5 日她再看这一页，会看到自己 1 年的变化 layer——这是 portfolio 里不刻意的 serendipity。";
 
 type CuratedViewProp = ComponentProps<typeof PathCuratedViewPage>["view"];
 
@@ -59,6 +57,7 @@ function viewFromSeed(slug: string): CuratedViewProp {
     heart: view.heart,
     output: view.output,
     serendipity: view.serendipity,
+    proseBlocks: view.proseBlocks,
     defaultTightRatio: view.defaultTightRatio,
     frictionCeilingDefault: view.frictionCeilingDefault,
     atoms,
@@ -103,6 +102,11 @@ function directListItems(list: Element) {
   );
 }
 
+function renderedSectionLabels(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>("main > section.d-sec"))
+    .map((section) => section.dataset.target ?? "");
+}
+
 describe("PathCuratedViewPage", () => {
   it("renders authored prose verbatim and splits atoms into tight and explore slots", () => {
     const view = viewFromSeed(LIXIA_SLUG);
@@ -135,7 +139,7 @@ describe("PathCuratedViewPage", () => {
       return atom;
     }
 
-    render(<PathCuratedViewPage view={view} />);
+    const lixiaRender = render(<PathCuratedViewPage view={view} />);
 
     expect(
       screen.getByRole("heading", { name: "立夏节气段" }),
@@ -143,20 +147,40 @@ describe("PathCuratedViewPage", () => {
 
     const proseRegions = [
       "触发条件",
+      "前置",
+      "时间",
       "为什么特别",
-      "心法",
       "产出",
-      "serendipity",
+      "心法",
     ].map((name) => screen.getByRole("region", { name }));
-    expect(proseRegions).toHaveLength(5);
+    expect(renderedSectionLabels(lixiaRender.container).slice(0, 6)).toEqual([
+      "触发条件",
+      "前置",
+      "时间",
+      "为什么特别",
+      "产出",
+      "心法",
+    ]);
     expect(proseRegions[0]).toHaveTextContent(firstRenderedSnippet(LIXIA_LEAD_LINE));
-    expect(proseRegions[1]).toHaveTextContent(LIXIA_WHY_SPECIAL);
-    expect(proseRegions[2]).toHaveTextContent(LIXIA_HEART);
-    expect(proseRegions[3]).toHaveTextContent(
+    expect(proseRegions[1]).toHaveTextContent("无。");
+    expect(proseRegions[2]).toHaveTextContent("1-2 小时，不占 weekend 半天");
+    expect(proseRegions[3]).toHaveTextContent(LIXIA_WHY_SPECIAL);
+    expect(
+      screen.queryByRole("region", {
+        name: "做什么（从下面挑 2-3 项组合，不用全做）",
+      }),
+    ).not.toBeInTheDocument();
+    expect(proseRegions[4]).toHaveTextContent(
       "节气 log 1 页 + 家里 1 个 artifact",
     );
-    expect(within(proseRegions[3]).getByText("关键")).toBeInTheDocument();
-    expect(proseRegions[4]).toHaveTextContent(LIXIA_SERENDIPITY);
+    expect(within(proseRegions[4]).getByText("关键")).toBeInTheDocument();
+    expect(proseRegions[5]).toHaveTextContent(LIXIA_HEART);
+    expect(
+      screen.queryByRole("region", { name: "serendipity" }),
+    ).not.toBeInTheDocument();
+    expect(
+      proseRegions[4].textContent?.match(/portfolio 里不刻意的 serendipity/g),
+    ).toHaveLength(1);
 
     const tightRegion = screen.getByRole("region", { name: "贴身" });
     const exploreRegion = screen.getByRole("region", { name: "探索" });
@@ -195,7 +219,9 @@ describe("PathCuratedViewPage", () => {
     const birdTable = screen.getByRole("table");
     expect(birdTable).toHaveTextContent("反嘴鹬");
     expect(birdTable).toHaveTextContent("黑翅长脚鹬");
-    expect(screen.getByText("2026-05-10 东滩").tagName).toBe("CODE");
+    const dongtanFolderNames = screen.getAllByText("2026-05-10 东滩");
+    expect(dongtanFolderNames).toHaveLength(1);
+    expect(dongtanFolderNames[0].tagName).toBe("CODE");
     expect(screen.queryByText(/`2026-05-10 东滩`/)).not.toBeInTheDocument();
 
     dongtanRender.unmount();
@@ -253,6 +279,67 @@ describe("PathCuratedViewPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders ordered source prose blocks that do not fit the legacy five fields", () => {
+    const baseline = viewFromSeed("g1-may-baseline");
+    const baselineRender = render(<PathCuratedViewPage view={baseline} />);
+
+    expect(renderedSectionLabels(baselineRender.container).slice(0, 4)).toEqual([
+      "一句话",
+      "时间占用",
+      "产出",
+      "心法",
+    ]);
+    expect(screen.getByRole("region", { name: "时间占用" })).toHaveTextContent(
+      "≤ 总周末时间 40%",
+    );
+
+    baselineRender.unmount();
+
+    const labor = viewFromSeed("g1-may-labor-holiday");
+    const laborRender = render(<PathCuratedViewPage view={labor} />);
+
+    expect(renderedSectionLabels(laborRender.container).slice(0, 6)).toEqual([
+      "触发条件",
+      "前置",
+      "时间预算",
+      "产出",
+      "避坑",
+      "心法",
+    ]);
+    expect(screen.getByRole("region", { name: "前置" })).toHaveTextContent(
+      "家里有基本出行 planning 能力",
+    );
+    expect(screen.getByRole("region", { name: "避坑" })).toHaveTextContent(
+      "提前预约票 + 尽量挪到 5/4 或 5/5",
+    );
+
+    laborRender.unmount();
+
+    const lixia = viewFromSeed("g1-may-lixia-solar-term");
+    const lixiaRender = render(<PathCuratedViewPage view={lixia} />);
+
+    expect(screen.getByRole("region", { name: "前置" })).toHaveTextContent("无。");
+    expect(screen.getByRole("region", { name: "时间" })).toHaveTextContent(
+      "1-2 小时，不占 weekend 半天",
+    );
+
+    lixiaRender.unmount();
+
+    const neighborhood = viewFromSeed("g1-may-neighborhood-ecology");
+    const neighborhoodRender = render(<PathCuratedViewPage view={neighborhood} />);
+
+    expect(screen.getByRole("region", { name: "时间" })).toHaveTextContent(
+      "一次 15-30 分钟",
+    );
+    expect(
+      screen.getByRole("region", {
+        name: "5 种家门口可见的初夏生物（带辨识特征）",
+      }),
+    ).toHaveTextContent("菜粉蝶");
+
+    neighborhoodRender.unmount();
+  });
+
   it("uses source-authored labels for trigger and time-window prose", () => {
     const labor = viewFromSeed("g1-may-labor-holiday");
     const laborRender = render(<PathCuratedViewPage view={labor} />);
@@ -272,6 +359,27 @@ describe("PathCuratedViewPage", () => {
     expect(
       screen.getByRole("region", { name: "为什么是这个时间窗" }),
     ).toHaveTextContent("春季鸟类迁徙主季是 3-4 月");
+    expect(renderedSectionLabels(dongtanRender.container).slice(0, 11)).toEqual([
+      "触发条件",
+      "前置",
+      "时间",
+      "为什么是这个时间窗",
+      "出发前准备（家长花 5-10 分钟翻下面 5 种就够）",
+      "怎么做（按顺序）",
+      "产出",
+      "避坑",
+      "Backup plan（看不到鸟 / 天气不行时的替代）",
+      "重要心法",
+      "心法",
+    ]);
+    expect(
+      screen.getByRole("region", {
+        name: "Backup plan（看不到鸟 / 天气不行时的替代）",
+      }),
+    ).toHaveTextContent("完全不去崇明 backup");
+    expect(screen.getByRole("region", { name: "重要心法" })).toHaveTextContent(
+      "提前准备 2-3 个",
+    );
 
     dongtanRender.unmount();
 
@@ -381,6 +489,169 @@ describe("PathCuratedViewPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("falls back to legacy prose when authored proseBlocks are partial", () => {
+    const view = {
+      slug: "test-partial-authored-prose",
+      title: "Partial authored prose",
+      month: 5,
+      leadLine: "Legacy lead",
+      whySpecial: "Legacy why",
+      heart: null,
+      output: null,
+      serendipity: null,
+      proseBlocks: [
+        { key: "leadLine", label: "一句话", value: "Authored lead" },
+        { key: "whySpecial", label: "为什么特别", value: "   " },
+      ],
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "partial-prose-atom",
+            title: "Partial prose atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("region", { name: "一句话" })).toHaveTextContent(
+      "Legacy lead",
+    );
+    expect(screen.getByRole("region", { name: "为什么特别" })).toHaveTextContent(
+      "Legacy why",
+    );
+    expect(screen.queryByText("Authored lead")).not.toBeInTheDocument();
+  });
+
+  it("falls back to legacy prose when authored proseBlocks repeat keys", () => {
+    const view = {
+      slug: "test-duplicate-authored-prose",
+      title: "Duplicate authored prose",
+      month: 5,
+      leadLine: "Legacy lead",
+      whySpecial: "Legacy why",
+      heart: null,
+      output: null,
+      serendipity: null,
+      proseBlocks: [
+        { key: "leadLine", label: "一句话", value: "Authored lead" },
+        { key: "leadLine", label: "重复一句话", value: "Duplicate lead" },
+      ],
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "duplicate-prose-atom",
+            title: "Duplicate prose atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("region", { name: "一句话" })).toHaveTextContent(
+      "Legacy lead",
+    );
+    expect(screen.getByRole("region", { name: "为什么特别" })).toHaveTextContent(
+      "Legacy why",
+    );
+    expect(screen.queryByText("Authored lead")).not.toBeInTheDocument();
+    expect(screen.queryByText("Duplicate lead")).not.toBeInTheDocument();
+  });
+
+  it("falls back to legacy prose when a known view has valid but incomplete authored proseBlocks", () => {
+    const view = {
+      slug: "g1-may-labor-holiday",
+      title: "Known view incomplete prose",
+      month: 5,
+      leadLine: "Legacy lead",
+      whySpecial: "Legacy time budget",
+      heart: null,
+      output: null,
+      serendipity: null,
+      proseBlocks: [{ key: "leadLine", label: "触发条件", value: "Authored lead" }],
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "known-incomplete-prose-atom",
+            title: "Known incomplete prose atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("region", { name: "触发条件" })).toHaveTextContent(
+      "Legacy lead",
+    );
+    expect(screen.getByRole("region", { name: "时间预算" })).toHaveTextContent(
+      "Legacy time budget",
+    );
+    expect(screen.queryByText("Authored lead")).not.toBeInTheDocument();
+  });
+
+  it("keeps authored prose DOM IDs distinct from fixed atom section IDs", () => {
+    const view = {
+      slug: "test-prose-id-collision",
+      title: "ID collision proof",
+      month: 5,
+      leadLine: null,
+      whySpecial: null,
+      heart: null,
+      output: null,
+      serendipity: null,
+      proseBlocks: [
+        { key: "tight", label: "Tight prose", value: "Authored tight prose" },
+        { key: "explore", label: "Explore prose", value: "Authored explore prose" },
+      ],
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "id-collision-atom",
+            title: "ID collision atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    const { container } = render(<PathCuratedViewPage view={view} />);
+
+    expect(container.querySelectorAll("#curated-prose-tight")).toHaveLength(1);
+    expect(container.querySelectorAll("#curated-prose-explore")).toHaveLength(1);
+    expect(container.querySelectorAll("#curated-tight")).toHaveLength(1);
+    expect(container.querySelectorAll("#curated-explore")).toHaveLength(0);
+  });
+
   it("preserves atom body line breaks in rendered detail cards", () => {
     const view = {
       slug: "test-curated-view",
@@ -424,7 +695,7 @@ describe("PathCuratedViewPage", () => {
       slug: "test-markdown-render",
       title: "Test markdown render",
       month: 5,
-      leadLine: "**重点**：[官网](https://example.com) 可查",
+      leadLine: "> **重点**：[官网](https://example.com) 可查",
       whySpecial: null,
       heart: null,
       output: null,
@@ -486,6 +757,9 @@ _[提示 [路线](https://example.com/route) 查]_`,
       "href",
       "https://example.com/route",
     );
+    const blockquote = screen.getByText("重点").closest("blockquote");
+    expect(blockquote).toBeInTheDocument();
+    expect(blockquote).not.toHaveTextContent(">");
     const orderedLists = screen
       .getAllByRole("list")
       .filter((list) => list.tagName === "OL");

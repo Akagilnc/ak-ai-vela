@@ -28,11 +28,18 @@ export type CuratedViewForPage = Pick<
   | "defaultTightRatio"
   | "frictionCeilingDefault"
 > & {
+  proseBlocks?: unknown;
   atoms: Array<{ atom: CuratedAtom }>;
 };
 
 type Props = {
   view: CuratedViewForPage;
+};
+
+type AuthoredProseBlock = {
+  key: string;
+  label: string;
+  value: string;
 };
 
 const PROSE_BLOCKS = [
@@ -60,6 +67,51 @@ const PROSE_LABEL_OVERRIDES_BY_SLUG: Record<
   "g1-may-neighborhood-ecology": { leadLine: "触发条件" },
 };
 
+const AUTHORED_PROSE_KEYS_BY_SLUG: Record<string, readonly string[]> = {
+  "g1-may-baseline": ["leadLine", "timeBudget", "output", "heart"],
+  "g1-may-labor-holiday": [
+    "leadLine",
+    "precondition",
+    "timeBudget",
+    "output",
+    "pitfalls",
+    "heart",
+  ],
+  "g1-may-lixia-solar-term": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "output",
+    "heart",
+  ],
+  "g1-may-dongtan-migration-tail": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "prepGuide",
+    "howTo",
+    "output",
+    "pitfalls",
+    "backupPlan",
+    "backupHeart",
+    "heart",
+  ],
+  "g1-may-neighborhood-ecology": [
+    "leadLine",
+    "precondition",
+    "time",
+    "whySpecial",
+    "speciesGuide",
+    "howTo",
+    "output",
+    "pitfalls",
+    "heart",
+    "sources",
+  ],
+};
+
 const EXPLORE_INTRO =
   "下面这些不一定贴她现在的兴趣，但很可能玩得来，有空不妨试试。";
 
@@ -73,6 +125,13 @@ const markdownListSpacing: CSSProperties = {
   paddingLeft: 22,
 };
 
+const markdownBlockquoteStyle: CSSProperties = {
+  borderLeft: "3px solid var(--color-border)",
+  color: "var(--color-secondary-text)",
+  margin: "0 0 10px",
+  paddingLeft: 12,
+};
+
 const markdownTableStyle: CSSProperties = {
   borderCollapse: "collapse",
   fontSize: 13,
@@ -81,7 +140,7 @@ const markdownTableStyle: CSSProperties = {
 };
 
 const markdownCellStyle: CSSProperties = {
-  border: "1px solid var(--line)",
+  border: "1px solid var(--color-border)",
   padding: "6px 8px",
   textAlign: "left",
   verticalAlign: "top",
@@ -163,6 +222,10 @@ function isTableLine(value: string) {
 
 function isTableSeparator(value: string) {
   return /^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)+\|?\s*$/.test(value);
+}
+
+function isBlockquoteLine(value: string) {
+  return /^\s*>\s?/.test(value);
 }
 
 type MarkdownListKind = "ordered" | "unordered";
@@ -283,6 +346,20 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       continue;
     }
 
+    if (isBlockquoteLine(line)) {
+      const quoteLines: string[] = [];
+      while (index < lines.length && isBlockquoteLine(lines[index])) {
+        quoteLines.push(lines[index].replace(/^\s*>\s?/, ""));
+        index += 1;
+      }
+      blocks.push(
+        <blockquote key={`quote-${blockIndex++}`} style={markdownBlockquoteStyle}>
+          {renderMarkdownBlocks(quoteLines.join("\n"))}
+        </blockquote>,
+      );
+      continue;
+    }
+
     if (
       isTableLine(line) &&
       index + 1 < lines.length &&
@@ -341,6 +418,7 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       lines[index].trim() &&
       !(
         parseMarkdownListLine(lines[index]) ||
+        isBlockquoteLine(lines[index]) ||
         (isTableLine(lines[index]) &&
           index + 1 < lines.length &&
           isTableSeparator(lines[index + 1]))
@@ -390,7 +468,49 @@ function toSlotAtom(atom: CuratedAtom): SlotAtom {
   };
 }
 
+function normalizeProseBlocks(value: unknown): AuthoredProseBlock[] {
+  if (!Array.isArray(value)) return [];
+
+  const blocks: AuthoredProseBlock[] = [];
+  const seenKeys = new Set<string>();
+  for (const item of value) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+    const block = item as Record<string, unknown>;
+    const key = typeof block.key === "string" ? block.key.trim() : "";
+    const label = typeof block.label === "string" ? block.label.trim() : "";
+    const blockValue = typeof block.value === "string" ? block.value.trim() : "";
+    if (
+      !key ||
+      !/^[a-z][a-zA-Z0-9_-]*$/.test(key) ||
+      !label ||
+      !blockValue ||
+      seenKeys.has(key)
+    ) {
+      return [];
+    }
+    seenKeys.add(key);
+
+    blocks.push({
+      key,
+      label,
+      value: blockValue,
+    });
+  }
+
+  return blocks;
+}
+
 function proseBlocksForView(view: CuratedViewForPage) {
+  const authoredBlocks = normalizeProseBlocks(view.proseBlocks);
+  const expectedKeys = AUTHORED_PROSE_KEYS_BY_SLUG[view.slug];
+  if (
+    authoredBlocks.length > 0 &&
+    (!expectedKeys ||
+      authoredBlocks.map((block) => block.key).join("\n") === expectedKeys.join("\n"))
+  ) {
+    return authoredBlocks;
+  }
+
   const labelOverrides = PROSE_LABEL_OVERRIDES_BY_SLUG[view.slug] ?? {};
 
   return PROSE_BLOCKS.flatMap((block) => {
@@ -427,7 +547,7 @@ function AtomList({ atoms }: { atoms: CuratedAtom[] }) {
         <li
           key={atom.slug}
           style={{
-            border: "1px solid var(--line)",
+            border: "1px solid var(--color-border)",
             borderRadius: 12,
             background: "rgba(255,255,255,0.46)",
             padding: 14,
@@ -504,13 +624,13 @@ export function PathCuratedViewPage({ view }: Props) {
           <section
             key={block.key}
             className="d-sec"
-            id={`curated-${block.key}`}
+            id={`curated-prose-${block.key}`}
             data-target={block.label}
-            aria-labelledby={`curated-${block.key}-heading`}
+            aria-labelledby={`curated-prose-${block.key}-heading`}
           >
             <div className="d-sec-head">
               <span className="num">{String(index + 1).padStart(2, "0")}</span>
-              <h2 id={`curated-${block.key}-heading`}>{block.label}</h2>
+              <h2 id={`curated-prose-${block.key}-heading`}>{block.label}</h2>
             </div>
             <MarkdownText
               className="summary"

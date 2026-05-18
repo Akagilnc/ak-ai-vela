@@ -36,6 +36,22 @@ function db() {
   return prisma;
 }
 
+async function expectSeededProseBlocks(slug: string) {
+  const expectedView = G1_MAY_ATOM_SEED.curatedViews.find((view) => view.slug === slug);
+  if (!expectedView) throw new Error(`${slug} curated view must exist in seed`);
+  const actualView = await db().pathCuratedView.findUniqueOrThrow({
+    where: { slug },
+  });
+
+  expect(actualView.proseBlocks).toEqual(expectedView.proseBlocks);
+}
+
+async function expectAllSeededProseBlocks() {
+  for (const view of G1_MAY_ATOM_SEED.curatedViews) {
+    await expectSeededProseBlocks(view.slug);
+  }
+}
+
 describe("prisma seed script --reset", () => {
   afterAll(async () => {
     await prisma?.$disconnect();
@@ -56,6 +72,18 @@ describe("prisma seed script --reset", () => {
     expect(await db().pathCuratedViewAtom.count()).toBe(
       G1_MAY_ATOM_SEED.viewAtomLinks.length,
     );
+    await expectAllSeededProseBlocks();
+
+    await db().pathCuratedView.updateMany({
+      where: {
+        slug: { in: G1_MAY_ATOM_SEED.curatedViews.map((view) => view.slug) },
+      },
+      data: {
+        proseBlocks: [
+          { key: "stale", label: "Stale authored prose", value: "Stale value" },
+        ] as Prisma.InputJsonValue,
+      },
+    });
 
     const stage = await db().pathStage.findUniqueOrThrow({
       where: { slug: G1_MAY_ATOM_SEED.stageSlug },
@@ -185,6 +213,7 @@ describe("prisma seed script --reset", () => {
     expect(await db().pathCuratedViewAtom.count()).toBe(
       G1_MAY_ATOM_SEED.viewAtomLinks.length + 2,
     );
+    await expectAllSeededProseBlocks();
 
     expect(() => run("npx", ["tsx", "prisma/seed.ts", "--reset"])).not.toThrow();
 
@@ -195,5 +224,6 @@ describe("prisma seed script --reset", () => {
     expect(await db().pathCuratedViewAtom.count()).toBe(
       G1_MAY_ATOM_SEED.viewAtomLinks.length,
     );
-  });
+    await expectAllSeededProseBlocks();
+  }, 30_000);
 });

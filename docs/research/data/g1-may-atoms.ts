@@ -59,9 +59,16 @@ export interface PathCuratedViewSeedRow {
   heart: string;
   output: string | null;
   serendipity: string | null;
+  proseBlocks: readonly PathCuratedViewProseBlockSeedRow[];
   defaultTightRatio: 50;
   frictionCeilingDefault: 3;
   displayOrder: number;
+}
+
+export interface PathCuratedViewProseBlockSeedRow {
+  key: string;
+  label: string;
+  value: string;
 }
 
 export interface PathCuratedViewAtomSeedRow {
@@ -85,15 +92,10 @@ const NATURE_CRAFT_INTEREST = ["nature", "craft"] as const;
 const NATURE_BIRDING_INTEREST = ["nature", "birding"] as const;
 const NATURE_FLOWER_INTEREST = ["nature", "flower"] as const;
 
-const DONGTAN_MAIN_BODY = `**前置**：至少 1 次场馆观察经验（有"安静看动物"的习惯）。G1 没有的话，改用佘山 / 世纪公园 + 望远镜替代。
+const DONGTAN_MAIN_BODY =
+  "5/10 前看最后一批迁徙候鸟。现场不求 5 种全看到，能认出 1-2 种就是这一次的收获。";
 
-**时间**：半天，6-8 小时含往返交通。
-
-**为什么是这个时间窗**：春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。
-
-**出发前准备**（家长花 5-10 分钟翻下面 5 种就够）：
-
-**可能看到的候鸟（春末 5 月上中旬典型 5 种）**：
+const DONGTAN_PREP_GUIDE = `**可能看到的候鸟（春末 5 月上中旬典型 5 种）**：
 
 | 中文名 | 辨识特征 | 难度 |
 |---|---|---|
@@ -103,28 +105,25 @@ const DONGTAN_MAIN_BODY = `**前置**：至少 1 次场馆观察经验（有"安
 | 黑腹滨鹬 | 繁殖羽时腹部明显黑色斑，群体活动 | 中 |
 | 红嘴鸥 | 红色嘴、灰白身。常见种，5 月仍在尾声群 | 易（最普及）|
 
-不求 5 种全看到，能认出 1-2 种就是这一次的收获。
+不求 5 种全看到，能认出 1-2 种就是这一次的收获。`;
 
-**怎么做**（按顺序）：
-
-1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。
+const DONGTAN_HOW_TO = `1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。
 2. **有带队跟团**：带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。带队会讲解。
 3. **无带队自行去**：崇明东滩南六公路入口，[dongtan.cn](https://www.dongtan.cn) 查当日开放时间。
 4. **现场**：**不求看到多少种**。能认出上面表里任意 1-2 种 + 看到一次"一群飞起"或"一次进食"，就已经值了。G1 注意力有限，30-60 分钟静观察就够。
 5. **拍摄指引**：现场拍 5-10 张照片 + 2-3 段 15 秒视频足够。回家不留全部——**家长 5 分钟挑出 1-2 张有鸟 + 1 段群体活动**的最好素材，放到一个命名文件夹（比如 \`2026-05-10 东滩\`）。其他删掉。长期下来这些素材就是 portfolio 的 raw material。
-6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。
+6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。`;
 
-**产出**：迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。
+const DONGTAN_BACKUP_PLAN = `G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。
 
-**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。自驾往返 2 小时 + 现场 30 分钟看不到鸟，小孩挫败感重。宁可 5/10 前去。
+- **就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。
+- **回程 backup**：[辰山植物园](http://www.csnbgsh.cn)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。
+- **完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：
+  - [世纪公园](http://www.centurypark.com.cn)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）
+  - [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）`;
 
-**Backup plan（看不到鸟 / 天气不行时的替代）**：
-
-G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。
-
-**重要心法**（backup 设计哲学）：**预设"失败友好" 的 2-3 个 backup**，家长敢带孩子出门。一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。这个基线比"每次都看到鸟"更重要。
-
-**心法**：自然有档期。错过这次等半年。这条经验她会记很久。`;
+const DONGTAN_BACKUP_HEART =
+  '提前准备 2-3 个"退一步也 OK"的替代方案，家长才敢带孩子出门。一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。这个基线比"每次都看到鸟"更重要。';
 
 const DONGPING_BACKUP_BODY =
   "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。";
@@ -148,21 +147,12 @@ const NEIGHBORHOOD_SPECIES_GUIDE = `**5 种家门口可见的初夏生物**（�
 | 西瓜虫（潮虫） | 花盆底 / 落叶下 / 石头下 | "会缩成球的小灰虫"—— G1 最爱的触碰互动 |
 | 树麻雀（家麻雀） | 家楼下、街角、任何树上 | 最熟悉的鸟。重点是让她意识到"这也是鸟"—— 不是只有东滩才有鸟 |`;
 
-const NEIGHBORHOOD_PITFALLS_AND_HEART = `**产出**：本子上的 "家门口生物 count"——一个月累积能记 10-20 种。这个数字她自己看着会长骄傲。
+const NEIGHBORHOOD_HOW_TO = `1. **蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝，和她一起蹲下来看 **5 分钟**。看蚂蚁从哪到哪、搬什么、怎么遇到同伴。回来本子画一条蚁道。
+2. **蝴蝶追踪**（20 分钟）：小区花坛边等 5 分钟，通常会有 1-2 种蝴蝶来。不追蝶（小孩跑得慢），只看它停下来的那几秒。
+3. **潮虫探险**（10 分钟）：搬开花盆 / 石头 / 落叶堆，看底下的西瓜虫 / 蚯蚓 / 各种小东西。**用手轻轻碰一下西瓜虫**，看它蜷成球。G1 对这种即时 feedback 最有感。
+4. **楼下鸟声**（5 分钟）：阳台静坐，听不同的鸟叫。麻雀的"喳喳" / 斑鸠的"咕咕" / 白头鹎清晨的歌声。她能分出 2 种就够。`;
 
-**避坑**：
-
-- **别用昆虫盒装回家**。G1 好奇心强 easily escalates 到 "抓"。教育重点是**观察在野外**，不是"带回家养死"。
-- **别用杀虫剂 / 驱蚊液喷她的观察对象**。她看蝴蝶不用喷。
-- **别强求"记住拉丁名"**。中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。
-
-**心法**：自然不只在远方的保护区。家门口 50 米内就有完整的城市生态系统。这张卡的真正价值 = **让她每天下楼的路变成实地课堂**，门槛为 0，频次无限。长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。
-
-这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。东滩 / 自博是 monthly events，家门口生态是 daily baseline。
-
-**Sources**：
-
-- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）
+const NEIGHBORHOOD_SOURCES = `- [图鉴] 《身边的昆虫》（科普出版社）/ 《中国鸟类野外手册》（湖南教育出版社，G2-G3 用）
 - iNaturalist APP 里"上海" 区域的 top observed species list`;
 
 export const G1_MAY_ATOMS: PathAtomSeedRow[] = [
@@ -544,9 +534,7 @@ _[展区以馆当日实际开放为准，[sh-aquarium.com](https://www.sh-aquari
   {
     slug: "g1-may-neighborhood-ant-trail",
     title: "蚁道观察",
-    body: `${NEIGHBORHOOD_SPECIES_GUIDE}
-
-**蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝，和她一起蹲下来看 **5 分钟**。看蚂蚁从哪到哪、搬什么、怎么遇到同伴。回来本子画一条蚁道。`,
+    body: "**蚁道观察**（15 分钟）：选一段有蚂蚁活动的人行道砖缝，和她一起蹲下来看 **5 分钟**。看蚂蚁从哪到哪、搬什么、怎么遇到同伴。回来本子画一条蚁道。",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -588,9 +576,7 @@ _[展区以馆当日实际开放为准，[sh-aquarium.com](https://www.sh-aquari
   {
     slug: "g1-may-neighborhood-bird-sounds",
     title: "楼下鸟声",
-    body: `**楼下鸟声**（5 分钟）：阳台静坐，听不同的鸟叫。麻雀的"喳喳" / 斑鸠的"咕咕" / 白头鹎清晨的歌声。她能分出 2 种就够。
-
-${NEIGHBORHOOD_PITFALLS_AND_HEART}`,
+    body: '**楼下鸟声**（5 分钟）：阳台静坐，听不同的鸟叫。麻雀的"喳喳" / 斑鸠的"咕咕" / 白头鹎清晨的歌声。她能分出 2 种就够。',
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -613,6 +599,28 @@ export const G1_MAY_CURATED_VIEWS: PathCuratedViewSeedRow[] = [
     heart: '5 月是过渡月，不追求"做什么大事"。你能坚持 4 月的 routine 就是胜利。',
     output: "本子多 1-3 页图文；场馆去 1 次（累积）；杂志看 1-2 篇；视频 1-2 期。",
     serendipity: null,
+    proseBlocks: [
+      {
+        key: "leadLine",
+        label: "一句话",
+        value: "5 月春末夏初，天气刚好。周末 routine 2-3 次小 action 保持观察本在用。",
+      },
+      {
+        key: "timeBudget",
+        label: "时间占用",
+        value: "一个月 3-5 次 weekend 半天。≤ 总周末时间 40%，留一半以上给别的。",
+      },
+      {
+        key: "output",
+        label: "产出",
+        value: "本子多 1-3 页图文；场馆去 1 次（累积）；杂志看 1-2 篇；视频 1-2 期。",
+      },
+      {
+        key: "heart",
+        label: "心法",
+        value: '5 月是过渡月，不追求"做什么大事"。你能坚持 4 月的 routine 就是胜利。',
+      },
+    ],
     defaultTightRatio: 50,
     frictionCeilingDefault: 3,
     displayOrder: 1,
@@ -626,6 +634,38 @@ export const G1_MAY_CURATED_VIEWS: PathCuratedViewSeedRow[] = [
     heart: '劳动节不是"冲刺日程"，是"改变节奏"的机会。让她看到平常不看到的地方，不在于多。',
     output: "一次 mini-trip，照片若干 + 观察本上 1-2 页新地方的记录。",
     serendipity: null,
+    proseBlocks: [
+      {
+        key: "leadLine",
+        label: "触发条件",
+        value: "每年 5/1-5 假期。2026 年为 5/1（周五）到 5/5（周二）。",
+      },
+      {
+        key: "precondition",
+        label: "前置",
+        value: "家里有基本出行 planning 能力，没特别要求。",
+      },
+      {
+        key: "timeBudget",
+        label: "时间预算",
+        value: "5 天里用 **1-2 天** 做 nature-themed 活动，3-4 天给家庭别的事。不要 5 天全排 Vela。",
+      },
+      {
+        key: "output",
+        label: "产出",
+        value: "一次 mini-trip，照片若干 + 观察本上 1-2 页新地方的记录。",
+      },
+      {
+        key: "pitfalls",
+        label: "避坑",
+        value: "5/1-3 上海各场馆人流峰值。提前预约票 + 尽量挪到 5/4 或 5/5。",
+      },
+      {
+        key: "heart",
+        label: "心法",
+        value: '劳动节不是"冲刺日程"，是"改变节奏"的机会。让她看到平常不看到的地方，不在于多。',
+      },
+    ],
     defaultTightRatio: 50,
     frictionCeilingDefault: 3,
     displayOrder: 2,
@@ -638,7 +678,31 @@ export const G1_MAY_CURATED_VIEWS: PathCuratedViewSeedRow[] = [
     whySpecial: "立夏是 culture + nature 双触发点——有传统习俗（秤人、立夏蛋、养蚕），也是春末转夏的明显自然变化节点。一年 24 节气是她和自然对表的锚点。",
     heart: '节气不是传统文化 performance，是季节感的 anchor。让她知道一年的 cycle 不只是"放假 / 上学"。',
     output: "节气 log 1 页 + 家里 1 个 artifact（蛋 / 种子 / 书签 / 秤数值）。**关键**：每年 5 月 5 日她再看这一页，会看到自己 1 年的变化 layer——这是 portfolio 里不刻意的 serendipity。",
-    serendipity: "每年 5 月 5 日她再看这一页，会看到自己 1 年的变化 layer——这是 portfolio 里不刻意的 serendipity。",
+    serendipity: null,
+    proseBlocks: [
+      {
+        key: "leadLine",
+        label: "触发条件",
+        value: "每年 5 月上旬立夏节气。2026 年为 **5 月 5 日（周二）**，刚好在劳动节假期内。",
+      },
+      { key: "precondition", label: "前置", value: "无。" },
+      { key: "time", label: "时间", value: "1-2 小时，不占 weekend 半天。" },
+      {
+        key: "whySpecial",
+        label: "为什么特别",
+        value: "立夏是 culture + nature 双触发点——有传统习俗（秤人、立夏蛋、养蚕），也是春末转夏的明显自然变化节点。一年 24 节气是她和自然对表的锚点。",
+      },
+      {
+        key: "output",
+        label: "产出",
+        value: "节气 log 1 页 + 家里 1 个 artifact（蛋 / 种子 / 书签 / 秤数值）。**关键**：每年 5 月 5 日她再看这一页，会看到自己 1 年的变化 layer——这是 portfolio 里不刻意的 serendipity。",
+      },
+      {
+        key: "heart",
+        label: "心法",
+        value: '节气不是传统文化 performance，是季节感的 anchor。让她知道一年的 cycle 不只是"放假 / 上学"。',
+      },
+    ],
     defaultTightRatio: 50,
     frictionCeilingDefault: 3,
     displayOrder: 3,
@@ -651,7 +715,60 @@ export const G1_MAY_CURATED_VIEWS: PathCuratedViewSeedRow[] = [
     whySpecial: '春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。',
     heart: "自然有档期。错过这次等半年。这条经验她会记很久。",
     output: "迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
-    serendipity: "portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
+    serendipity: null,
+    proseBlocks: [
+      {
+        key: "leadLine",
+        label: "触发条件",
+        value: "每年 5 月上中旬，春季候鸟最后一批离开上海。5 月中旬后进入夏候鸟期，基本看不到了。",
+      },
+      {
+        key: "precondition",
+        label: "前置",
+        value: "至少 1 次场馆观察经验（有\"安静看动物\"的习惯）。G1 没有的话，改用佘山 / 世纪公园 + 望远镜替代。",
+      },
+      { key: "time", label: "时间", value: "半天，6-8 小时含往返交通。" },
+      {
+        key: "whySpecial",
+        label: "为什么是这个时间窗",
+        value: '春季鸟类迁徙主季是 3-4 月，但 5 月初还能赶上最后一批。错过就要等 10 月秋季迁徙。这是她第一次理解"自然有档期"的机会。',
+      },
+      {
+        key: "prepGuide",
+        label: "出发前准备（家长花 5-10 分钟翻下面 5 种就够）",
+        value: DONGTAN_PREP_GUIDE,
+      },
+      {
+        key: "howTo",
+        label: "怎么做（按顺序）",
+        value: DONGTAN_HOW_TO,
+      },
+      {
+        key: "output",
+        label: "产出",
+        value: "迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
+      },
+      {
+        key: "pitfalls",
+        label: "避坑",
+        value: "5 月中旬后基本看不到春季候鸟，别白跑。自驾往返 2 小时 + 现场 30 分钟看不到鸟，小孩挫败感重。宁可 5/10 前去。",
+      },
+      {
+        key: "backupPlan",
+        label: "Backup plan（看不到鸟 / 天气不行时的替代）",
+        value: DONGTAN_BACKUP_PLAN,
+      },
+      {
+        key: "backupHeart",
+        label: "重要心法",
+        value: DONGTAN_BACKUP_HEART,
+      },
+      {
+        key: "heart",
+        label: "心法",
+        value: "自然有档期。错过这次等半年。这条经验她会记很久。",
+      },
+    ],
     defaultTightRatio: 50,
     frictionCeilingDefault: 3,
     displayOrder: 4,
@@ -664,7 +781,63 @@ export const G1_MAY_CURATED_VIEWS: PathCuratedViewSeedRow[] = [
     whySpecial: "前面几张卡（场馆 / 东滩 / 节气）都有某种\"去某处 / 某日做某事\"的 barrier。这张卡反过来——**告诉家长她家 50 米内就有 100 种生物**。低门槛、高频次，是月度 baseline 的支撑面。",
     heart: "自然不只在远方的保护区。家门口 50 米内就有完整的城市生态系统。这张卡的真正价值 = **让她每天下楼的路变成实地课堂**，门槛为 0，频次无限。长期下来，她对\"自然\"的语言会从\"我在公园里看到过\"变成\"我家楼下的麻雀今年比去年少\"。",
     output: '本子上的 "家门口生物 count"——一个月累积能记 10-20 种。这个数字她自己看着会长骄傲。',
-    serendipity: '长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。',
+    serendipity: null,
+    proseBlocks: [
+      {
+        key: "leadLine",
+        label: "触发条件",
+        value: "每年 5 月下旬起（上海大致 5/20 后），气温稳定 20°C 以上，第一批初夏物种开始在城市绿化 / 小区 / 公园大量出现。",
+      },
+      {
+        key: "precondition",
+        label: "前置",
+        value: "家附近有任何绿化（小区内花坛 / 楼下绿地 / 社区公园即可）。完全 0 门槛。",
+      },
+      {
+        key: "time",
+        label: "时间",
+        value: "一次 15-30 分钟。可以拆成一周 2-3 次，每次 15 分钟。",
+      },
+      {
+        key: "whySpecial",
+        label: "为什么特别",
+        value: "前面几张卡（场馆 / 东滩 / 节气）都有某种\"去某处 / 某日做某事\"的 barrier。这张卡反过来——**告诉家长她家 50 米内就有 100 种生物**。低门槛、高频次，是月度 baseline 的支撑面。",
+      },
+      {
+        key: "speciesGuide",
+        label: "5 种家门口可见的初夏生物（带辨识特征）",
+        value: NEIGHBORHOOD_SPECIES_GUIDE,
+      },
+      {
+        key: "howTo",
+        label: "怎么做（随意组合）",
+        value: NEIGHBORHOOD_HOW_TO,
+      },
+      {
+        key: "output",
+        label: "产出",
+        value: '本子上的 "家门口生物 count"——一个月累积能记 10-20 种。这个数字她自己看着会长骄傲。',
+      },
+      {
+        key: "pitfalls",
+        label: "避坑",
+        value: `- **别用昆虫盒装回家**。G1 好奇心强 easily escalates 到 "抓"。教育重点是**观察在野外**，不是"带回家养死"。
+- **别用杀虫剂 / 驱蚊液喷她的观察对象**。她看蝴蝶不用喷。
+- **别强求"记住拉丁名"**。中文名 / 她起的外号 / "那种会飞的蓝蝴蝶" 都行。`,
+      },
+      {
+        key: "heart",
+        label: "心法",
+        value: `自然不只在远方的保护区。家门口 50 米内就有完整的城市生态系统。这张卡的真正价值 = **让她每天下楼的路变成实地课堂**，门槛为 0，频次无限。长期下来，她对"自然"的语言会从"我在公园里看到过"变成"我家楼下的麻雀今年比去年少"。
+
+这是城市 G1 孩子的**唯一低成本、高频次、可持续的自然连接方式**。东滩 / 自博是 monthly events，家门口生态是 daily baseline。`,
+      },
+      {
+        key: "sources",
+        label: "Sources",
+        value: NEIGHBORHOOD_SOURCES,
+      },
+    ],
     defaultTightRatio: 50,
     frictionCeilingDefault: 3,
     displayOrder: 5,
