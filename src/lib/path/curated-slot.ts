@@ -30,7 +30,8 @@ export function selectSlot(
     (atom) => atom.frictionLevel <= config.frictionCeiling,
   );
 
-  let tightQuota = Math.floor((eligible.length * config.tightRatio) / 100);
+  const tightRatio = Math.min(100, Math.max(0, config.tightRatio));
+  let tightQuota = Math.floor((eligible.length * tightRatio) / 100);
   let exploreQuota = eligible.length - tightQuota;
 
   if (eligible.length >= 2 && exploreQuota === 0) {

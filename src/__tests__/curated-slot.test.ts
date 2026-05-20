@@ -172,6 +172,34 @@ describe("selectSlot", () => {
     expect(slugs(result.explore)).toEqual(["first", "second", "third"]);
   });
 
+  it("clamps negative tight ratios to keep eligible atoms in explore", () => {
+    const result = selectSlot(
+      [
+        atom({ slug: "first", displayOrder: 1 }),
+        atom({ slug: "second", displayOrder: 2 }),
+        atom({ slug: "third", displayOrder: 3 }),
+      ],
+      { tightRatio: -25, frictionCeiling: 3 },
+    );
+
+    expect(result.tight).toEqual([]);
+    expect(slugs(result.explore)).toEqual(["first", "second", "third"]);
+  });
+
+  it("clamps oversized tight ratios before reserving an explore seat", () => {
+    const result = selectSlot(
+      [
+        atom({ slug: "first", displayOrder: 1 }),
+        atom({ slug: "second", displayOrder: 2 }),
+        atom({ slug: "third", displayOrder: 3 }),
+      ],
+      { tightRatio: 200, frictionCeiling: 3 },
+    );
+
+    expect(slugs(result.tight)).toEqual(["first", "second"]);
+    expect(slugs(result.explore)).toEqual(["third"]);
+  });
+
   it("does not drop or down-rank ANNUAL_RITUAL atoms merely for cadence", () => {
     const result = selectSlot(
       [
