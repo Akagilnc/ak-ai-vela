@@ -635,6 +635,50 @@ describe("PathCuratedViewPage", () => {
     expect(screen.queryByText("Legacy output")).not.toBeInTheDocument();
   });
 
+  it("caps authored prose block normalization before scanning untrusted tails", () => {
+    const proseBlocks = Array.from({ length: 20 }, (_, index) => ({
+      key: `block${index}`,
+      label: `Block ${index}`,
+      value: `Authored block ${index}`,
+    }));
+    const view = {
+      slug: "test-capped-authored-prose",
+      title: "Capped authored prose",
+      month: 5,
+      leadLine: "Legacy lead",
+      whySpecial: null,
+      heart: null,
+      output: null,
+      serendipity: null,
+      proseBlocks: [...proseBlocks, { key: "", label: "", value: "" }],
+      defaultTightRatio: 100,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "capped-prose-atom",
+            title: "Capped prose atom",
+            body: "Atom body",
+            interests: [],
+            frictionLevel: 0,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("region", { name: "Block 0" })).toHaveTextContent(
+      "Authored block 0",
+    );
+    expect(screen.getByRole("region", { name: "Block 19" })).toHaveTextContent(
+      "Authored block 19",
+    );
+    expect(screen.queryByText("Legacy lead")).not.toBeInTheDocument();
+  });
+
   it("keeps authored prose DOM IDs distinct from fixed atom section IDs", () => {
     const view = {
       slug: "test-prose-id-collision",

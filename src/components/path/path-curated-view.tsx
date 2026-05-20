@@ -116,6 +116,8 @@ const AUTHORED_PROSE_KEYS_BY_SLUG: Record<string, readonly string[]> = {
 const EXPLORE_INTRO =
   "下面这些不一定贴她现在的兴趣，但很可能玩得来，有空不妨试试。";
 
+const MAX_AUTHORED_PROSE_BLOCKS = 20;
+
 const markdownBlockSpacing: CSSProperties = {
   margin: "0 0 10px",
   whiteSpace: "pre-wrap",
@@ -595,7 +597,9 @@ function normalizeProseBlocks(value: unknown): AuthoredProseBlock[] {
 
   const blocks: AuthoredProseBlock[] = [];
   const seenKeys = new Set<string>();
-  for (const item of value) {
+  const blockLimit = Math.min(value.length, MAX_AUTHORED_PROSE_BLOCKS);
+  for (let index = 0; index < blockLimit; index += 1) {
+    const item = value[index];
     if (!item || typeof item !== "object" || Array.isArray(item)) return [];
     const block = item as Record<string, unknown>;
     const key = typeof block.key === "string" ? block.key.trim() : "";
@@ -622,6 +626,8 @@ function normalizeProseBlocks(value: unknown): AuthoredProseBlock[] {
   return blocks;
 }
 
+// For known source-authored views, block order is part of the narrative contract.
+// If the source order changes, update AUTHORED_PROSE_KEYS_BY_SLUG with the seed.
 function includesExpectedProseKeys(
   blocks: AuthoredProseBlock[],
   expectedKeys: readonly string[],
