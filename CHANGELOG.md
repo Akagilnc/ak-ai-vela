@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0.0] - 2026-05-21
+
+### Added
+- **Path curated segment pages** — `/path/seg/[slug]` now serves DB-backed curated views for the five G1 May Path segments, with static params, metadata, loading/error/not-found states, and `/path` overview cards linked directly to the curated routes.
+- **Atomic Path content model** — Prisma now includes `PathAtom`, `PathCuratedView`, and join rows so authored atoms can be reused across curated views while preserving source-authored prose and parent-facing activity detail.
+- **G1 May atom seed** — the existing May activity sample is ported into atom + curated-view seed data, including rich tables, how-to steps, backup plans, markdown rendering, and interest/friction metadata.
+- **12-year Path research dossier** — `docs/research/path-12y-overview/` adds the multi-model research corpus, audited synthesis, source quotes, retry roadmap, and convergence trail for future Path roadmap work.
+- **Tracked review gate scripts** — the pre/post-commit review gate and installer are now tracked so review-report enforcement survives checkout/clean/new-clone workflows.
+- **Curated-view test coverage** — new test suites cover atom schema shape, seed fidelity against the source MD, runtime DB loading, reset reseeding, slot selection, route hardening, overview card routing, and render behavior.
+
+### Changed
+- **Path overview navigation** now opens the curated segment routes for the five seeded May cards instead of the legacy activity detail routes.
+- **Curated slot selection** preserves source display order when no personalization signal is present, while still supporting signal-driven tight/explore partitioning.
+- **Prisma test setup** now isolates runtime DB coverage through `VELA_TEST_DB_URL` so tests do not depend on a developer-local `prisma/dev.db`.
+
+### Fixed
+- **Atom content fidelity** — restored rich parent-facing atom bodies that had been compressed during the initial port, including Dongtan bird tables, how-to steps, pitfalls, sources, and backup plans.
+- **Curated route safety** — missing curated slugs now return 404 instead of rendering a misleading success page.
+- **Seed reset behavior** — reset flows reseed atom/curated data and delete dependent rows in FK-safe order.
+- **Curated prose labels** — source-authored sections such as time budget and trigger conditions render under the correct labels instead of generic field names.
+- **Scroll restore cleanup** — curated detail pages now clear stale `/path` restore flags when users leave the Path subtree.
+- **Dongtan backup links** — stale parent-facing external links were replaced with reachable destinations or non-link WeChat search instructions.
+
+### Process
+- **Ship review convergence trail** — this PR includes per-slice and pre-ship cross-model review reports, coverage audit fixes, and release verification notes. Gemini was unavailable during the last pre-landing pass due model capacity, so it was not counted as an approving reviewer.
+
 ## [0.9.0.0] - 2026-05-01
 
 ### Added
