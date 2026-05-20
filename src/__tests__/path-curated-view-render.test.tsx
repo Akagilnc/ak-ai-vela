@@ -775,6 +775,18 @@ describe("PathCuratedViewPage", () => {
     expect(body).toHaveStyle({ whiteSpace: "pre-wrap" });
   });
 
+  it("clears stale overview restore flags when leaving a curated detail route", () => {
+    const view = viewFromSeed(LIXIA_SLUG);
+    window.history.replaceState(null, "", `/path/seg/${LIXIA_SLUG}`);
+    sessionStorage.setItem("vela:path-overview:departed-at", "123");
+
+    const rendered = render(<PathCuratedViewPage view={view} />);
+    window.history.replaceState(null, "", "/schools");
+    rendered.unmount();
+
+    expect(sessionStorage.getItem("vela:path-overview:departed-at")).toBeNull();
+  });
+
   it("renders parent-facing markdown as structure instead of raw syntax", () => {
     const view = {
       slug: "test-markdown-render",

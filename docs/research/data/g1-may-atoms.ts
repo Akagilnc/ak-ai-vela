@@ -107,7 +107,7 @@ const DONGTAN_PREP_GUIDE = `**可能看到的候鸟（春末 5 月上中旬典�
 
 不求 5 种全看到，能认出 1-2 种就是这一次的收获。`;
 
-const DONGTAN_HOW_TO = `1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。
+const DONGTAN_HOW_TO = `1. **周一查**：微信里搜“上海观鸟会”公众号，看 5/1-15 有没有家庭公开带队活动。
 2. **有带队跟团**：带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。带队会讲解。
 3. **无带队自行去**：崇明东滩南六公路入口，[dongtan.cn](https://www.dongtan.cn) 查当日开放时间。
 4. **现场**：**不求看到多少种**。能认出上面表里任意 1-2 种 + 看到一次"一群飞起"或"一次进食"，就已经值了。G1 注意力有限，30-60 分钟静观察就够。
@@ -116,26 +116,26 @@ const DONGTAN_HOW_TO = `1. **周一查**：[上海观鸟会 shwbs.org](http://ww
 
 const DONGTAN_BACKUP_PLAN = `G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。
 
-- **就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。
-- **回程 backup**：[辰山植物园](http://www.csnbgsh.cn)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。
+- **就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](https://www.dpslpark.net/)，G1 适合的小规模自然探索 + 岛上农家菜收尾。
+- **回程 backup**：[辰山植物园](https://www.csnbgsh.cn/)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。
 - **完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：
-  - [世纪公园](http://www.centurypark.com.cn)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）
-  - [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）`;
+  - [世纪公园](https://www.shanghai.gov.cn/nw4411/20240417/479731e035004c3e9a03dd6c5cfe3099.html)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）
+  - [佘山国家森林公园](https://english.shanghai.gov.cn/en-Parks/20231205/685f847c133a4b39878345651f1d179f.html)（松江，5 月林下植物 + 昆虫多）`;
 
 const DONGTAN_BACKUP_HEART =
   '提前准备 2-3 个"退一步也 OK"的替代方案，家长才敢带孩子出门。一次成功记忆 × 几次"退一步也 OK"记忆 = 她长期对"自然探索"不抗拒。这个基线比"每次都看到鸟"更重要。';
 
 const DONGPING_BACKUP_BODY =
-  "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)，G1 适合的小规模自然探索 + 岛上农家菜收尾。";
+  "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](https://www.dpslpark.net/)，G1 适合的小规模自然探索 + 岛上农家菜收尾。";
 
 const CHENSHAN_BACKUP_BODY =
-  "**回程 backup**：[辰山植物园](http://www.csnbgsh.cn)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。";
+  "**回程 backup**：[辰山植物园](https://www.csnbgsh.cn/)（松江，5 月花季高峰，月季 / 鸢尾 / 栀子花同开，适合 G1 的视觉冲击强度）。";
 
 const CENTURY_PARK_BACKUP_BODY =
-  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [世纪公园](http://www.centurypark.com.cn)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）";
+  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [世纪公园](https://www.shanghai.gov.cn/nw4411/20240417/479731e035004c3e9a03dd6c5cfe3099.html)（浦东，市区观鸟常见地，能看到白鹭 / 夜鹭 / 翠鸟）";
 
 const SHESHAN_BACKUP_BODY =
-  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）";
+  "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：\n\n- [佘山国家森林公园](https://english.shanghai.gov.cn/en-Parks/20231205/685f847c133a4b39878345651f1d179f.html)（松江，5 月林下植物 + 昆虫多）";
 
 const NEIGHBORHOOD_SPECIES_GUIDE = `**5 种家门口可见的初夏生物**（带辨识特征）：
 

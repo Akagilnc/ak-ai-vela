@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { PathAtom, PathCuratedView } from "@prisma/client";
 import { selectSlot, type SlotAtom } from "@/lib/path/curated-slot";
 import { BackIcon } from "./path-icons";
+import { PathDetailExitCleanup } from "./path-detail-exit-cleanup";
 
 type CuratedAtom = Pick<
   PathAtom,
@@ -694,6 +695,8 @@ export function PathCuratedViewPage({ view }: Props) {
           </section>
         ) : null}
       </main>
+
+      <PathDetailExitCleanup />
     </>
   );
 }

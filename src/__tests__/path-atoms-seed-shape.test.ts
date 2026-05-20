@@ -92,7 +92,7 @@ const EXPECTED_CURATED_PROSE_SNIPPETS: Record<string, string[]> = {
   ],
   "g1-may-dongtan-migration-tail": [
     "**可能看到的候鸟（春末 5 月上中旬典型 5 种）**",
-    "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org)",
+    "1. **周一查**：微信里搜“上海观鸟会”公众号",
     "6. **回家本子**：记 1-2 种观察到的鸟 + 日期 + 天气 + 简单印象句。",
     "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：",
   ],
@@ -160,7 +160,7 @@ const EXPECTED_CURATED_PROSE_SOURCE_RANGES: Record<
       "不求 5 种全看到，能认出 1-2 种就是这一次的收获。",
     ],
     howTo: [
-      "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。",
+      "1. **周一查**：微信里搜“上海观鸟会”公众号，看 5/1-15 有没有家庭公开带队活动。",
       "文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。",
     ],
     output: [
@@ -170,7 +170,7 @@ const EXPECTED_CURATED_PROSE_SOURCE_RANGES: Record<
     pitfalls: ["5 月中旬后基本看不到春季候鸟，别白跑。", "宁可 5/10 前去。"],
     backupPlan: [
       'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
-      "- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）",
+      "- [佘山国家森林公园](https://english.shanghai.gov.cn/en-Parks/20231205/685f847c133a4b39878345651f1d179f.html)（松江，5 月林下植物 + 昆虫多）",
     ],
     backupHeart: [
       '提前准备 2-3 个"退一步也 OK"的替代方案，',
@@ -450,7 +450,7 @@ describe("G1 May atom seed", () => {
       "繁殖羽时腹部明显黑色斑，群体活动",
       "红色嘴、灰白身。常见种，5 月仍在尾声群",
       "不求 5 种全看到，能认出 1-2 种就是这一次的收获。",
-      "**周一查**：[上海观鸟会 shwbs.org]",
+      "**周一查**：微信里搜“上海观鸟会”公众号",
       "**有带队跟团**：带望远镜（没有也行，用手机最大变焦）+ 防晒 + 防蚊喷雾 + 水 + 零食。",
       "**无带队自行去**：崇明东滩南六公路入口，[dongtan.cn](https://www.dongtan.cn) 查当日开放时间。",
       "**现场**：**不求看到多少种**。能认出上面表里任意 1-2 种 + 看到一次\"一群飞起\"或\"一次进食\"，就已经值了。",
@@ -459,7 +459,7 @@ describe("G1 May atom seed", () => {
       "**产出**：迁徙季最后一次观察记录。portfolio 多 1 条独特的 season-specific 素材（文字 + 视觉 + 文件时间戳）。",
       "**避坑**：5 月中旬后基本看不到春季候鸟，别白跑。",
       'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
-      "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](http://www.dpforest.com)",
+      "**就近 backup（东滩同日）**：崇明岛内 [东平国家森林公园](https://www.dpslpark.net/)",
       "**完全不去崇明 backup**（出门前天气预报糟糕直接放弃）：",
       '**重要心法**：提前准备 2-3 个"退一步也 OK"的替代方案，家长才敢带孩子出门。',
       "**心法**：自然有档期。错过这次等半年。这条经验她会记很久。",
@@ -487,7 +487,7 @@ describe("G1 May atom seed", () => {
     expectProseBlockEqualsSourceRange(
       "g1-may-dongtan-migration-tail",
       "howTo",
-      "1. **周一查**：[上海观鸟会 shwbs.org](http://www.shwbs.org) 公众号，看 5/1-15 有没有家庭公开带队活动。",
+      "1. **周一查**：微信里搜“上海观鸟会”公众号，看 5/1-15 有没有家庭公开带队活动。",
       "文件夹里挑的那 1-2 张照片可以打印出来贴在本子旁边。",
     );
     expectProseBlockEqualsSourceRange(
@@ -500,7 +500,7 @@ describe("G1 May atom seed", () => {
       "g1-may-dongtan-migration-tail",
       "backupPlan",
       'G1 去东滩 carry 一定挫败风险（远 + 天气依赖 + 鸟靠运气）。预先和孩子说好 "如果今天运气不好看不到鸟，我们 plan B"，挫败感就降一半。',
-      "- [佘山国家森林公园](http://www.shfestival.com/sheshan)（松江，5 月林下植物 + 昆虫多）",
+      "- [佘山国家森林公园](https://english.shanghai.gov.cn/en-Parks/20231205/685f847c133a4b39878345651f1d179f.html)（松江，5 月林下植物 + 昆虫多）",
     );
     expectProseBlockEqualsSourceRange(
       "g1-may-dongtan-migration-tail",
@@ -514,16 +514,16 @@ describe("G1 May atom seed", () => {
     );
 
     expect(atomBody("g1-may-dongping-forest-backup")).toContain(
-      "崇明岛内 [东平国家森林公园](http://www.dpforest.com)",
+      "崇明岛内 [东平国家森林公园](https://www.dpslpark.net/)",
     );
     expect(atomBody("g1-may-chenshan-botanical-backup")).toContain(
-      "[辰山植物园](http://www.csnbgsh.cn)",
+      "[辰山植物园](https://www.csnbgsh.cn/)",
     );
     expect(atomBody("g1-may-dongtan-century-park-backup")).toContain(
-      "[世纪公园](http://www.centurypark.com.cn)",
+      "[世纪公园](https://www.shanghai.gov.cn/nw4411/20240417/479731e035004c3e9a03dd6c5cfe3099.html)",
     );
     expect(atomBody("g1-may-dongtan-sheshan-backup")).toContain(
-      "[佘山国家森林公园](http://www.shfestival.com/sheshan)",
+      "[佘山国家森林公园](https://english.shanghai.gov.cn/en-Parks/20231205/685f847c133a4b39878345651f1d179f.html)",
     );
   });
 
