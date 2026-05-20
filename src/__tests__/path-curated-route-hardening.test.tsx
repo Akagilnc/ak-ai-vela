@@ -94,6 +94,20 @@ describe("/path/seg/[slug] route hardening", () => {
     );
   }, 15_000);
 
+  it("hides error details in production", () => {
+    const reset = vi.fn();
+    vi.stubEnv("NODE_ENV", "production");
+
+    try {
+      render(<ErrorBoundary error={new Error("db hiccup")} reset={reset} />);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+
+    expect(screen.getByRole("heading", { name: "加载出了点问题" })).toBeInTheDocument();
+    expect(screen.queryByText("db hiccup")).not.toBeInTheDocument();
+  });
+
   it("renders the branded curated segment not-found UI", () => {
     render(<NotFound />);
 
@@ -131,6 +145,55 @@ describe("/path/seg/[slug] route hardening", () => {
         type: "article",
       },
     });
+  });
+
+  it("falls back to whySpecial when metadata leadLine is missing", async () => {
+    const view = MOCK_CURATED_VIEWS[0] as {
+      leadLine: string | null;
+      whySpecial: string | null;
+    };
+    const original = { leadLine: view.leadLine, whySpecial: view.whySpecial };
+    view.leadLine = null;
+    view.whySpecial = "为什么特别第一句。第二句不会进 metadata。";
+
+    try {
+      const metadata = await generateMetadata({
+        params: Promise.resolve({ slug: view.slug }),
+      });
+
+      expect(metadata.description).toBe("为什么特别第一句。");
+      expect(metadata.openGraph).toMatchObject({
+        description: "为什么特别第一句。",
+      });
+    } finally {
+      Object.assign(view, original);
+    }
+  });
+
+  it("omits metadata descriptions when both prose fields are empty", async () => {
+    const view = MOCK_CURATED_VIEWS[0] as {
+      leadLine: string | null;
+      whySpecial: string | null;
+    };
+    const original = { leadLine: view.leadLine, whySpecial: view.whySpecial };
+    view.leadLine = null;
+    view.whySpecial = null;
+
+    try {
+      const metadata = await generateMetadata({
+        params: Promise.resolve({ slug: view.slug }),
+      });
+
+      expect(metadata).toEqual({
+        title: "5 月底盘 · Vela Path Explorer",
+        openGraph: {
+          title: "5 月底盘",
+          type: "article",
+        },
+      });
+    } finally {
+      Object.assign(view, original);
+    }
   });
 
   it("keeps existing curated-view slugs inside the streaming layout", async () => {

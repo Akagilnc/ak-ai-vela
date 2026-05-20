@@ -107,6 +107,21 @@ describe("selectSlot", () => {
     expect(slugs(result.explore)).toEqual(["plants", "weather"]);
   });
 
+  it("keeps original order as the final tie-breaker", () => {
+    const result = selectSlot(
+      [
+        atom({ slug: "first-equal", displayOrder: 1 }),
+        atom({ slug: "second-equal", displayOrder: 1 }),
+        atom({ slug: "third-equal", displayOrder: 1 }),
+        atom({ slug: "fourth-equal", displayOrder: 1 }),
+      ],
+      config,
+    );
+
+    expect(slugs(result.tight)).toEqual(["first-equal", "second-equal"]);
+    expect(slugs(result.explore)).toEqual(["third-equal", "fourth-equal"]);
+  });
+
   it("splits a 50/50 ratio into the expected tight and explore counts", () => {
     const result = selectSlot(
       [

@@ -674,6 +674,69 @@ describe("PathCuratedViewPage", () => {
     expect(container.querySelectorAll("#curated-explore")).toHaveLength(0);
   });
 
+  it("falls back to the overview link when a curated view has no month", () => {
+    const view = {
+      ...viewFromSeed(LIXIA_SLUG),
+      month: null,
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    expect(screen.getByRole("link", { name: "Path" })).toHaveAttribute(
+      "href",
+      "/path",
+    );
+    expect(screen.getByText("策展段")).toBeInTheDocument();
+  });
+
+  it("renders atoms with malformed interests JSON without treating it as a signal", () => {
+    const badInterests =
+      "animals" as unknown as CuratedViewProp["atoms"][number]["atom"]["interests"];
+    const view = {
+      slug: "test-bad-interests",
+      title: "Bad interests",
+      month: 5,
+      leadLine: "Lead",
+      whySpecial: null,
+      heart: null,
+      output: null,
+      serendipity: null,
+      defaultTightRatio: 50,
+      frictionCeilingDefault: 3,
+      atoms: [
+        {
+          atom: {
+            slug: "bad-interests",
+            title: "Bad interests atom",
+            body: "Bad interests body",
+            interests: badInterests,
+            frictionLevel: 1,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 1,
+          },
+        },
+        {
+          atom: {
+            slug: "normal-interests",
+            title: "Normal interests atom",
+            body: "Normal interests body",
+            interests: ["animals"],
+            frictionLevel: 1,
+            cadenceRole: "LIGHT_RECURRING",
+            displayOrder: 2,
+          },
+        },
+      ],
+    } satisfies CuratedViewProp;
+
+    render(<PathCuratedViewPage view={view} />);
+
+    const tightRegion = screen.getByRole("region", { name: "贴身" });
+    const exploreRegion = screen.getByRole("region", { name: "探索" });
+    expect(within(tightRegion).getByText("Bad interests atom")).toBeInTheDocument();
+    expect(within(exploreRegion).getByText("Normal interests atom")).toBeInTheDocument();
+  });
+
   it("preserves atom body line breaks in rendered detail cards", () => {
     const view = {
       slug: "test-curated-view",
