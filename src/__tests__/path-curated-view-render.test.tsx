@@ -807,8 +807,11 @@ describe("PathCuratedViewPage", () => {
             body: `| 物种 | 特征 |
 |-|-|
 | 菜粉蝶 | **白色小蝴蝶** |
+| 管道 | \`a | b\` 和 红\\|白 |
 
 - [资料](https://example.com/species)
+- [**加粗** 链接](https://example.com/bold)
+- [Wiki](https://example.com/wiki/A_(B))
 - [内部](/path/seg/example)
 - [危险](data:text/html,evil)
 - [文件](file:///tmp/seed)
@@ -839,6 +842,9 @@ _[提示 [路线](https://example.com/route) 查]_`,
     );
     expect(screen.getByRole("table")).toHaveTextContent("菜粉蝶");
     expect(screen.getByText("白色小蝴蝶").tagName).toBe("STRONG");
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("a | b").tagName).toBe("CODE");
+    expect(table).toHaveTextContent("红|白");
     expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
       "href",
       "https://example.com/species",
@@ -846,6 +852,13 @@ _[提示 [路线](https://example.com/route) 查]_`,
     expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
       "target",
       "_blank",
+    );
+    const boldLabelLink = screen.getByRole("link", { name: "加粗 链接" });
+    expect(boldLabelLink).toHaveAttribute("href", "https://example.com/bold");
+    expect(within(boldLabelLink).getByText("加粗").tagName).toBe("STRONG");
+    expect(screen.getByRole("link", { name: "Wiki" })).toHaveAttribute(
+      "href",
+      "https://example.com/wiki/A_(B)",
     );
     expect(screen.getByRole("link", { name: "内部" })).toHaveAttribute(
       "href",

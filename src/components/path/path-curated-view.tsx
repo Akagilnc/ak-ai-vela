@@ -166,60 +166,152 @@ function markdownHrefKind(href: string): "external" | "internal" | null {
   return null;
 }
 
-function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
-  const parts: ReactNode[] = [];
-  const tokenPattern = /(`[^`\n]+`|\*\*[^*]+\*\*|_[^_\n]+_|\[[^\[\]]+\]\([^)]+\))/g;
-  let cursor = 0;
-  let tokenIndex = 0;
+type InlineMarkdownToken =
+  | { kind: "code"; start: number; end: number; value: string }
+  | { kind: "strong"; start: number; end: number; value: string }
+  | { kind: "em"; start: number; end: number; value: string }
+  | {
+      kind: "link";
+      start: number;
+      end: number;
+      label: string;
+      href: string;
+    };
 
-  for (const match of value.matchAll(tokenPattern)) {
-    const [token] = match;
-    const start = match.index ?? 0;
-    if (start > cursor) {
-      parts.push(value.slice(cursor, start));
+function findMarkdownLinkHrefEnd(value: string, hrefStart: number) {
+  let nestedParentheses = 0;
+  for (let index = hrefStart; index < value.length; index += 1) {
+    const char = value[index];
+    if (char === "\\" && index + 1 < value.length) {
+      index += 1;
+      continue;
     }
+    if (char === "(") {
+      nestedParentheses += 1;
+      continue;
+    }
+    if (char === ")") {
+      if (nestedParentheses === 0) return index;
+      nestedParentheses -= 1;
+    }
+  }
+  return -1;
+}
 
-    const key = `${keyPrefix}-${tokenIndex++}`;
-    if (token.startsWith("**")) {
-      parts.push(
-        <strong key={key}>
-          {renderInlineMarkdown(token.slice(2, -2), `${key}-strong`)}
-        </strong>,
-      );
-    } else if (token.startsWith("`")) {
-      parts.push(<code key={key}>{token.slice(1, -1)}</code>);
-    } else if (token.startsWith("_")) {
-      parts.push(
-        <em key={key}>{renderInlineMarkdown(token.slice(1, -1), `${key}-em`)}</em>,
-      );
-    } else {
-      const linkMatch = token.match(/^\[([^\[\]]+)\]\(([^)]+)\)$/);
-      if (linkMatch) {
-        const [, label, href] = linkMatch;
-        const hrefKind = markdownHrefKind(href);
-        parts.push(
-          hrefKind === "external" ? (
-            <a key={key} href={href} target="_blank" rel="noreferrer">
-              {label}
-            </a>
-          ) : hrefKind === "internal" ? (
-            <Link key={key} href={href}>
-              {label}
-            </Link>
-          ) : (
-            label
-          ),
-        );
-      } else {
-        parts.push(token);
+function hasInlineNewline(value: string) {
+  return /[\r\n]/.test(value);
+}
+
+function findNextInlineMarkdownToken(
+  value: string,
+  cursor: number,
+): InlineMarkdownToken | null {
+  for (let index = cursor; index < value.length; index += 1) {
+    if (value[index] === "`") {
+      const end = value.indexOf("`", index + 1);
+      if (end > index && !hasInlineNewline(value.slice(index + 1, end))) {
+        return {
+          kind: "code",
+          start: index,
+          end: end + 1,
+          value: value.slice(index + 1, end),
+        };
       }
     }
 
-    cursor = start + token.length;
+    if (value.startsWith("**", index)) {
+      const end = value.indexOf("**", index + 2);
+      if (end > index && !hasInlineNewline(value.slice(index + 2, end))) {
+        return {
+          kind: "strong",
+          start: index,
+          end: end + 2,
+          value: value.slice(index + 2, end),
+        };
+      }
+    }
+
+    if (value[index] === "_") {
+      const end = value.indexOf("_", index + 1);
+      if (end > index && !hasInlineNewline(value.slice(index + 1, end))) {
+        return {
+          kind: "em",
+          start: index,
+          end: end + 1,
+          value: value.slice(index + 1, end),
+        };
+      }
+    }
+
+    if (value[index] === "[") {
+      const labelEnd = value.indexOf("](", index + 1);
+      if (labelEnd === -1) continue;
+      const label = value.slice(index + 1, labelEnd);
+      if (/[\[\]\r\n]/.test(label)) continue;
+      const hrefStart = labelEnd + 2;
+      const hrefEnd = findMarkdownLinkHrefEnd(value, hrefStart);
+      if (hrefEnd === -1) continue;
+      return {
+        kind: "link",
+        start: index,
+        end: hrefEnd + 1,
+        label,
+        href: value.slice(hrefStart, hrefEnd),
+      };
+    }
   }
 
-  if (cursor < value.length) {
-    parts.push(value.slice(cursor));
+  return null;
+}
+
+function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  let cursor = 0;
+  let tokenIndex = 0;
+
+  while (cursor < value.length) {
+    const token = findNextInlineMarkdownToken(value, cursor);
+    if (!token) {
+      parts.push(value.slice(cursor));
+      break;
+    }
+
+    if (token.start > cursor) {
+      parts.push(value.slice(cursor, token.start));
+    }
+
+    const key = `${keyPrefix}-${tokenIndex++}`;
+    if (token.kind === "strong") {
+      parts.push(
+        <strong key={key}>
+          {renderInlineMarkdown(token.value, `${key}-strong`)}
+        </strong>,
+      );
+    } else if (token.kind === "code") {
+      parts.push(<code key={key}>{token.value}</code>);
+    } else if (token.kind === "em") {
+      parts.push(
+        <em key={key}>{renderInlineMarkdown(token.value, `${key}-em`)}</em>,
+      );
+    } else {
+      const hrefKind = markdownHrefKind(token.href);
+      const label = renderInlineMarkdown(token.label, `${key}-label`);
+      parts.push(
+        hrefKind === "external" ? (
+          <a key={key} href={token.href} target="_blank" rel="noreferrer">
+            {label}
+          </a>
+        ) : hrefKind === "internal" ? (
+          <Link key={key} href={token.href}>
+            {label}
+          </Link>
+        ) : (
+          label
+        ),
+      );
+    }
+
+    cursor = token.end;
   }
 
   return parts;
@@ -334,12 +426,33 @@ function renderMarkdownList(node: MarkdownListNode, keyPrefix: string) {
 }
 
 function splitTableRow(value: string) {
-  return value
-    .trim()
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
+  const row = value.trim().replace(/^\|/, "").replace(/\|$/, "");
+  const cells: string[] = [];
+  let current = "";
+  let inCodeSpan = false;
+
+  for (let index = 0; index < row.length; index += 1) {
+    const char = row[index];
+    if (char === "\\" && row[index + 1] === "|") {
+      current += "|";
+      index += 1;
+      continue;
+    }
+    if (char === "`") {
+      inCodeSpan = !inCodeSpan;
+      current += char;
+      continue;
+    }
+    if (char === "|" && !inCodeSpan) {
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  cells.push(current.trim());
+  return cells;
 }
 
 function renderMarkdownBlocks(text: string): ReactNode[] {
