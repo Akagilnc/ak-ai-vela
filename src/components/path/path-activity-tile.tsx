@@ -9,6 +9,19 @@ type Props = {
   total: number;         // total tile count (for "01 / 05")
 };
 
+const CURATED_SEGMENT_SLUG_BY_ACTIVITY_SLUG: Record<string, string> = {
+  "g1-may-routine": "g1-may-baseline",
+  "g1-may-labor-day-holiday": "g1-may-labor-holiday",
+  "g1-may-lixia-solar-term": "g1-may-lixia-solar-term",
+  "chongming-spring-migration-tail": "g1-may-dongtan-migration-tail",
+  "g1-may-near-door-ecology": "g1-may-neighborhood-ecology",
+};
+
+function activityHref(slug: string): string {
+  const curatedSlug = CURATED_SEGMENT_SLUG_BY_ACTIVITY_SLUG[slug];
+  return curatedSlug ? `/path/seg/${curatedSlug}` : `/path/${slug}`;
+}
+
 function stripBold(html: string): string {
   return html.replace(/<\/?b>/g, "");
 }
@@ -24,7 +37,7 @@ export function PathActivityTile({ activity, index, total }: Props) {
 
   return (
     <Link
-      href={`/path/${activity.slug}`}
+      href={activityHref(activity.slug)}
       className={`tile ${activity.cardType}${hasPreviews ? " has-previews" : ""}`}
       aria-label={`打开 ${activity.title}`}
     >

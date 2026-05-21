@@ -4,7 +4,10 @@ import path from "path";
 
 function createPrismaClient() {
   // MVP: local-only deployment, single machine. Revisit for cloud.
+  const testUrl =
+    process.env.NODE_ENV === "test" ? process.env.VELA_TEST_DB_URL : undefined;
   const url =
+    testUrl ||
     process.env.DATABASE_URL ||
     `file:${path.join(process.cwd(), "prisma", "dev.db")}`;
   const adapter = new PrismaBetterSqlite3({ url });

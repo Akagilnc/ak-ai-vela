@@ -3,7 +3,7 @@
 AI-powered growth guidance for Chinese families planning their child's path to US universities.
 
 Three tools:
-- **Path Explorer** (v0.2) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards). June = 雨季观察家 (4 cards). Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
+- **Path Explorer** (v0.10) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards) with DB-backed curated segment pages at `/path/seg/[slug]`; June = 雨季观察家 (4 cards). Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
 - **Trait assessment quiz** (v0.6) — 30-question Likert assessment based on Thomas & Chess 1956 NYU 9-dimension temperament framework. Produces a 9-dimension profile + 4-class hero (灵活型 / 慎重型 / 慢热型 / 平衡型) with consumer-friendly aliases over the academic labels. URL-encoded score payload (8 base64url chars, CRC-8 checksum) so result links are shareable + reproducible. `/trait-quiz`.
 - **Gap analysis engine** — for high schoolers targeting specific universities. `/questionnaire`.
 
@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3300
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (753 tests, 31 files) |
+| `npm test` | Run all tests (814 tests, 40 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -44,8 +44,9 @@ npm run dev            # Start dev server at http://localhost:3300
 ```
 src/
   app/                    # Next.js App Router pages
-    path/                 # Path Explorer (v0.2)
-      [activitySlug]/     # Detail page per activity card
+    path/                 # Path Explorer (v0.10)
+      seg/[slug]/         # DB-backed curated segment pages for G1 May
+      [activitySlug]/     # Legacy detail page per activity card
         loading.tsx       # Skeleton for route transitions
       layout.tsx          # Loads vela.css + skip-to-content links
       page.tsx            # Overview: month-aware (?month=N) tile list, theme map per month
@@ -65,9 +66,11 @@ src/
       path/interest/      # POST endpoint for CTA form (create-then-update on conflict)
     page.tsx              # Homepage (dual entry: trait quiz + questionnaire)
   components/
-    path/                 # Path Explorer UI components (10 files)
+    path/                 # Path Explorer UI components (12 files)
       path-activity-tile.tsx    # Overview tile (preview images + chips)
       path-activity-detail.tsx  # Detail page chrome + <main id="detail-body">
+      path-curated-view.tsx     # Curated segment renderer (authored prose + atom slots)
+      path-detail-exit-cleanup.tsx  # Clears stale overview scroll restore flags outside /path
       block-renderer.tsx        # 17 block types (paragraph, triad, route, trivia, etc.)
       share-button.tsx          # Web Share API + WeChat clipboard fallback (+ iOS execCommand)
       path-detail-nav.tsx       # Keyboard (←/→/Esc) + touch swipe nav, multi-touch guard
@@ -98,6 +101,8 @@ src/
     path/                 # Path Explorer library (@/lib/path)
       canonical-source.ts # sourcePath canonicalizer — NFKC + Default_Ignorable strip + dot-segment resolve + percent decode (15 rounds of Unicode smuggling hardening)
       month-routing.ts    # resolveMonth() — current → nearest upcoming → max past, validateMonthParam() for ?month=N
+      curated-slot.ts     # tight/explore atom slot selection with display-order fallback
+      curated-view-query.ts # slug-guarded Prisma loader for /path/seg/[slug]
       parse.ts            # Runtime Prisma Json shape guards (parseChips, parseSections)
       types.ts            # Block/section type discriminated unions
       __tests__/          # Regression tests: canonical-source smuggling vectors + month-routing fallback ladder
@@ -115,10 +120,10 @@ src/
       engine.ts           # analyzeStudentVsSchool / analyzeStudentVsAllSchools
       normalize.ts        # Chinese GPA → US 4.0 normalization
       recommendations.ts  # Hardcoded action templates (4 dims × 5 severities)
-  __tests__/              # Top-level Vitest tests (questionnaire, backup, schema, path seed shape, path seed integration, copy quality)
+  __tests__/              # Top-level Vitest tests (questionnaire, backup, schema, path seed shape, curated views, copy quality)
 prisma/
-  schema.prisma           # Path (6 models) + School + Student + QuestionnaireResult
-  seed.ts                 # Seed: 26 schools + G1 month seeds merged by goal+activity slug (May 5 + June 4 = 9 activities, single-stage guard)
+  schema.prisma           # Path (legacy activity + atom/curated-view models) + School + Student + QuestionnaireResult
+  seed.ts                 # Seed: 26 schools + G1 month seeds + G1 May atom/curated views
 public/assets/
   img/                    # 31 species + location photos (Wikipedia Commons, CC-licensed) — covers May (24) + June (7 new: snail, earthworm, frog, mugwort, sweet_flag, zongzi, firefly)
   vela.css                # Brand styles for /path scope (loaded via path/layout.tsx)
@@ -126,7 +131,7 @@ docs/
   current-state.md        # Long-term project status (MVP semantics, blockers, next steps)
   process.md              # Git workflow and project management rules
   project-context.md      # Project scope and constraints
-  research/               # Path Explorer content drafts + source manifest
+  research/               # Path Explorer content drafts, source manifest, and 12-year Path research dossier
     data/g1-may-seed.ts   # Single source of truth for May card content (5 cards, 小小动物科学家)
     data/g1-jun-seed.ts   # Single source of truth for June card content (4 cards, 雨季观察家)
 ```
@@ -161,6 +166,7 @@ Defined in `DESIGN.md`. Organic/Natural aesthetic with forest green, warm gold, 
 | Trait Assessment Phase 1 (pure frontend) | Done (v0.5.0.0) |
 | Path Explorer v0.1 (G1 May activity cards) | Done (v0.6.0.0) |
 | Path Explorer v0.2 (multi-month routing + G1 June seed) | Done (v0.7.0.0) |
+| Path Explorer v0.10 (G1 May curated segment pages + atom model) | Done (v0.10.0.0) |
 | Path Explorer v0.3+ (additional months, second stage G4–G6) | Planned (after Kailing feedback) |
 | Trait Assessment v0.6 (scientific framework — Thomas & Chess 9-dim) | Done (v0.8.0.0) |
 | Polish sprint + IDOR closure (HMAC-signed studentId cookie) | Done (v0.9.0.0) |

@@ -4,7 +4,7 @@ Long-term project status document. Keeps only the current truth, not the history
 of how we got here. For past context, read CHANGELOG, PR descriptions, and
 retrospectives under `docs/retrospectives/` (when they exist).
 
-**Last updated:** 2026-05-01 · `fix/polish-sprint-p2` @ `3ee658d` (v0.9.0.0, PR #34 open, 3 bot-review rounds complete)
+**Last updated:** 2026-05-21 · `path-atomic-curated-view` @ `ddaa09b` (v0.10.0.0, PR #36 ready to merge)
 
 ## Product Direction
 
@@ -21,11 +21,13 @@ v0.5 marked the pivot from "gap analysis only" to "growth guidance." v0.6
 extends upstream with Path Explorer v0.1 — the literacy layer. v0.7 makes
 Path Explorer multi-month: routing + theme map + G1 June seed. v0.8 replaces
 the v0.5 DIY trait quiz with a Thomas & Chess 9-dimension temperament
-framework (30-Q Likert, URL-encoded score), closing issue #24.
+framework (30-Q Likert, URL-encoded score), closing issue #24. v0.10 adds
+DB-backed curated segment pages for the five G1 May Path cards, preserving
+source-authored parent prose as reusable atoms.
 
 ## MVP Semantics
 
-**Tool 1: Path Explorer** (`/path`, v0.7.0.0, ready to ship)
+**Tool 1: Path Explorer** (`/path`, v0.10.0.0, ready to merge)
 1. Parent opens `/path` and lands on the current calendar month if seeded
    (April→May fallback today via three-tier resolveMonth: current → nearest
    upcoming → max past). May = 小小动物科学家 (5 cards). June = 雨季观察家 (4 cards).
@@ -36,22 +38,26 @@ framework (30-Q Likert, URL-encoded score), closing issue #24.
    June: 1 baseline + 3 event cards covering 端午 3-day holiday, 入梅 backyard
    ecology, 夏至 fireflies). Card count is content-driven, not padded to a
    fixed number.
-4. Each tile → detail page `/path/{slug}` with chips, trigger, time pacing,
-   and 2–5 themed sections rendered from 17 block types (paragraph / triad /
-   route / trivia / callout / callout-trio / path-opts / sub-block / list-
-   check / list-bullets / photo-row / id-table / steps / philosophy /
-   sources / aside-note / callout).
-5. Detail-page back button + Esc shortcut preserve the activity's month
+4. May tiles now route to curated segment pages at `/path/seg/[slug]`.
+   Those pages load `PathCuratedView` + `PathAtom` rows from SQLite, render
+   source-authored prose blocks, then split reusable activity atoms into
+   tight/explore lanes. June and any unmapped future activity still fall back
+   to the legacy `/path/{slug}` detail page.
+5. Legacy detail pages keep chips, trigger, time pacing, and 2–5 themed
+   sections rendered from 17 block types (paragraph / triad / route / trivia /
+   callout / callout-trio / path-opts / sub-block / list-check / list-bullets /
+   photo-row / id-table / steps / philosophy / sources / aside-note / callout).
+6. Detail-page back button + Esc shortcut preserve the activity's month
    (`/path?month=${activity.month}`) so multi-month routing doesn't strand
    users on a different month after returning.
-6. Sticky sub-nav scroll-spy + species-photo lightbox + keyboard (←/→/Esc)
+7. Sticky sub-nav scroll-spy + species-photo lightbox + keyboard (←/→/Esc)
    and touch-swipe navigation between cards within the same month.
-7. CTA form at bottom of overview: email + optional grade → future months.
+8. CTA form at bottom of overview: email + optional grade → future months.
    Copy is now month-agnostic ("下次更新发你" / "当月卡片"); error.tsx and
    not-found.tsx match.
-8. WeChat share button: native share sheet outside WeChat, clipboard copy
+9. WeChat share button: native share sheet outside WeChat, clipboard copy
    inside WeChat webview (+ iOS Safari `execCommand` legacy fallback).
-9. Brand-styled 404 (`/path/not-found`) for invalid `?month=99`/`?month=foo`
+10. Brand-styled 404 (`/path/not-found`) for invalid `?month=99`/`?month=foo`
    and error boundary (`/path/error`).
 
 **Tool 2: Trait Assessment** (`/trait-quiz`, v0.8.0.0 / v0.6 trait quiz, Phase 1 pure frontend)
@@ -87,10 +93,11 @@ The system speaks Chinese by default.
 ## Architecture Snapshot
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript strict.
-- **Database:** Prisma 7.7.0 on SQLite (`dev.db`). Path Explorer adds 6 new
-  models: PathStage / PathGoal / PathActivity / PathDecision /
-  PathDecisionBranch / PathInterest. Existing: School / Student /
-  QuestionnaireResult.
+- **Database:** Prisma 7.7.0 on SQLite (`dev.db`). Path Explorer now has
+  legacy activity models plus atom/curated-view models: PathStage / PathGoal /
+  PathActivity / PathAtom / PathCuratedView / PathCuratedViewAtom /
+  PathDecision / PathDecisionBranch / PathInterest. Existing:
+  School / Student / QuestionnaireResult.
 - **Path Explorer engine:** `src/lib/path/` — pure utilities. The key
   security-boundary function is `canonicalSourcePath` (100 regression
   tests covering NFKC normalization, multi-pass percent decoding with
@@ -99,7 +106,9 @@ The system speaks Chinese by default.
   at 10 for DoS resistance). v0.7 adds `month-routing.ts` —
   `resolveMonth(current, available)` (3-tier: current → nearest upcoming
   → max past) + `validateMonthParam` (regex int-only, range [1,12], no
-  decimals / leading zeros beyond "01"–"09"). 33 routing tests.
+  decimals / leading zeros beyond "01"–"09"). v0.10 adds
+  `curated-view-query.ts` (slug-guarded Prisma loader) and `curated-slot.ts`
+  (tight/explore slot selection with display-order fallback).
 - **Gap engine:** `src/lib/gap/` — deterministic pure-function library, 4
   v1 dimensions (GPA / SAT / ACT / pre-vet experience), 5-level severity,
   tier classification, 20 recommendation templates.
@@ -110,17 +119,19 @@ The system speaks Chinese by default.
   `cutoffHistory` append-only ledger preserves backward-compat re-classification.
   `quantizeDimScores` invariant: live-result and URL-decoded paths converge on
   identical integer profiles. 159 tests across 7 files.
-- **Tests:** 733 passing via Vitest (31 files). Coverage invariant
+- **Tests:** 814 passing via Vitest (40 files). Coverage invariant
   fences the recommendation template matrix. canonical-source suite pins
   every Unicode smuggling vector (U+00AD SOFT HYPHEN, U+061C ARABIC LETTER
   MARK, U+202A-E bidi, U+E0000-U+E01EF TAG + variation selectors, etc.).
   v0.7 adds `month-routing.test.ts` (33 tests) and `path-seed-shape.test.ts`
   (29 tests including a recursive block walker that fails at test time
   on per-discriminator field-name drift across all month seeds). v0.8 adds
-  7 new test files in `src/lib/traits/temperament/__tests__/` covering score
+  7 test files in `src/lib/traits/temperament/__tests__/` covering score
   encoding round-trips, CRC-8 tamper detection, dimension polarity, hero
   classification cutoffs, lowConfidenceFlag thresholds, and the
-  quantizeDimScores live↔URL invariant.
+  quantizeDimScores live↔URL invariant. v0.10 adds curated-view coverage for
+  atom schema shape, source fidelity, runtime DB loading, reset reseeding,
+  route hardening, overview routing, slot ordering, and markdown rendering.
 - **Design system:** Tokens + rules in `DESIGN.md` for the trait-quiz +
   gap flows. Path Explorer uses `vela.css` (scoped via `<link>` in
   `src/app/path/layout.tsx`) with its own warm palette layered on the
@@ -135,90 +146,32 @@ The system speaks Chinese by default.
 
 ## Active branch / PR / review state
 
-- **Current branch:** `fix/polish-sprint-p2`
-- **HEAD:** `3ee658d` (v0.9.0.0, PR #34 open at https://github.com/Akagilnc/ak-ai-vela/pull/34)
-- **Version:** `0.9.0.0`
-- **Branch summary (10 commits, +1169 / -161 LOC across 27 files, 753 tests passing):**
-  Polish sprint covering 6 deferred items (radar dimension skip-reason,
-  `/path` dev-mode error display, `/schools` landscape safe-area, gap
-  recommendation school-name fallback, `Student.name` → stable studentId,
-  block-shape walker tightening) plus a 7-round cross-model adversarial
-  review trail that surfaced and closed both write-side and read-side IDOR
-  on the questionnaire flow. Net new file: `src/lib/auth/student-token.ts`
-  (HMAC-signed studentId cookie, `timingSafeEqual` constant-time compare,
-  fail-fast `STUDENT_TOKEN_SECRET` probe in production, lazy-cached secret
-  resolution). New env var `STUDENT_TOKEN_SECRET` (≥32 chars, generate via
-  `openssl rand -hex 32`).
-- **PR #34 bot review (3-round cap reached, 7 findings total, 6 fixed + 1
-  deferred with rationale):**
-  - R1 (`5de77a7`): Codex P2 — `handleFreshStart` swallowed
-    `clearStudentSession` errors; now blocks navigation + surfaces error.
-    Gemini Medium ×2 — `STUDENT_COOKIE_NAME` constant exported from
-    `student-token.ts` (single source); `getSecret()` lazy-cached.
-    Gemini High deferred with rationale: "non-atomic update via try-create
-    + P2002" pattern doesn't apply (no unique constraint on `Student.name`);
-    real concurrent-update race is documented in TODOS.md as Postgres-only
-    deploy gate.
-  - R2 (`0c195a5`): Codex P2 — `signStudentToken("__probe__")` hoisted
-    above `verifyStudentToken()` so a returning user with cookie + missing
-    prod secret gets graceful response, not uncaught throw. Gemini Medium —
-    `/schools` safe-area inset applied at `sm:` + `lg:` breakpoints
-    (16/24/32px tier), iPhone Pro Max landscape (~932px) now respects notch.
-  - R3 (`3ee658d`): Codex P2 — wrapped `verifyStudentToken()` on
-    `/questionnaire/complete/gaps` in try/catch, returns `EmptyState` on
-    throw. Symmetric to write-path fail-fast; consistent UX across read +
-    write boundaries.
-  - Copilot did not auto-fire and did not respond to manual
-    `gh api requested_reviewers POST` triggers across all 3 rounds.
-- **Open Issues:** #25 (Path Explorer feature — v0.1 + v0.2 shipped, v0.3+
-  tracked for more months / additional stage).
-- **Previously open PR (now reflected in CHANGELOG / "Recently merged" once landed):**
-  PR #33 (Trait Quiz v0.6, v0.8.0.0). 3 rounds of bot review (Codex + Gemini),
-  all 7 findings addressed: 1 Critical (quantize math drift between live + URL
-  paths), 1 High (dimension polarity inversion), 1 P1, 4 medium / P2.
-- **v0.8.0.0 branch summary (16 commits, +4825 / -2800 LOC across 44 files):**
-  - Slice 1: dimension framework — `dimensions.ts` (Thomas & Chess 9
-    dims, attentionPole low/high, no neutral) + `questions.ts` (30
-    Likert items, ~3.3 per dim, mix of forward + reverse-keyed).
-  - Slice 2: scoring engine — `score.ts` (per-dim mean → quantize int
-    1-5, then 4-class hero classification with cutoff thresholds).
-  - Slice 3: URL encoding — `score-encoding.ts` (6-byte payload → 8
-    base64url chars, CRC-8 checksum, schemaVersion + cutoffVersion +
-    lowConfidenceFlag).  `cutoffHistory` append-only ledger so old
-    score URLs re-classify correctly under newer cutoffs.
-  - Slice 4: result page — `/trait-quiz/result/[score]` decodes URL,
-    renders 4-class hero card with academic + consumer aliases (灵活/
-    慎重/慢热/平衡), 9-dim profile bars, drift CTA.
-  - Slice 5: quiz UI — `quiz-provider.tsx`, `quiz-step.tsx`,
-    `likert-options.tsx`, `dim-progress.tsx`. Auto-advance after
-    first-time Likert pick (250ms `setTimeout` + `useRef`-guarded
-    cancel-on-上一题).
-  - Slice 6: removed v0.5 — deleted `trait-quiz-provider.tsx`,
-    `trait-step.tsx`, `trait-progress.tsx`, `trait-insight.tsx`,
-    `src/lib/traits/{types,questions,routes,match,portraits,insights}.ts`,
-    24-route matchRoute, all v0.5 tests. Net -2800 LOC.
-  - Bot review R1 (Codex): caught Critical math drift — live result
-    used floor; URL-decoded path used round → off-by-one classifications
-    on edge scores. Fixed via shared `quantizeDimScores` helper + invariant
-    test.
-  - Bot review R2 (Gemini): polarity inversion on adaptability and
-    distractibility (reverse-keyed items not flipped). Fixed + test.
-  - Bot review R3: 4 P2 items addressed (label affordance, error
-    boundary copy, share button race, severity scale tokens).
-  - Real-device E2E via `vela.akbot.top` named tunnel: user surfaced
-    2 UX gaps — manual 下一题 click feels heavy after each pick (fixed
-    with auto-advance, `7d51a01`), redundant dim transition banner
-    above progress bar (`86f339d`).
-  - Tunnel infra (`e0f2c51`): permanent dev tunnel host
-    `vela.akbot.top` baked into `next.config.ts allowedDevOrigins`.
-    `DEV_TUNNEL_ORIGIN` env var still supported for ad-hoc parallel
-    quick tunnels via `Set` deduplication.
-  - DESIGN.md severity scale token swap: trait severity now uses
-    forest green / deep gold / burnt orange (replaces v0.5 terracotta
-    on dark which failed contrast).
-  - WCAG AA: muted text `#B8B0A0` → `#6B6560` (5.45:1 on cream),
-    closes the `[P2] A11y muted text contrast` TODO.
+- **Current branch:** `path-atomic-curated-view`
+- **HEAD:** `ddaa09b` (v0.10.0.0, PR #36 open at https://github.com/Akagilnc/ak-ai-vela/pull/36)
+- **Version:** `0.10.0.0`
+- **Branch summary:** Path curated segment work. `/path/seg/[slug]` now serves
+  DB-backed curated pages for the five G1 May cards; `/path` links those May
+  cards to curated routes while preserving legacy `/path/{slug}` for unmapped
+  activity cards. Prisma adds `PathAtom`, `PathCuratedView`, and
+  `PathCuratedViewAtom`; seed/reset paths now populate both legacy activity
+  data and atom/curated-view data. The branch also tracks the 12-year Path
+  research dossier under `docs/research/path-12y-overview/`.
+- **PR #36 review state:** 3 remote bot-review rounds completed. R1 fixed
+  curated slot ratio clamping. R2 fixed markdown link/table parsing for curated
+  prose. R3 fixed malformed slug rejection before Prisma lookup and capped
+  authored prose scanning. Copilot was intentionally ignored/unavailable for
+  the online review flow.
+- **Open Issues:** #25 (Path Explorer feature — v0.1 + v0.2 + v0.10 seeded
+  May curated segments shipped; future work still tracks more months /
+  additional stages).
 - **Recently merged:**
+  - PR #34 (Polish sprint + IDOR closure, v0.9.0.0, merged 2026-05-01).
+    HMAC-signed studentId cookie, questionnaire read/write trust-boundary
+    closure, radar skip-reason parity, `/schools` safe-area fix, `/path`
+    dev error display, and path block-shape walker tightening.
+  - PR #33 (Trait Quiz v0.6, v0.8.0.0, merged 2026-04-30). Thomas & Chess
+    9-dimension 30-Q Likert quiz, 4-class hero, score URL encoding, and
+    permanent dev tunnel setup.
   - PR #31 (Path Explorer v0.2 — multi-month routing + G1 June seed, v0.7.0.0, merged 2026-04-26). 16 commits, +1700 LOC. resolveMonth 3-tier fallback + month-routing.ts + path-seed-shape walker + DB integration suite. 2 slices × 4 rounds cross-model review + 3 rounds PR bot.
   - PR #30 (copy de-slop Slices 1–4 + GPA recovery bug fixes, v0.6.2.1, merged 2026-04-22).
     28 files, 1000+ insertions. Questionnaire step subtitles, trait quiz UI, gap
@@ -245,41 +198,29 @@ The system speaks Chinese by default.
 
 ## Most recent real verification
 
-**2026-05-01** — Polish sprint + IDOR closure (v0.9.0.0), branch
-`fix/polish-sprint-p2` @ `3ee658d`, PR #34 open, 3-round bot-review cap reached:
-- `npm test`: 753 / 753 green (31 files, +20 net since v0.8.0.0). New
-  coverage on `radar-utils` `buildRadarDimensions` (skip-reason branching),
-  `student-token` round-trip integration via `questionnaire-actions`,
-  block-shape walker per-item field validation (`route.steps[]`,
-  `photo-row.photos[]`, `path-opts.opts[].locCards[]`), and the
-  `clearStudentSession` server action.
-- 7 rounds of LOCAL cross-model adversarial review pre-PR: R1 (3 Claude
-  subagents + Gemini outside voice), R2 (regression fence + saveStudentId
-  logging), R3 (Codex caught 4 cross-section findings — including 1
-  R1-introduced drift), R4 verification, R5 (Codex + Claude adversarial
-  converged on the write-side IDOR; closed with HMAC-signed cookie), R6
-  (3 reviewers converged on read-side IDOR at `/complete/gaps`; closed
-  with cookie-only studentId read), R7 (Codex final clean PASS).
-- 3 rounds of REMOTE bot review on PR #34 (cap per wiki): R1 (Codex P2 +
-  Gemini Medium ×2 fixed; Gemini High deferred — non-applicable pattern),
-  R2 (Codex P2 probe ordering + Gemini Medium responsive safe-area —
-  both fixed), R3 (Codex P2 read-path try/catch — fixed). Each round
-  trace: 4 + 2 + 1 findings, decreasing as expected. Each finding got a
-  per-comment inline reply with fix evidence (commit ref + diff context)
-  or deferred-with-rationale per wiki "reply to every inline comment"
-  rule. Copilot did not auto-fire on PR creation and did not respond to
-  manual `gh api requested_reviewers POST` triggers across all 3 rounds.
-- Trust boundary moved server-side: questionnaire write authorization is
-  no longer "client claims studentId" but "server's HMAC verifies cookie".
-  URL leakage of `?studentId=X` is now harmless. `STUDENT_TOKEN_SECRET`
-  required in prod (server refuses on first request via fail-fast probe;
-  not module-load throw because Next.js imports server modules during
-  `next build` data collection — that variant broke the build);
-  dev falls back to a banner-warned constant. Symmetric guards on both
-  read and write paths after R2/R3 bot review.
-- Cross-system consistency fix: `sat.ts` and `act.ts` gap dimensions now
-  skip both `testPolicy === "free"` and `"blind"` (matched what the radar
-  page already did, closing a R3 cross-section finding).
+**2026-05-21** — Path curated segment pages (v0.10.0.0), branch
+`path-atomic-curated-view` @ `ddaa09b`, PR #36 open and ready to merge:
+- `npm test`: 814 / 814 green (40 files). New coverage includes atom schema
+  shape, source-MD fidelity, runtime DB loading, reset reseeding, curated route
+  hardening, markdown rendering, overview card routing, malformed interests,
+  slot-ordering edge cases, and slug-shape rejection before Prisma lookup.
+- `npm run build`: compiled successfully, TypeScript completed, 27 static
+  pages generated.
+- Targeted eslint on R3 fix files completed with no output:
+  `src/lib/path/curated-view-query.ts`,
+  `src/components/path/path-curated-view.tsx`,
+  `src/__tests__/path-curated-view-query.test.ts`,
+  `src/__tests__/path-curated-view-render.test.tsx`,
+  `src/__tests__/curated-slot.test.ts`.
+- Remote PR review loop completed 3 rounds per wiki timing. R1 fixed curated
+  slot ratio clamping; R2 fixed curated markdown links/table parsing; R3 fixed
+  malformed slug rejection and prose scan bounds. Review reports live under
+  `docs/reviews/path-pr36-online-review-r*.review.md`.
+- Earlier ship-pre cross-model review intentionally blocked the first pass:
+  reviewers caught atom body fidelity loss, internal notes leaking into
+  parent-facing prose, reset FK/reseed bugs, route hardening gaps, display
+  ordering drift, and presentation gaps. The branch was reworked slice-by-slice
+  and re-reviewed before PR review resumed.
 
 **2026-04-30** — Trait Quiz v0.6 (30-Q Likert, Thomas & Chess 9 dims),
 branch `feat/trait-quiz-v06` @ `86f339d`, ready to ship:
@@ -415,11 +356,10 @@ branch `feat/path-v0.2` @ `02596b5`, ready to ship:
   one light check-in allowed ~1 week after 4/11 stand-by.
 
 **Correctness gaps tracked in `TODOS.md`:**
-- `Student.name` de-facto lookup key across questionnaire flow. Rename
-  would break references. Needs stable `studentId` (cuid/uuid) + Prisma
-  migration. Independent PR, not urgent for current single-user.
-- `recommendations.ts` copy nits from M4 resolved in v0.6.2.1 PR #30
-  (数据库 + tone softening addressed in Slice 2).
+- No active P0/P1 correctness blocker is known for the v0.10 merge target.
+  Earlier questionnaire `Student.name` trust-boundary work is closed by the
+  v0.9 HMAC-signed studentId cookie flow; earlier gap recommendation copy
+  nits were closed in v0.6.2.1.
 
 **Path Explorer v0.5+ deferred (architectural, not urgent for v0.1):**
 - CSP header + HTML sanitization for `BlockRenderer` — v0.1 trusts the
@@ -430,14 +370,11 @@ branch `feat/path-v0.2` @ `02596b5`, ready to ship:
 - `PathDecisionBranch.downstreamStageSlugs: Json` → proper FK join table.
   v0.1 doesn't seed this model (0 rows) so impact is zero.
 
-**Path Explorer v0.6.0.0 P2 deferred (polish, not shipping blockers):**
+**Path Explorer P2 deferred (polish, not shipping blockers):**
 - `--mute-2` (#8F8B72) on cream is 3.1:1 (fails WCAG AA 4.5:1 for small
   text). Brand-compliant fix exists (DESIGN.md #6B6560 secondary tier).
   Awaiting brand decision. Note: trait quiz v0.6 already migrated muted
   text to `#6B6560` (5.45:1); Path Explorer scope still pending.
-- `/schools` landscape safe-area edge — side-effect of global
-  `viewport-fit=cover`. `px-4` < notch inset in landscape.
-- `error.tsx` dev-mode error display — currently discards error prop.
 
 **Operational / infra:**
 - Local-only deployment. No WeChat QR sharing beyond the share button's
@@ -449,17 +386,15 @@ branch `feat/path-v0.2` @ `02596b5`, ready to ship:
 **Immediate:**
 1. Act on the Kailing-flagged P1 CTA channel TODO (email → WeChat ID / phone)
    before any wider distribution push.
-2. Decide on Path Explorer v0.2 scope (June cards? Different stage?) based
-   on Kailing signal.
+2. After v0.10 lands, collect feedback on the curated segment format before
+   expanding atomized content beyond the five G1 May cards.
 
 **Path Explorer v0.3+ (issue #25, future branch):**
-1. v0.2 already ships May + June. Next: decide whether to extend G1–G3
-   into July/August (summer break has different observation surface) or
-   to start a second stage (G4–G6) earlier — depends on whether Kailing
-   tests v0.2 against the same child or shifts to peer feedback.
+1. v0.2 ships May + June, and v0.10 atomizes the five G1 May cards. Next:
+   decide whether to extend G1–G3 into July/August, convert June into the
+   curated atom model, or start a second stage (G4–G6) earlier.
 2. Address v0.2 cross-review deferrals tracked in TODOS.md:
-   - Tighten the block-shape walker for `route` / `photo-row` /
-     `path-opts.opts[].locCards` per-item field checks (currently outer-array only).
+   - `resolveMonth` cross-year fallback before early-year month seeds ship.
    - `PathInterest.month` schema column for sign-up attribution. Today
      `canonicalSourcePath` strips queries, so `/path?month=5` vs
      `/path?month=6` signups are indistinguishable. Land with the third

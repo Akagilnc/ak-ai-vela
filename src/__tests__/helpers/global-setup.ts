@@ -41,7 +41,10 @@ export default async function setup(): Promise<() => Promise<void>> {
   // `--accept-data-loss` is safe here because the DB is empty.
   try {
     execSync("npx prisma db push --accept-data-loss", {
-      env: { ...process.env, DATABASE_URL: testDbUrl },
+      // Prisma 7.7's schema engine can fail with an empty "Schema engine error"
+      // when the host shell exports RUST_LOG=warn/error. Keep test setup
+      // isolated from that developer-machine setting.
+      env: { ...process.env, DATABASE_URL: testDbUrl, RUST_LOG: "info" },
       stdio: "pipe",
     });
   } catch (e) {

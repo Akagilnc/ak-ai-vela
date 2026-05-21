@@ -1,15 +1,18 @@
 /**
- * G1 5月 Path Explorer seed data — single source of truth for both:
- *   1. demo (assets/vela.js consumes this)
- *   2. future Prisma seed (Day 1 implementation)
+ * G1 5月 Path Explorer seed data — LEGACY old-model seed for /path.
  *
- * Schema mirrors planned Prisma tables:
+ * This file remains the source for the legacy PathActivity card model consumed
+ * by the old /path route/demo seed. The new atomic + curated-view model is
+ * derived from docs/research/path-explorer-sample-g1-may.md.
+ *
+ * Legacy consumers:
+ *   1. demo (assets/vela.js consumes this)
+ *   2. prisma/seed.ts for legacy PathActivity rows
+ *
+ * Schema mirrors the legacy Prisma tables:
  *   PathStage  → 1 row (G1-G3 stage)
  *   PathGoal   → 1 row (G1-G3 自然观察 + 文化感知)
  *   PathActivity → 5 rows (c1 baseline + c2-c5 events)
- *
- * Field names align with Prisma — when migration lands, this file moves to
- * prisma/seed-data/ and gets imported by prisma/seed.ts directly.
  *
  * Scope: v0.1. No measurement/feedback fields (defer to v0.2+ when telemetry exists).
  */

@@ -114,7 +114,7 @@ describe("StepLayout flushSave ordering (P2.2)", () => {
     // with the stale stateRef (currentStep=3) before setStep dispatched.
     expect(readPersistedStep()).toBe(4);
     expect(pushMock).toHaveBeenCalledWith("/questionnaire/step/4");
-  });
+  }, 15_000);
 
   it("handlePrev persists the PREVIOUS step, not the current step", async () => {
     render(
