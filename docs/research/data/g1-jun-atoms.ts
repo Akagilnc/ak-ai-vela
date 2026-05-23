@@ -57,7 +57,7 @@ const RAINY_SEASON_PITFALLS_BODY = `- **防滑第一**：湿滑石板上别让�
 const FIREFLY_WINDOW_BODY = "夏至到 7 月中旬（约 2026/06/21 – 07/15）为高峰。农历月中前后月光亮反而看不到，闷热无风雨的暗夜最佳。时段 19:30-22:00 最稳";
 
 const FIREFLY_METHOD_BODY = `1. **关闪光灯 / 关手机屏**。光会让萤火虫熄灯。
-2. **适应黑暗**：到了先等 5 分钟让眼睛适应黑暗。一开始什么都看不到很正常。
+2. **到了先等 5 分钟让眼睛适应黑暗**。一开始什么都看不到很正常。
 3. **不抓**。萤火虫寿命只有 1–2 周成虫期，抓一只就少一只。
 4. **安静**。不需要刻意，只是别大声招呼小孩"快来看"。
 5. **带防蚊液**。林下夏夜蚊子凶。`;
@@ -179,7 +179,7 @@ export const G1_JUN_ATOMS: PathAtomSeedRow[] = [
     body: "摸闻认新鲜草药 + 包 5 个粽子绑线，比远途奔波留下的感受更多",
     gradeFrom: 1,
     gradeTo: 12,
-    interests: NATURE_CRAFT_INTEREST,
+    interests: CULTURE_CRAFT_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "HOLIDAY",
     cadenceRole: "ONE_SHOT",
@@ -344,21 +344,21 @@ export const G1_JUN_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-jun-firefly-spot-binjiang",
     title: "滨江森林公园夜观",
-    body: "滨江森林公园——浦东高桥。近年上海公园里萤火虫最多的点（人民网 / 东方网都报道过）。有官方夜赏活动最稳，地铁 6 号线打车可达",
+    body: "浦东高桥。近年上海公园里萤火虫最多的点（人民网 / 东方网都报道过）。有官方夜赏活动最稳，地铁 6 号线打车可达",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
     scheduleKind: "WINDOW",
     windowType: "SEASON_WINDOW",
     cadenceRole: "ONE_SHOT",
-    frictionLevel: 1,
+    frictionLevel: 2,
     setting: "OUTDOOR",
     displayOrder: 20,
   },
   {
     slug: "g1-jun-firefly-spot-botanical",
     title: "上海/辰山植物园夜观",
-    body: "上海植物园 / 辰山植物园——上海植物园（徐汇）有黄脉翅萤、条背萤等；辰山植物园（松江）夜赏需查公众号确认当年夜场是否开放",
+    body: "上海植物园（徐汇）有黄脉翅萤、条背萤等；辰山植物园（松江）夜赏需查公众号确认当年夜场是否开放",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,
@@ -372,7 +372,7 @@ export const G1_JUN_ATOMS: PathAtomSeedRow[] = [
   {
     slug: "g1-jun-firefly-spot-qingpu",
     title: "青浦金泽/朱家角夜观",
-    body: "青浦金泽 / 朱家角——近郊水网地带，光污染低。自驾约 1 小时。密度大但点位多变要靠运气，需向当地观萤群打听",
+    body: "近郊水网地带，光污染低。自驾约 1 小时。密度大但点位多变要靠运气，需向当地观萤群打听",
     gradeFrom: 1,
     gradeTo: 12,
     interests: NATURE_INTEREST,

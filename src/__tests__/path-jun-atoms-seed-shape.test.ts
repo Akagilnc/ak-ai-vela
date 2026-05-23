@@ -166,12 +166,6 @@ function atomBody(slug: string): string {
   return atom.body;
 }
 
-function viewProse(slug: string): string {
-  const view = G1_JUN_ATOM_SEED.curatedViews.find((item) => item.slug === slug);
-  if (!view) throw new Error(`${slug} view must exist`);
-  return view.proseBlocks.map((block) => `${block.label}\n${block.value}`).join("\n\n");
-}
-
 function viewProseBlock(slug: string, key: string) {
   const view = G1_JUN_ATOM_SEED.curatedViews.find((item) => item.slug === slug);
   if (!view) throw new Error(`${slug} view must exist`);
@@ -188,15 +182,6 @@ function sourceRange(start: string, end: string): string {
   const endIndex = PARENT_FACING_SOURCE_MD.indexOf(end, startIndex);
   expect(endIndex, `${end} must exist after ${start}`).toBeGreaterThanOrEqual(0);
   return PARENT_FACING_SOURCE_MD.slice(startIndex, endIndex + end.length).trim();
-}
-
-function expectProseBlockEqualsSourceRange(
-  slug: string,
-  key: string,
-  start: string,
-  end: string,
-): void {
-  expect(viewProseBlock(slug, key).value).toBe(sourceRange(start, end));
 }
 
 function expectCopiedSnippet(target: string, snippet: string): void {
@@ -269,6 +254,12 @@ describe("G1 June atom seed shape and fidelity tests", () => {
       expect(Number.isInteger(atom.displayOrder), `${atom.slug}.displayOrder`).toBe(
         true,
       );
+    }
+  });
+
+  it("keeps every June atom body verbatim as a substring of the source MD", () => {
+    for (const atom of G1_JUN_ATOM_SEED.atoms) {
+      expect(SOURCE_MD, `${atom.slug} body must exist in source MD`).toContain(atom.body);
     }
   });
 
@@ -387,7 +378,7 @@ describe("G1 June atom seed shape and fidelity tests", () => {
       interestsBySlug,
       "g1-jun-dragon-boat-home-moxibustion",
       "| 家里搞艾草与粽叶 | G1-G12 | 文化+手作 |",
-      ["nature", "craft"],
+      ["culture", "craft"],
     );
     expectTaggedFromSource(
       interestsBySlug,
