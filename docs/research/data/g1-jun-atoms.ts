@@ -18,7 +18,6 @@ export const G1_JUN_STAGE_SLUG = PATH_ATOM_STAGE_SLUG;
 const NATURE_INTEREST = ["nature"] as const;
 const FOUNDATION_INTEREST = ["foundation"] as const;
 const NATURE_CULTURE_INTEREST = ["nature", "culture"] as const;
-const NATURE_CRAFT_INTEREST = ["nature", "craft"] as const;
 const CULTURE_CRAFT_INTEREST = ["culture", "craft"] as const;
 const CULTURE_INTEREST = ["culture"] as const;
 

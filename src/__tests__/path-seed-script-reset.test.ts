@@ -9,6 +9,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { G1_MAY_ATOM_SEED } from "../../docs/research/data/g1-may-atoms";
+import { G1_JUN_ATOM_SEED } from "../../docs/research/data/g1-jun-atoms";
 
 const testDbPath = path.join(tmpdir(), `vela-seed-reset-${randomUUID()}.db`);
 const testDbUrl = `file:${testDbPath}`;
@@ -37,7 +38,9 @@ function db() {
 }
 
 async function expectSeededProseBlocks(slug: string) {
-  const expectedView = G1_MAY_ATOM_SEED.curatedViews.find((view) => view.slug === slug);
+  const expectedView =
+    G1_MAY_ATOM_SEED.curatedViews.find((view) => view.slug === slug) ||
+    G1_JUN_ATOM_SEED.curatedViews.find((view) => view.slug === slug);
   if (!expectedView) throw new Error(`${slug} curated view must exist in seed`);
   const actualView = await db().pathCuratedView.findUniqueOrThrow({
     where: { slug },
@@ -48,6 +51,9 @@ async function expectSeededProseBlocks(slug: string) {
 
 async function expectAllSeededProseBlocks() {
   for (const view of G1_MAY_ATOM_SEED.curatedViews) {
+    await expectSeededProseBlocks(view.slug);
+  }
+  for (const view of G1_JUN_ATOM_SEED.curatedViews) {
     await expectSeededProseBlocks(view.slug);
   }
 }
@@ -65,12 +71,12 @@ describe("prisma seed script --reset", () => {
     run("npx", ["prisma", "db", "push", "--accept-data-loss"]);
     run("npx", ["tsx", "prisma/seed.ts"]);
 
-    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length);
+    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length + G1_JUN_ATOM_SEED.atoms.length);
     expect(await db().pathCuratedView.count()).toBe(
-      G1_MAY_ATOM_SEED.curatedViews.length,
+      G1_MAY_ATOM_SEED.curatedViews.length + G1_JUN_ATOM_SEED.curatedViews.length,
     );
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length,
+      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length,
     );
     await expectAllSeededProseBlocks();
 
@@ -177,7 +183,7 @@ describe("prisma seed script --reset", () => {
     });
 
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + 3,
+      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length + 3,
     );
 
     run("npx", ["tsx", "prisma/seed.ts"]);
@@ -211,18 +217,18 @@ describe("prisma seed script --reset", () => {
       }),
     ).not.toBeNull();
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + 2,
+      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length + 2,
     );
     await expectAllSeededProseBlocks();
 
     expect(() => run("npx", ["tsx", "prisma/seed.ts", "--reset"])).not.toThrow();
 
-    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length);
+    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length + G1_JUN_ATOM_SEED.atoms.length);
     expect(await db().pathCuratedView.count()).toBe(
-      G1_MAY_ATOM_SEED.curatedViews.length,
+      G1_MAY_ATOM_SEED.curatedViews.length + G1_JUN_ATOM_SEED.curatedViews.length,
     );
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length,
+      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length,
     );
     await expectAllSeededProseBlocks();
   }, 60_000);

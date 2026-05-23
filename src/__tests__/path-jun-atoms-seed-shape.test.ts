@@ -166,14 +166,6 @@ function atomBody(slug: string): string {
   return atom.body;
 }
 
-function viewProseBlock(slug: string, key: string) {
-  const view = G1_JUN_ATOM_SEED.curatedViews.find((item) => item.slug === slug);
-  if (!view) throw new Error(`${slug} view must exist`);
-  const block = view.proseBlocks.find((item) => item.key === key);
-  if (!block) throw new Error(`${slug}.${key} prose block must exist`);
-  return block;
-}
-
 function sourceRange(start: string, end: string): string {
   const startIndex = PARENT_FACING_SOURCE_MD.indexOf(start);
   expect(startIndex, `${start} must exist in sanitized source MD`).toBeGreaterThanOrEqual(
