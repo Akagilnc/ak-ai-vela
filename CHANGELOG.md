@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0.0] - 2026-05-24
+
+### Added
+- **G1 June Spec & Content Pilot** — Authored `docs/research/path-explorer-sample-g1-jun.md` detailing the June segments: Dragon Boat festival (`端午 3 天段`), Rainy Season backyard ecology (`入梅家门口生态段`), and Solstice Fireflies (`夏至萤火虫段`).
+- **June TS Atoms & Curated Views** — Ported 26 atoms, 4 curated views, and many-to-many joins to `docs/research/data/g1-jun-atoms.ts` with 100% byte-perfect verbatim fidelity.
+- **Additive Database Seeding** — Extended `prisma/seed.ts` to idempotently seed June stage, goals, curated views, and atoms concurrently with May content.
+- **June Atom Fidelity Test Suite** — Added `src/__tests__/path-jun-atoms-seed-shape.test.ts` to assert atom body substring containment and verify that all internal notes are scrubbed.
+
+### Changed
+- **Unified Seeding Script** — `prisma/seed.ts` now supports seeding both G1 May and G1 June explorer stages concurrently under `npx tsx prisma/seed.ts --reset`.
+- **Seeding count constraints** — Updated `path-seed-script-reset.test.ts` to assert combined May + June counts (54 atoms, 9 curated views, and 63 links) correctly.
+
+### Fixed
+- **Route Hardening Type Casting** — Resolved a pre-existing TypeScript error in `path-curated-route-hardening.test.tsx` to enable flawless `npx tsc --noEmit` checks.
+- **Eslint cleanliness** — Cleaned up unused imports, lints, and format issues to satisfy the pre-commit review gates.
+
+### Process
+- **Multi-model review convergence** — Completed 1+3+1 ship-pre cross-model reviews (Claude, Codex, Gemini) for Slice 4/June content, resolving all P0/P1 concerns before committing.
+
 ## [0.10.0.0] - 2026-05-21
 
 ### Added

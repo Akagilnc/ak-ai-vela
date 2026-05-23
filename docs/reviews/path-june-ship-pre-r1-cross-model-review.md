@@ -39,3 +39,5 @@ No new P0 or P1 findings were raised in this final ship-pre landing review. All 
 ## Ship Status
 
 CONVERGED: 3/3 vendor families approve the cumulative branch diff. The branch `path-june-content` is 100% green and ready for pre-ship review by the user.
+
+<!-- ship version bump v0.11.0.0 -->
