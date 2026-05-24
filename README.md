@@ -3,7 +3,7 @@
 AI-powered growth guidance for Chinese families planning their child's path to US universities.
 
 Three tools:
-- **Path Explorer** (v0.10) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards) with DB-backed curated segment pages at `/path/seg/[slug]`; June = 雨季观察家 (4 cards). Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
+- **Path Explorer** (v0.11) — month-at-a-glance activity cards that show parents what a G1–G3 child's path actually looks like. May = 小小动物科学家 (5 cards) and June = 雨季观察家 (4 cards), both with DB-backed curated segment pages at `/path/seg/[slug]`. Multi-month nav via `/path?month=N` with current-month default and nearest-upcoming fallback. `/path`.
 - **Trait assessment quiz** (v0.6) — 30-question Likert assessment based on Thomas & Chess 1956 NYU 9-dimension temperament framework. Produces a 9-dimension profile + 4-class hero (灵活型 / 慎重型 / 慢热型 / 平衡型) with consumer-friendly aliases over the academic labels. URL-encoded score payload (8 base64url chars, CRC-8 checksum) so result links are shareable + reproducible. `/trait-quiz`.
 - **Gap analysis engine** — for high schoolers targeting specific universities. `/questionnaire`.
 
@@ -32,7 +32,7 @@ npm run dev            # Start dev server at http://localhost:3300
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Production build |
-| `npm test` | Run all tests (814 tests, 40 files) |
+| `npm test` | Run all tests (822 tests, 41 files) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:push` | Push Prisma schema to SQLite |
 | `npm run db:seed` | Upsert school data (safe with existing student data) |
@@ -44,8 +44,8 @@ npm run dev            # Start dev server at http://localhost:3300
 ```
 src/
   app/                    # Next.js App Router pages
-    path/                 # Path Explorer (v0.10)
-      seg/[slug]/         # DB-backed curated segment pages for G1 May
+    path/                 # Path Explorer (v0.11)
+      seg/[slug]/         # DB-backed curated segment pages for G1 May + June
       [activitySlug]/     # Legacy detail page per activity card
         loading.tsx       # Skeleton for route transitions
       layout.tsx          # Loads vela.css + skip-to-content links
