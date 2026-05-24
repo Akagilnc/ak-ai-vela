@@ -11,6 +11,24 @@ import { afterAll, describe, expect, it } from "vitest";
 import { G1_MAY_ATOM_SEED } from "../../docs/research/data/g1-may-atoms";
 import { G1_JUN_ATOM_SEED } from "../../docs/research/data/g1-jun-atoms";
 
+// Single source of truth for all month seeds expected to be loaded by
+// `prisma/seed.ts`. Adding a new month = append its `_ATOM_SEED` here and
+// the expected counts below auto-update. Avoids hardcoded May+June sums
+// breaking the test the moment a new month lands.
+const ALL_ATOM_SEEDS = [G1_MAY_ATOM_SEED, G1_JUN_ATOM_SEED];
+const EXPECTED_ATOM_COUNT = ALL_ATOM_SEEDS.reduce(
+  (sum, s) => sum + s.atoms.length,
+  0,
+);
+const EXPECTED_VIEW_COUNT = ALL_ATOM_SEEDS.reduce(
+  (sum, s) => sum + s.curatedViews.length,
+  0,
+);
+const EXPECTED_LINK_COUNT = ALL_ATOM_SEEDS.reduce(
+  (sum, s) => sum + s.viewAtomLinks.length,
+  0,
+);
+
 const testDbPath = path.join(tmpdir(), `vela-seed-reset-${randomUUID()}.db`);
 const testDbUrl = `file:${testDbPath}`;
 const commandEnv = {
@@ -38,9 +56,15 @@ function db() {
 }
 
 async function expectSeededProseBlocks(slug: string) {
-  const expectedView =
-    G1_MAY_ATOM_SEED.curatedViews.find((view) => view.slug === slug) ||
-    G1_JUN_ATOM_SEED.curatedViews.find((view) => view.slug === slug);
+  // Iterate ALL_ATOM_SEEDS so a new month seed is covered automatically.
+  let expectedView: (typeof ALL_ATOM_SEEDS)[number]["curatedViews"][number] | undefined;
+  for (const seed of ALL_ATOM_SEEDS) {
+    const hit = seed.curatedViews.find((view) => view.slug === slug);
+    if (hit) {
+      expectedView = hit;
+      break;
+    }
+  }
   if (!expectedView) throw new Error(`${slug} curated view must exist in seed`);
   const actualView = await db().pathCuratedView.findUniqueOrThrow({
     where: { slug },
@@ -50,11 +74,13 @@ async function expectSeededProseBlocks(slug: string) {
 }
 
 async function expectAllSeededProseBlocks() {
-  for (const view of G1_MAY_ATOM_SEED.curatedViews) {
-    await expectSeededProseBlocks(view.slug);
-  }
-  for (const view of G1_JUN_ATOM_SEED.curatedViews) {
-    await expectSeededProseBlocks(view.slug);
+  // Iterate ALL_ATOM_SEEDS — new month seed coverage drops in automatically
+  // (was: 2 hardcoded for-loops over G1_MAY/G1_JUN; would silently skip a
+  // new month until someone also edited this helper).
+  for (const seed of ALL_ATOM_SEEDS) {
+    for (const view of seed.curatedViews) {
+      await expectSeededProseBlocks(view.slug);
+    }
   }
 }
 
@@ -71,13 +97,9 @@ describe("prisma seed script --reset", () => {
     run("npx", ["prisma", "db", "push", "--accept-data-loss"]);
     run("npx", ["tsx", "prisma/seed.ts"]);
 
-    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length + G1_JUN_ATOM_SEED.atoms.length);
-    expect(await db().pathCuratedView.count()).toBe(
-      G1_MAY_ATOM_SEED.curatedViews.length + G1_JUN_ATOM_SEED.curatedViews.length,
-    );
-    expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length,
-    );
+    expect(await db().pathAtom.count()).toBe(EXPECTED_ATOM_COUNT);
+    expect(await db().pathCuratedView.count()).toBe(EXPECTED_VIEW_COUNT);
+    expect(await db().pathCuratedViewAtom.count()).toBe(EXPECTED_LINK_COUNT);
     await expectAllSeededProseBlocks();
 
     await db().pathCuratedView.updateMany({
@@ -183,7 +205,7 @@ describe("prisma seed script --reset", () => {
     });
 
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length + 3,
+      EXPECTED_LINK_COUNT + 3,
     );
 
     run("npx", ["tsx", "prisma/seed.ts"]);
@@ -217,19 +239,15 @@ describe("prisma seed script --reset", () => {
       }),
     ).not.toBeNull();
     expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length + 2,
+      EXPECTED_LINK_COUNT + 2,
     );
     await expectAllSeededProseBlocks();
 
     expect(() => run("npx", ["tsx", "prisma/seed.ts", "--reset"])).not.toThrow();
 
-    expect(await db().pathAtom.count()).toBe(G1_MAY_ATOM_SEED.atoms.length + G1_JUN_ATOM_SEED.atoms.length);
-    expect(await db().pathCuratedView.count()).toBe(
-      G1_MAY_ATOM_SEED.curatedViews.length + G1_JUN_ATOM_SEED.curatedViews.length,
-    );
-    expect(await db().pathCuratedViewAtom.count()).toBe(
-      G1_MAY_ATOM_SEED.viewAtomLinks.length + G1_JUN_ATOM_SEED.viewAtomLinks.length,
-    );
+    expect(await db().pathAtom.count()).toBe(EXPECTED_ATOM_COUNT);
+    expect(await db().pathCuratedView.count()).toBe(EXPECTED_VIEW_COUNT);
+    expect(await db().pathCuratedViewAtom.count()).toBe(EXPECTED_LINK_COUNT);
     await expectAllSeededProseBlocks();
   }, 60_000);
 });

@@ -144,12 +144,23 @@ async function seedPathExplorer() {
 async function seedPathAtomExplorer() {
   const seeds = [G1_MAY_ATOM_SEED, G1_JUN_ATOM_SEED];
 
-  for (const seed of seeds) {
-    console.log(
-      `Seeding Path Explorer atom model (G1 ${seed.slugPrefix.toUpperCase().includes("MAY") ? "May" : "Jun"}, ${seed.atoms.length} atoms + ${seed.curatedViews.length} curated views)...`,
-    );
+  // codex P2 (R1): wrap multi-month seeding in ONE outer transaction so a
+  // failure while seeding a later month (e.g. bad viewAtomLinks reference in
+  // June) rolls back EARLIER months too. Previously each month had its own
+  // tx, leaving earlier months committed if a later one failed — partial-seed
+  // data-integrity regression on --reset flows.
+  await prisma.$transaction(async (tx) => {
+    for (const seed of seeds) {
+      // Derive month label from slugPrefix (e.g. "g1-may" → "May") so a new
+      // month seed auto-labels correctly without code changes here.
+      const monthCode = seed.slugPrefix.split("-")[1] ?? "unknown";
+      const monthLabel =
+        monthCode.charAt(0).toUpperCase() + monthCode.slice(1);
+      console.log(
+        `Seeding Path Explorer atom model (G1 ${monthLabel}, ${seed.atoms.length} atoms + ${seed.curatedViews.length} curated views)...`,
+      );
 
-    await prisma.$transaction(async (tx) => {
+
       const stage = await tx.pathStage.findUnique({
         where: { slug: seed.stageSlug },
       });
@@ -236,26 +247,31 @@ async function seedPathAtomExplorer() {
           throw new Error(`PathCuratedView link references unknown atom "${link.atomSlug}"`);
         }
 
-        await tx.pathCuratedViewAtom.upsert({
-          where: {
-            curatedViewId_atomId: {
-              curatedViewId,
-              atomId,
-            },
-          },
-          update: {},
-          create: {
-            curatedViewId,
-            atomId,
-          },
-        });
+        // Prisma v7 + better-sqlite3: composite-key upsert with empty update
+        // can hit known-issue edge cases on the SQLite adapter. Since the join
+        // row has no fields to update beyond the unique pair itself, "create
+        // if absent, otherwise no-op" is the actual semantic — use try-create
+        // and catch the unique-constraint violation (P2002) for atomicity.
+        try {
+          await tx.pathCuratedViewAtom.create({
+            data: { curatedViewId, atomId },
+          });
+        } catch (e) {
+          if (
+            e instanceof Prisma.PrismaClientKnownRequestError &&
+            e.code === "P2002"
+          ) {
+            // Join row already exists; nothing to update — proceed.
+          } else {
+            throw e;
+          }
+        }
       }
-    });
-
-    console.log(
-      `Seeded Path Explorer atom model: ${seed.atoms.length} atoms, ${seed.curatedViews.length} curated views, ${seed.viewAtomLinks.length} memberships`,
-    );
-  }
+      console.log(
+        `Seeded Path Explorer atom model: ${seed.atoms.length} atoms, ${seed.curatedViews.length} curated views, ${seed.viewAtomLinks.length} memberships`,
+      );
+    }
+  });
 }
 
 async function resetAll() {
