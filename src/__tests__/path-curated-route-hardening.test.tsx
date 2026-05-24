@@ -149,6 +149,8 @@ describe("/path/seg/[slug] route hardening", () => {
 
   it("falls back to whySpecial when metadata leadLine is missing", async () => {
     const view = MOCK_CURATED_VIEWS[0] as {
+      slug: string;
+      title: string;
       leadLine: string | null;
       whySpecial: string | null;
     };
@@ -172,6 +174,8 @@ describe("/path/seg/[slug] route hardening", () => {
 
   it("omits metadata descriptions when both prose fields are empty", async () => {
     const view = MOCK_CURATED_VIEWS[0] as {
+      slug: string;
+      title: string;
       leadLine: string | null;
       whySpecial: string | null;
     };

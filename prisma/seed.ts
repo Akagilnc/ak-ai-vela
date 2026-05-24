@@ -6,6 +6,8 @@ import { schools } from "./schools-data";
 import { G1_MAY_SEED } from "../docs/research/data/g1-may-seed";
 import { G1_JUN_SEED } from "../docs/research/data/g1-jun-seed";
 import { G1_MAY_ATOM_SEED } from "../docs/research/data/g1-may-atoms";
+import { G1_JUN_ATOM_SEED } from "../docs/research/data/g1-jun-atoms";
+
 
 const url =
   process.env.DATABASE_URL ||
@@ -140,118 +142,136 @@ async function seedPathExplorer() {
 }
 
 async function seedPathAtomExplorer() {
-  const seed = G1_MAY_ATOM_SEED;
+  const seeds = [G1_MAY_ATOM_SEED, G1_JUN_ATOM_SEED];
 
-  console.log(
-    `Seeding Path Explorer atom model (G1 May, ${seed.atoms.length} atoms + ${seed.curatedViews.length} curated views)...`,
-  );
-
+  // codex P2 (R1): wrap multi-month seeding in ONE outer transaction so a
+  // failure while seeding a later month (e.g. bad viewAtomLinks reference in
+  // June) rolls back EARLIER months too. Previously each month had its own
+  // tx, leaving earlier months committed if a later one failed — partial-seed
+  // data-integrity regression on --reset flows.
   await prisma.$transaction(async (tx) => {
-    const stage = await tx.pathStage.findUnique({
-      where: { slug: seed.stageSlug },
-    });
-    if (!stage) {
-      throw new Error(
-        `Path atom seed requires PathStage "${seed.stageSlug}". Run old Path Explorer seeding first.`,
+    for (const seed of seeds) {
+      // Derive month label from slugPrefix (e.g. "g1-may" → "May") so a new
+      // month seed auto-labels correctly without code changes here.
+      const monthCode = seed.slugPrefix.split("-")[1] ?? "unknown";
+      const monthLabel =
+        monthCode.charAt(0).toUpperCase() + monthCode.slice(1);
+      console.log(
+        `Seeding Path Explorer atom model (G1 ${monthLabel}, ${seed.atoms.length} atoms + ${seed.curatedViews.length} curated views)...`,
+      );
+
+
+      const stage = await tx.pathStage.findUnique({
+        where: { slug: seed.stageSlug },
+      });
+      if (!stage) {
+        throw new Error(
+          `Path atom seed requires PathStage "${seed.stageSlug}". Run old Path Explorer seeding first.`,
+        );
+      }
+
+      const seedSlugPrefix = seed.slugPrefix;
+      const validAtomSlugs = seed.atoms.map((atom) => atom.slug);
+      const validViewSlugs = seed.curatedViews.map((view) => view.slug);
+
+      await tx.pathCuratedViewAtom.deleteMany({
+        where: {
+          OR: [
+            { curatedView: { stageId: stage.id, slug: { in: validViewSlugs } } },
+            {
+              curatedView: {
+                stageId: stage.id,
+                slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
+              },
+            },
+            {
+              atom: {
+                stageId: stage.id,
+                slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
+              },
+            },
+          ],
+        },
+      });
+      await tx.pathCuratedView.deleteMany({
+        where: {
+          stageId: stage.id,
+          slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
+        },
+      });
+      await tx.pathAtom.deleteMany({
+        where: {
+          stageId: stage.id,
+          slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
+        },
+      });
+
+      const atomIdBySlug = new Map<string, number>();
+      for (const atom of seed.atoms) {
+        const { interests, ...rest } = atom;
+        const jsonFields = {
+          interests: interests as unknown as Prisma.InputJsonValue,
+        };
+        const row = await tx.pathAtom.upsert({
+          where: { slug: rest.slug },
+          update: { ...rest, ...jsonFields, stageId: stage.id },
+          create: { ...rest, ...jsonFields, stageId: stage.id },
+        });
+        atomIdBySlug.set(row.slug, row.id);
+      }
+
+      const viewIdBySlug = new Map<string, number>();
+      for (const view of seed.curatedViews) {
+        const { proseBlocks, ...rest } = view;
+        const jsonFields = {
+          proseBlocks:
+            proseBlocks == null
+              ? Prisma.JsonNull
+              : (proseBlocks as unknown as Prisma.InputJsonValue),
+        };
+        const row = await tx.pathCuratedView.upsert({
+          where: { slug: rest.slug },
+          update: { ...rest, ...jsonFields, stageId: stage.id },
+          create: { ...rest, ...jsonFields, stageId: stage.id },
+        });
+        viewIdBySlug.set(row.slug, row.id);
+      }
+
+      for (const link of seed.viewAtomLinks) {
+        const curatedViewId = viewIdBySlug.get(link.viewSlug);
+        const atomId = atomIdBySlug.get(link.atomSlug);
+        if (!curatedViewId) {
+          throw new Error(`PathCuratedView link references unknown view "${link.viewSlug}"`);
+        }
+        if (!atomId) {
+          throw new Error(`PathCuratedView link references unknown atom "${link.atomSlug}"`);
+        }
+
+        // Prisma v7 + better-sqlite3: composite-key upsert with empty update
+        // can hit known-issue edge cases on the SQLite adapter. Since the join
+        // row has no fields to update beyond the unique pair itself, "create
+        // if absent, otherwise no-op" is the actual semantic — use try-create
+        // and catch the unique-constraint violation (P2002) for atomicity.
+        try {
+          await tx.pathCuratedViewAtom.create({
+            data: { curatedViewId, atomId },
+          });
+        } catch (e) {
+          if (
+            e instanceof Prisma.PrismaClientKnownRequestError &&
+            e.code === "P2002"
+          ) {
+            // Join row already exists; nothing to update — proceed.
+          } else {
+            throw e;
+          }
+        }
+      }
+      console.log(
+        `Seeded Path Explorer atom model: ${seed.atoms.length} atoms, ${seed.curatedViews.length} curated views, ${seed.viewAtomLinks.length} memberships`,
       );
     }
-
-    const seedSlugPrefix = seed.slugPrefix;
-    const validAtomSlugs = seed.atoms.map((atom) => atom.slug);
-    const validViewSlugs = seed.curatedViews.map((view) => view.slug);
-
-    await tx.pathCuratedViewAtom.deleteMany({
-      where: {
-        OR: [
-          { curatedView: { stageId: stage.id, slug: { in: validViewSlugs } } },
-          {
-            curatedView: {
-              stageId: stage.id,
-              slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
-            },
-          },
-          {
-            atom: {
-              stageId: stage.id,
-              slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
-            },
-          },
-        ],
-      },
-    });
-    await tx.pathCuratedView.deleteMany({
-      where: {
-        stageId: stage.id,
-        slug: { startsWith: seedSlugPrefix, notIn: validViewSlugs },
-      },
-    });
-    await tx.pathAtom.deleteMany({
-      where: {
-        stageId: stage.id,
-        slug: { startsWith: seedSlugPrefix, notIn: validAtomSlugs },
-      },
-    });
-
-    const atomIdBySlug = new Map<string, number>();
-    for (const atom of seed.atoms) {
-      const { interests, ...rest } = atom;
-      const jsonFields = {
-        interests: interests as unknown as Prisma.InputJsonValue,
-      };
-      const row = await tx.pathAtom.upsert({
-        where: { slug: rest.slug },
-        update: { ...rest, ...jsonFields, stageId: stage.id },
-        create: { ...rest, ...jsonFields, stageId: stage.id },
-      });
-      atomIdBySlug.set(row.slug, row.id);
-    }
-
-    const viewIdBySlug = new Map<string, number>();
-    for (const view of seed.curatedViews) {
-      const { proseBlocks, ...rest } = view;
-      const jsonFields = {
-        proseBlocks:
-          proseBlocks == null
-            ? Prisma.JsonNull
-            : (proseBlocks as unknown as Prisma.InputJsonValue),
-      };
-      const row = await tx.pathCuratedView.upsert({
-        where: { slug: rest.slug },
-        update: { ...rest, ...jsonFields, stageId: stage.id },
-        create: { ...rest, ...jsonFields, stageId: stage.id },
-      });
-      viewIdBySlug.set(row.slug, row.id);
-    }
-
-    for (const link of seed.viewAtomLinks) {
-      const curatedViewId = viewIdBySlug.get(link.viewSlug);
-      const atomId = atomIdBySlug.get(link.atomSlug);
-      if (!curatedViewId) {
-        throw new Error(`PathCuratedView link references unknown view "${link.viewSlug}"`);
-      }
-      if (!atomId) {
-        throw new Error(`PathCuratedView link references unknown atom "${link.atomSlug}"`);
-      }
-
-      await tx.pathCuratedViewAtom.upsert({
-        where: {
-          curatedViewId_atomId: {
-            curatedViewId,
-            atomId,
-          },
-        },
-        update: {},
-        create: {
-          curatedViewId,
-          atomId,
-        },
-      });
-    }
   });
-
-  console.log(
-    `Seeded Path Explorer atom model: ${seed.atoms.length} atoms, ${seed.curatedViews.length} curated views, ${seed.viewAtomLinks.length} memberships`,
-  );
 }
 
 async function resetAll() {
