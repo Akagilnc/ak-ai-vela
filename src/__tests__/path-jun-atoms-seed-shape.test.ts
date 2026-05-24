@@ -53,6 +53,7 @@ const EXPECTED_CURATED_PROSE_KEYS: Record<string, string[]> = {
     "time",
     "whySpecial",
     "output",
+    "pitfalls",
     "heart",
   ],
   "g1-jun-firefly": [
@@ -119,6 +120,10 @@ const EXPECTED_CURATED_PROSE_SOURCE_RANGES: Record<
     output: [
       "本子上 \"雨后清单\"——",
       "她对家门口物种数量会有自己的估计。",
+    ],
+    pitfalls: [
+      "- **防滑第一**：湿滑石板上别让她跑。",
+      "3 岁以下避免柠檬桉油（OLE / PMD）</u>。",
     ],
     heart: ["“雨后第二天 7 点”是一个观察习惯 (routine)。", "这是观察习惯，不是知识点。"],
   },
@@ -316,7 +321,7 @@ describe("G1 June atom seed shape and fidelity tests", () => {
     expectCopiedSnippet(rainySteps, "3. **不抓不踩**。蜗牛壳薄，捏一下就死。");
 
     expectCopiedSnippet(rainyPitfalls, "- **防滑第一**：湿滑石板上别让她跑。");
-    expectCopiedSnippet(rainyPitfalls, "被咬仍需就医清创）。看到立即拉开距离，**不要尝试抓或赶**。");
+    expectCopiedSnippet(rainyPitfalls, "被咬需立即就医清创）。看到立即拉开距离，**不要尝试抓或赶**。");
     expectCopiedSnippet(rainyPitfalls, "3 岁以下避免柠檬桉油（OLE / PMD）");
 
     expectCopiedSnippet(fireflyWindow, "夏至到 7 月中旬（约 2026/06/21 – 07/15）为高峰。");
