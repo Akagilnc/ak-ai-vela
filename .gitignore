@@ -61,5 +61,3 @@ prisma/backups/
 
 # review-gate 本地绕过审计（不入库）
 .review-bypass.log
-.cmr-gate/
-.review-unconverged.log

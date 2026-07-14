@@ -71,11 +71,4 @@ print(f"[review-gate] ⚠ 绕过已记录 → .review-bypass.log（{sha} 含 "
 sys.exit(0)
 PY
 
-# ── cmr-gate L1 audit (chained intentionally before exit 0) ──
-# vela 既有 review-gate-postcommit 上面 PY 段写 .review-bypass.log(无 report);
-# cmr-gate postcommit_audit 多扫一层:report 存在但 verdict 未 APPROVE
-# → 写 .review-unconverged.log。两段并存,各管一段。
-_CMR_HOOK="$(git rev-parse --show-toplevel)/scripts/cmr-gate/postcommit_audit.py"
-[ -f "$_CMR_HOOK" ] && python3 "$_CMR_HOOK" || true
-
 exit 0
